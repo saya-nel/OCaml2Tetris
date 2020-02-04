@@ -1,7 +1,7 @@
 class Main {
 
   function void main() {
-    do Output.printString("Hellow world !\n");
+    do Output.printString("hello world!\n");
     return;
   }
 
