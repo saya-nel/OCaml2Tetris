@@ -1,0 +1,13 @@
+class Div {
+  	field _ x;
+  	constructor Div new() {
+        return this;
+    }
+  	method void apply (){
+        do Output.printString("Div!");
+        do Output.println();
+  		return;
+  	}
+}
+
+

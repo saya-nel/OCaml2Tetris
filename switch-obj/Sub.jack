@@ -1,0 +1,15 @@
+class Sub {
+  	field _ x;
+
+  	constructor Sub new() {
+      return this;
+    }
+
+  	method void apply (){
+        do Output.printString("Sub!");
+        do Output.println();
+  		return;
+  	}
+}
+
+
