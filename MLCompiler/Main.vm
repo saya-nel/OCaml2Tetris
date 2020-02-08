@@ -1,0 +1,45 @@
+function Main.main 2
+push constant 3
+push constant 4
+add
+pop local 1
+push constant 1
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 100
+push constant 42
+add
+goto IF_END1
+label IF_FALSE1
+push constant 2
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push constant 200
+push constant 42
+add
+goto IF_END2
+label IF_FALSE2
+push constant 7
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push constant 50
+push constant 23
+add
+goto IF_END3
+label IF_FALSE3
+push constant 42
+label IF_END3
+label IF_END2
+label IF_END1
+pop local 0
+push local 0
+call Output.printInt 1
+pop temp 0
+pop temp 0
+call Output.println 1
+pop temp 0
+return
+
