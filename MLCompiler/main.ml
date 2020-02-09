@@ -25,10 +25,10 @@ let compile input =
 	(* close_in ic; *)
     let result = Parser.prog Lexer.token lexbuf in 
     match !action with `Parse -> Ast.string_of_prog result |> Printf.printf "## AST reconnu ######################\n%s####################################\n"; exit 0
-    | _ ->
-    let by =  Bytecode.vm_prog result |> Bytecode.string_of_code in
+    | _ -> let mod_name = String.capitalize_ascii @@ Filename.remove_extension @@ Filename.basename input in
+    let by = Bytecode.vm_prog mod_name result |> Bytecode.string_of_code in
     let dir = match !destination_folder with None -> Filename.dirname input | Some s -> s in
-    let name = Filename.concat dir ((String.capitalize_ascii @@ Filename.remove_extension @@ Filename.basename input) ^ ".vm") in
+    let name = Filename.concat dir (mod_name ^ ".vm") in
     let oc = open_out name in
     Printf.fprintf oc "%s\n\n" by;
     close_out oc

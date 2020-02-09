@@ -7,6 +7,10 @@ type name = string
 type prog = decl list
 and decl = Decl of (name * name list * expr * pos) 
          | RecDecl of (name * name list * expr * pos)
+         | Type of (name * ty * pos)
+and ty = Sum of (sum_type)
+and sum_type = (constructor list)
+and constructor = name
 and expr = 
 | Constant of (constant * pos)
 | Ident of (name * pos)
@@ -30,6 +34,7 @@ and constant =
 | Int of (int)
 | Bool of (bool)
 | String of (string)
+| Constructor of (string)
 and match_case = Case of (constant * expr * pos) | Otherwise of (expr * pos)
 
 let indent_factor = 2
@@ -45,6 +50,7 @@ and string_of_defun lvl = function
 | (Decl (f,args,e,_)) | (RecDecl (f,args,e,_)) ->
 	sptf "%slet %s %s =\n%s\n" (indent_string lvl) (string_of_name f) (string_of_bindings args) 
  (string_of_expr (lvl+1) e)
+ | Type(t,d,_) -> sptf "type %s = %s\n" t (match d with Sum(l) -> (String.concat " | " l))
 and string_of_bindings l = 
 	String.concat " " (List.map string_of_name l)
 and string_of_name n = n
@@ -53,6 +59,7 @@ and string_of_constant lvl = function
 | Int(n) -> sptf "%s%d" (indent_string lvl) n
 | Bool(b) -> sptf "%s%s" (indent_string lvl) (if b then "true" else "false")
 | String(s) -> sptf "%s\"%s\"" (indent_string lvl) s
+| Constructor(s) -> sptf "%s%s" (indent_string lvl) s
 and string_of_expr lvl = function
 | Constant(c,_) -> string_of_constant lvl c
 | Ident (x,_) -> sptf "%s%s" (indent_string lvl) (string_of_name x)
@@ -62,7 +69,7 @@ and string_of_expr lvl = function
                              (string_of_expr (lvl+1) e2)
 | App(f,args,_) -> sptf "%s((%s) %s)" (indent_string lvl) 
                (string_of_expr 0 f) (String.concat " " (List.map (string_of_expr 0) args))
-| Seq(l,_) -> (String.concat ";\n" (List.map (string_of_expr lvl) l))
+| Seq(l,_) -> sptf "%sbegin\n%s\n%send" (indent_string lvl) (String.concat ";\n" (List.map (string_of_expr (lvl+1)) l)) (indent_string lvl)
 | BinOp(op,e1,e2,_) -> sptf "%s((%s)%s(%s))" (indent_string lvl)  (string_of_expr 0 e1) 
                     (string_of_name op) (string_of_expr 0 e2)
 |UnOp(op,e,_) -> sptf "%s(%s(%s))" (indent_string lvl) (string_of_name op) (string_of_expr 0 e)

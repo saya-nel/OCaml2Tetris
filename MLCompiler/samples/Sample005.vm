@@ -1,0 +1,25 @@
+function Sample005.test 2
+push constant 5
+pop local 1
+push local 1
+push constant 2
+add
+pop local 0
+push local 0
+push constant 7
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 42
+goto IF_END1
+label IF_FALSE1
+push constant 0
+label IF_END1
+call Output.printInt 1
+pop temp 0
+pop temp 0
+pop temp 0
+call Output.println 0
+return
+

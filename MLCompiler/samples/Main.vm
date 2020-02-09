@@ -1,0 +1,31 @@
+function Main.main 9
+pop temp 0
+call Sample001.test 1
+pop local 0
+pop temp 0
+call Sample002.test 1
+pop local 1
+pop temp 0
+call Sample003.test 1
+pop local 2
+pop temp 0
+call Sample004.test 1
+pop local 3
+pop temp 0
+call Sample005.test 1
+pop local 4
+pop temp 0
+call Sample006.test 1
+pop local 5
+pop temp 0
+call Sample007.test 1
+pop local 6
+pop temp 0
+call Sample008.test 1
+pop local 7
+pop temp 0
+call Sample009.test 1
+pop local 8
+pop temp 0
+return
+

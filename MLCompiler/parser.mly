@@ -6,41 +6,44 @@
 %}
 
 /* (* reserved words *) */
-%token LET IN IF THEN ELSE WHILE FOR DO DONE MATCH WITH PIPE
+%token LET IN IF THEN ELSE WHILE FOR DO DONE MATCH WITH PIPE BEGIN END
 
-%token <string> IDENT
+%token <string> IDENT IDENT_CAPITALIZE
 %token <string> STRING
 %token <int> INT
 %token <bool> BOOL
 
-%token PLUS MINUS TIMES DIV AND OR EQ NEQ GT LT GE LE NOT TRUE FALSE
+%token PLUS MINUS TIMES DIV AND OR EQ NEQ GT LT GE LE NOT TRUE FALSE TYPE
 %token REC
 /* (* control characters *) */
 %token EOF TERMINAISON DOT COLON LPAREN RPAREN LBRACKET RBRACKET SEMICOL BEGIN END 
 %token ARRAY_OPEN ARRAY_CLOSE ARRAY_ACCESS_OPEN LEFT_ARROW RIGHT_ARROW ASSIGN ACCESS REF WILDCARD
 
 %nonassoc LET IN 
-%nonassoc ARRAY_OPEN ARRAY_CLOSE LEFT_ARROW
+%nonassoc ARRAY_OPEN ARRAY_CLOSE
 
 /* (* operators *) */
-%right     COLON SEMICOL  /* lowest precedence */ 
+%right SEMICOL COLON /* lowest precedence */ 
+%nonassoc  IF
+%right     LEFT_ARROW ASSIGN
+/* %right     COMMA */
 %left      OR
 %left      AND
 %left      EQ NEQ GT GE LT LE
 %left      PLUS MINUS        
 %left      TIMES DIV               
 %left      DOT                  
-%nonassoc  LPAREN RPAREN         /* highest precedence */        
+%nonassoc  LPAREN RPAREN BEGIN END        /* highest precedence */        
 
 
 %start prog         /* the entry point */
 
 %type <Ast.prog>       prog
 %type <Ast.expr>       expr
+%type <Ast.sum_type>   sum_type
 %type <Ast.match_case> match_case
 
 %%
-
 
 prog :
  | EOF                    { [] }
@@ -48,10 +51,27 @@ prog :
  | decl TERMINAISON prog  { $1::$3 }
  ;
 
-decl :
+decl : 
+ | TYPE IDENT EQ ty             { Type($2,$4,pos()) }
  | LET IDENT args EQ expr       { Decl($2,$3,$5,pos()) }
- | LET REC IDENT args EQ expr       { RecDecl($3,$4,$6,pos()) }
+ | LET REC IDENT args EQ expr   { RecDecl($3,$4,$6,pos()) }
  ;
+
+ty :
+ | sum_type                      { Sum($1) }
+;
+sum_type :
+| sum_type_aux { $1 }
+| PIPE sum_type_aux { $2 }
+;
+
+sum_type_aux :
+ | constructor               { [$1] }
+ | constructor PIPE sum_type_aux { $1::$3 }
+ ;
+
+constructor :
+|  IDENT_CAPITALIZE                { $1 }
 
 args : 
 | arg       { [$1] }
@@ -62,10 +82,14 @@ arg :
 | LPAREN RPAREN  { "_" }
 ;
 
-idents : 
+/*idents : 
 | IDENT         { [$1] }
 | IDENT idents  { $1::$2 }
-;
+;*/
+
+ident_in_mod:
+| IDENT                  { $1 }
+| IDENT_CAPITALIZE DOT ident_in_mod { $1 ^ "." ^ $3 }
 
 exprs :
  | expr        { [$1] }
@@ -74,10 +98,13 @@ exprs :
 
 expr :
  | LPAREN expr RPAREN                    { $2 }
+ | BEGIN expr END                        { $2 }
  | constant                              { Constant($1,pos()) }
  | IDENT                                 { Ident($1,pos()) }
+ | ident_in_mod                          { Ident($1,pos()) }
  | expr exprs                            { App($1,$2,pos()) }
  | LET IDENT EQ expr IN expr             { Let($2,$4,$6,pos()) }
+ | BEGIN sequence END                    { $2 }
  | LPAREN sequence RPAREN                { $2 }
  | IF expr THEN expr ELSE expr           { If($2,$4,$6,pos())}
  | MATCH expr WITH match_body            { Match($2,$4,pos())}
@@ -112,6 +139,7 @@ constant:
  | INT                                   { Int($1) }
  | BOOL                                  { Bool($1) }
  | STRING                                { String($1) }
+ | constructor                           { Constructor($1) }
  ;
 
 match_body:
@@ -128,6 +156,7 @@ match_case:
 ;
 sequence:
 | expr SEMICOL sequence_aux { Seq($1::$3,pos()) }
+/*| expr SEMICOL sequence_aux           { raise (Parse_Exception ("merci de commencer et terminer une sequence avec les mots clefs begin et end",pos())) } */                     
 ;
 
 sequence_aux : 

@@ -11,7 +11,10 @@ type token =
   | MATCH
   | WITH
   | PIPE
+  | BEGIN
+  | END
   | IDENT of (string)
+  | IDENT_CAPITALIZE of (string)
   | STRING of (string)
   | INT of (int)
   | BOOL of (bool)
@@ -30,6 +33,7 @@ type token =
   | NOT
   | TRUE
   | FALSE
+  | TYPE
   | REC
   | EOF
   | TERMINAISON
@@ -40,8 +44,6 @@ type token =
   | LBRACKET
   | RBRACKET
   | SEMICOL
-  | BEGIN
-  | END
   | ARRAY_OPEN
   | ARRAY_CLOSE
   | ARRAY_ACCESS_OPEN

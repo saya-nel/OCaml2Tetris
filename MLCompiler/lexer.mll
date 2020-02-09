@@ -4,11 +4,13 @@
   exception Eof
 }
 
-let identifier = ['a'-'z''A'-'Z'] ['a'-'z''A'-'Z''0'-'9''_']*
+let ident = ['a'-'z'] ['a'-'z''A'-'Z''0'-'9''_']*
+let ident_capitalize = ['A'-'Z'] ['a'-'z''A'-'Z''0'-'9''_']*
 let module_ident = ['A'-'Z'] ['a'-'z''A'-'Z''0'-'9''_']*
 
 rule token = parse
 | ['0'-'9']+ as lxm  { INT(int_of_string lxm) }
+| "type"             { TYPE }
 | "true"             { BOOL(true) }
 | "false"            { BOOL(false) }
 | ':'                { COLON }
@@ -33,6 +35,8 @@ rule token = parse
 | "for"              { FOR }
 | "do"               { DO }
 | "done"             { DONE }
+| "begin"            { BEGIN }
+| "end"              { END }
 | "[|"               { ARRAY_OPEN }
 | "|]"               { ARRAY_CLOSE }
 | ".("               { ARRAY_ACCESS_OPEN }
@@ -55,7 +59,8 @@ rule token = parse
 | "<"                { LT }
 | ">="               { GE }
 | "<="               { LE }
-| identifier as lxm  { IDENT(lxm) }
+| ident_capitalize as lxm { IDENT_CAPITALIZE(lxm) }
+| ident as lxm       { IDENT(lxm) }
 | ['\n' ]            { (Lexing.new_line lexbuf) ; (token lexbuf) }
 | [' ' '\t']         { token lexbuf }    (* skip blanks *)
 | "(*"               { comment lexbuf }  (* Comment until closing *)
