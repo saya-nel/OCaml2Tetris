@@ -1,6 +1,6 @@
 (* devrait afficher 42 *)
 
-let rec sum n = if n < 1 then 0 else n + sum (n - 1) ;; 
+let rec sum n = n if n < 1 then 0 else n + sum (n - 1) ;; 
 
 let test x = 
 	begin

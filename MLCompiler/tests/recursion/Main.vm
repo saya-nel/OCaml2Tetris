@@ -1,19 +1,24 @@
-function Sample007.sum 0
+function Main.sum 0
 push argument 0
-return
-function Sample007.test 0
-push constant 10
-call Sample007.sum 1
-push constant 55
-eq
+push constant 1
+lt
 if-goto IF_TRUE1
 goto IF_FALSE1
 label IF_TRUE1
-push constant 42
+push constant 0
 goto IF_END1
 label IF_FALSE1
-push constant 0
+push argument 0
+push argument 0
+push constant 1
+sub
+call Main.sum 1
+add
 label IF_END1
+return
+function Main.main 0
+push constant 10
+call Main.sum 1
 call Output.printInt 1
 pop temp 0
 pop temp 0

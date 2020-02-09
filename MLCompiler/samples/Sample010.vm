@@ -2,6 +2,8 @@ function Sample010.test 2
 push constant 1
 pop local 1
 push constant 0
+push local 1
+eq
 if-goto IF_TRUE1
 goto IF_FALSE1
 label IF_TRUE1
@@ -9,6 +11,8 @@ push constant 17
 goto IF_END1
 label IF_FALSE1
 push constant 1
+push local 1
+eq
 if-goto IF_TRUE2
 goto IF_FALSE2
 label IF_TRUE2
@@ -16,6 +20,8 @@ push constant 42
 goto IF_END2
 label IF_FALSE2
 push constant 2
+push local 1
+eq
 if-goto IF_TRUE3
 goto IF_FALSE3
 label IF_TRUE3
