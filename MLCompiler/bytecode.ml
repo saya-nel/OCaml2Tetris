@@ -259,14 +259,18 @@ push constant 17*)
   | Ast.Array_get (e1,e2,_) ->
      (vm_expr env e1) @ (vm_expr env e2) @ [Prim "add"] @ [Push (Constant 1); Prim "add"] 
      @ [Pop (Pointer 1); Push (Temp 0); Push (That 0);]
-  | Ast.Array_assign (e1,e_offset,e3,_) -> 
-     (vm_expr env e_offset) @ (vm_expr env e1)@ [Prim "add"] @ 
-       [Push (Constant 1); Prim "add"] @
-         (vm_expr env e3) @
-           [Pop (Temp 0);
-            Pop (Pointer 1);
-            Push (Temp 0);
-            Pop (That 0)]
+
+  | Ast.Array_assign (e1,e_offset,e3,_) ->
+     let env' = (Env.local_next env) in
+     (vm_expr env e3) @
+       [(Pop (Local (Env.local env)))] @
+         (vm_expr env' e_offset) @ (vm_expr env' e1)@ [Prim "add"] @ 
+           [Push (Constant 1); Prim "add"] @
+             [Push (Local (Env.local env));
+                    Pop (Temp 0);
+                    Pop (Pointer 1);
+                    Push (Temp 0);
+                    Pop (That 0)]
     
 let string_of_segment = function
   | Argument n -> sptf "argument %d" n
