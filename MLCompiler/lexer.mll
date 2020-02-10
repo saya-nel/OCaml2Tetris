@@ -4,13 +4,15 @@
   exception Eof
 }
 
-let ident = ['a'-'z'] ['a'-'z''A'-'Z''0'-'9''_']*
+let vm_ident = ['a'-'z''A'-'Z''0'-'9''_']+
+let ident = ['a'-'z''_'] ['a'-'z''A'-'Z''0'-'9''_']*
 let ident_capitalize = ['A'-'Z'] ['a'-'z''A'-'Z''0'-'9''_']*
 let module_ident = ['A'-'Z'] ['a'-'z''A'-'Z''0'-'9''_']*
 
 rule token = parse
 | ['0'-'9']+ as lxm  { INT(int_of_string lxm) }
 | "type"             { TYPE }
+| "external"         { EXTERNAL } (* external int_of_string : string -> int = f *)
 | "true"             { BOOL(true) }
 | "false"            { BOOL(false) }
 | ':'                { COLON }
@@ -61,6 +63,7 @@ rule token = parse
 | "<="               { LE }
 | ident_capitalize as lxm { IDENT_CAPITALIZE(lxm) }
 | ident as lxm       { IDENT(lxm) }
+| vm_ident as lxm    { VM_IDENT(lxm) }
 | ['\n' ]            { (Lexing.new_line lexbuf) ; (token lexbuf) }
 | [' ' '\t']         { token lexbuf }    (* skip blanks *)
 | "(*"               { comment lexbuf }  (* Comment until closing *)

@@ -8,17 +8,22 @@ type prog = decl list
 and decl = Decl of (name * name list * expr * pos) 
          | RecDecl of (name * name list * expr * pos)
          | Type of (name * ty * pos)
+         | External of (name * expr_ty * name * pos)
 and ty = Sum of (sum_type)
 and sum_type = (constructor list)
+and expr_ty = 
+| Ident_ty of (name * pos)
+| Star_ty of (expr_ty list * pos)
+| Arrow_ty of (expr_ty * expr_ty * pos)
 and constructor = name
 and expr = 
   | Constant of (constant * pos)
   | Ident of (name * pos)
   | Let of (name * expr * expr * pos)
   | App of (expr * expr list * pos)
-  | Seq of (expr list * pos)
-  | BinOp of (name * expr * expr * pos)
-  | UnOp of (name * expr * pos)
+  | Seq of (expr * expr * pos)
+  | BinOp of (primitive * expr * expr * pos)
+  | UnOp of (primitive * expr * pos)
   | If of (expr * expr * expr * pos)
   | Match of (expr * match_case list * pos)
   | While of (expr * expr * pos)
@@ -39,6 +44,7 @@ and match_case =
   | Case of (constant * expr * pos)
   | Otherwise of (expr * pos)
 
+and primitive = Add | Minus | Eq | Neq | Gt | Lt | Ge | Le | Or | And | Not | UMinus
 let indent_factor = 2
 
 let indent_string (level:int) : string =
@@ -64,19 +70,37 @@ and string_of_defun (lvl : int) (df : decl) : string = match df with
        (string_of_expr (lvl+1) e)
   | Type(t,d,_) -> sptf "type %s = %s\n" t
                      (match d with Sum(l) -> (String.concat " | " l))
-
+  | External(name,ty,vm_name,_) -> sptf "external %s : %s = \"%s\" ;;" 
+                                   (string_of_name name) 
+                                   (string_of_expr_ty ty)
+                                   (string_of_name vm_name)  
 and string_of_bindings l = 
   String.concat " " (List.map string_of_name l)
 
 and string_of_name n = n
-                     
+and string_of_expr_ty = function
+| Ident_ty (s,_) -> s
+| Star_ty (l,_) -> "(" ^ (String.concat " * " (List.map string_of_expr_ty l)) ^ ")"
+| Arrow_ty (t1,t2,_) -> sptf "%s -> %s" (string_of_expr_ty t1) (string_of_expr_ty t2)              
 and string_of_constant lvl = function
   | Unit -> sptf "%s()" (indent_string lvl)
   | Int(n) -> sptf "%s%d" (indent_string lvl) n
   | Bool(b) -> sptf "%s%s" (indent_string lvl) (if b then "true" else "false")
   | String(s) -> sptf "%s\"%s\"" (indent_string lvl) s
   | Constructor(s) -> sptf "%s%s" (indent_string lvl) s
-                    
+and string_of_primitive = function 
+| Add -> "+"
+| Minus -> "-"
+| Eq -> "="
+| Neq -> "<>"
+| Gt -> ">"
+| Ge -> ">="
+| Lt -> "<"
+| Le -> "<="
+| Or -> "||"
+| And -> "&&"
+| Not -> "not"
+| UMinus -> "-"              
 and string_of_expr (lvl : int) (e : expr) : string =
   match e with
   | Constant(c,_) -> string_of_constant lvl c
@@ -91,18 +115,17 @@ and string_of_expr (lvl : int) (e : expr) : string =
                        (indent_string lvl) 
                        (string_of_expr 0 f)
                        (String.concat " " (List.map (string_of_expr 0) args))
-  | Seq(l,_) -> sptf "%sbegin\n%s\n%send"
-                  (indent_string lvl)
-                  (String.concat ";\n" (List.map (string_of_expr (lvl+1)) l))
-                  (indent_string lvl)
+  | Seq(e1,e2,_) -> sptf "(%s;\n%s)"
+                  (string_of_expr (lvl) e1)
+                  (string_of_expr (lvl) e2)
   | BinOp(op,e1,e2,_) -> sptf "%s((%s)%s(%s))"
                            (indent_string lvl)
                            (string_of_expr 0 e1) 
-                           (string_of_name op)
+                           (string_of_primitive op)
                            (string_of_expr 0 e2)
   |UnOp(op,e,_) -> sptf "%s(%s(%s))"
                      (indent_string lvl)
-                     (string_of_name op)
+                     (string_of_primitive op)
                      (string_of_expr 0 e)
   | If(e1,e2,e3,_) -> let indentation = (indent_string lvl) in 
                       sptf "%sif %s\n%sthen %s\n%selse %s"

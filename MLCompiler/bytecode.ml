@@ -14,7 +14,7 @@ and instr =
   | Return
   | Function of fun_name * int (* nb locales *)
   | Call of fun_name * int (* arité *)
-  | Prim of string
+  | Prim of vm_primitive
           
 and segment =
   | Argument of int
@@ -27,6 +27,8 @@ and segment =
 and label = string
 and fun_name = string
 
+and vm_primitive = Add | Sub | Eq | Gt | Lt | And | Or | Not
+(*
 let prim_lookup = function
   | "+" -> "add"
   | "-" -> "sub" (* manque - unaire *)
@@ -37,7 +39,7 @@ let prim_lookup = function
   | "||" -> "or"  
   | "not" -> "not" 
   | _ -> assert false
-
+*)
 (** environnement de compilation *)
 module Env = struct
   module SMap = Map.Make(String)
@@ -47,10 +49,12 @@ module Env = struct
 
   let prims_env () = 
     SMap.(empty 
-          |> add "print_int" [Call ("Output.printInt",1)]
+          |> add "print_char"    [Call ("Output.printChar",1)]
+          |> add "print_int"     [Call ("Output.printInt",1)]
           |> add "print_newline" [Pop (Temp 0); Call ("Output.println",0)]
-          |> add "print_string" [Call ("Output.printString",1)]
+          |> add "print_string"  [Call ("Output.printString",1)]
           |> add "Array.length"  [Pop (Pointer 1); Push (Temp 0); Push (That 0)]
+          |> add "read_char"     [Call ("Output.readInt",0)]
     )
 
   let create ~mod_name () =
@@ -65,6 +69,10 @@ module Env = struct
     let r = ref env.smap in
     List.iteri (fun i x -> r := SMap.add x (`Argument (env.local + i)) !r) args;
     {env with smap=(!r)}
+
+  let extends_prims env name arity vm_name =
+    {env with prims=(SMap.add name [Call (vm_name,arity)] env.prims)}
+
 
   let find env x =
     SMap.find_opt x env.smap
@@ -90,12 +98,15 @@ end
 
 
 let prim_lookup = function
-  | "+" -> Prim "add"
-  | "-" -> Prim "sub"
-  | "=" -> Prim "eq"
-  | "<" -> Prim "lt"
-  | "and" -> Prim "and"
-  | "or" -> Prim "or"
+  | Ast.Add -> [Prim Add]
+  | Ast.Minus -> [Prim Sub]
+  | Ast.Eq -> [Prim Eq]
+  | Ast.Lt -> [Prim Lt]
+  | Ast.Gt -> [Prim Gt]
+  | Ast.Le -> [Prim Gt;Prim Not]
+  | Ast.Ge -> [Prim Lt;Prim Not]
+  | Ast.And -> [Prim And]
+  | Ast.Or -> [Prim Or]
   | _ -> assert false
 
 let gensym =
@@ -130,7 +141,7 @@ and vm_constant env = function
   | Ast.Unit -> [Pop (Temp(0))]
   | Ast.Int(n) -> [Push (Constant n)]
   | Ast.Bool(b) -> (match b with
-                    | true -> [Push (Constant 0); Prim "not"]
+                    | true -> [Push (Constant 0); Prim Not]
                     | false -> [Push (Constant 0)])
   | Ast.String(s) -> let n = String.length s in
                      [Push (Constant(n));
@@ -153,15 +164,20 @@ and vm_decl env (d : Ast.decl) : (Env.t * bytecode) =
      let n = nb_local body in
      let mf = f_with_module env f in  
      (env, [Function (mf,n)] @ body @ [Return])
-  | Type (t,Sum ctrs,_) ->
+  | Ast.Type (t,Sum ctrs,_) ->
      let env' = Env.extends_constructors env ctrs in
      (env',[])
-     
+  | Ast.External(name,ty,vm_name,_) -> 
+     let arity = let rec aux = function
+                 | Ast.Arrow_ty (t1,t2,_) -> 1 + aux t2
+                 | _ -> 0 in aux ty in
+     let env' = Env.extends_prims env name arity vm_name in
+     (env',[])
 and vm_expr env (e : Ast.expr) : bytecode =
   match e with
   | Ast.Constant (c,_) -> vm_constant env c
-  | Ast.BinOp(op,e1,e2,_) -> (vm_expr env e1) @ (vm_expr env e2) @ [prim_lookup op]
-  | Ast.UnOp(op,e,_) -> (vm_expr env e) @ [prim_lookup op]
+  | Ast.BinOp(op,e1,e2,_) -> (vm_expr env e1) @ (vm_expr env e2) @ prim_lookup op
+  | Ast.UnOp(op,e,_) -> (vm_expr env e) @ prim_lookup op
   | Ast.App(f,l,_) -> (mapcat (vm_expr env) l) @ 
                         (match f with
                          | Ident (name,_) ->
@@ -180,11 +196,7 @@ and vm_expr env (e : Ast.expr) : bytecode =
                           failwith "globales pas encore implémentées"
                        | Some (`Local i) -> [Push (Local i)]
                        | Some (`Argument i) -> [Push (Argument i)])
-  | Ast.Seq (l,_) -> let l',last = match List.rev l with 
-                       | [] -> assert false
-                       | h::t -> (List.rev t,h) in
-                     (mapcat (fun x -> (vm_expr env x) @ [Pop (Temp 0)]) l')
-                     @ (vm_expr env last)
+  | Ast.Seq (e1,e2,_) -> (vm_expr env e1) @ [Pop (Temp 0)] @ (vm_expr env e2) 
   | Ast.If (e1,e2,e3,_) -> let k = next_label "" in
                            let true_label = ("IF_TRUE" ^ k)
                            and false_label = ("IF_FALSE" ^ k)
@@ -204,7 +216,7 @@ and vm_expr env (e : Ast.expr) : bytecode =
                   | [] -> assert false
                   | Ast.Otherwise (e,pos)::_ -> e
                   | Ast.Case (c,e,pos)::cases ->
-                     Ast.If(Ast.BinOp ("=",Ast.Constant(c,dpos),Ident (x,dpos),dpos),e,(transform cases),pos) in 
+                     Ast.If(Ast.BinOp (Ast.Eq,Ast.Constant(c,dpos),Ident (x,dpos),dpos),e,(transform cases),pos) in 
                 transform cases in
      let env' = Env.extends env [x] in
      Ast.Let(x,e,body,pos) |> (vm_expr env')
@@ -213,7 +225,7 @@ and vm_expr env (e : Ast.expr) : bytecode =
                            and while_end_label = ("WHILE_END0" ^ k) in
                            [Label while_exp_label] @
                              (vm_expr env e1) @
-                               [Prim "not"] @
+                               [Prim Not] @
                                  [IfGoto while_end_label] @
                                    (vm_expr env e2) @
                                      [Pop (Temp 0)] @
@@ -250,29 +262,29 @@ push constant 17*)
       Call ("Array.new", 1)] @
        [(Pop (Local (Env.local env)))] @
          (List.concat (List.mapi (fun i e -> (* Pop (Temp 0);*)
-                           [Push (Constant i);Push (Local (Env.local env)); Prim "add"] @ 
+                           [Push (Constant i);Push (Local (Env.local env)); Prim Add] @ 
                              (vm_expr env' e) @ 
                                [Pop (Temp 0);
                                 Pop (Pointer 1);
                                 Push (Temp 0);
                                 Pop (That 0)]) bloc)) @ [Push (Local (Env.local env))]
   | Ast.Array_get (e1,e2,_) ->
-     (vm_expr env e1) @ (vm_expr env e2) @ [Prim "add"] @ [Push (Constant 1); Prim "add"] 
+     (vm_expr env e1) @ (vm_expr env e2) @ [Prim Add] @ [Push (Constant 1); Prim Add] 
      @ [Pop (Pointer 1); Push (Temp 0); Push (That 0);]
 
   | Ast.Array_assign (e1,e_offset,e3,_) ->
-     let env' = (Env.local_next env) in
+     let env' = (Env.local_next env) in (* introduction d'une variable temporaire pour gérer le cas (a.(0) <- f (a.(0))) *) 
      (vm_expr env e3) @
        [(Pop (Local (Env.local env)))] @
-         (vm_expr env' e_offset) @ (vm_expr env' e1)@ [Prim "add"] @ 
-           [Push (Constant 1); Prim "add"] @
+         (vm_expr env' e_offset) @ (vm_expr env' e1)@ [Prim Add] @ 
+           [Push (Constant 1); Prim Add] @
              [Push (Local (Env.local env));
                     Pop (Temp 0);
                     Pop (Pointer 1);
                     Push (Temp 0);
                     Pop (That 0)]
     
-let string_of_segment = function
+and string_of_segment = function
   | Argument n -> sptf "argument %d" n
   | Constant n -> sptf "constant %d" n
   | Local n -> sptf "local %d" n
@@ -280,7 +292,7 @@ let string_of_segment = function
   | Temp n -> sptf "temp %d" n
   | Pointer n -> sptf "pointer %d" n
                
-let string_of_instr = function
+and string_of_instr = function
   | Push pt -> "push " ^ string_of_segment pt
   | Pop pt -> "pop " ^ string_of_segment pt
   | Label k -> sptf "label %s" k
@@ -289,7 +301,16 @@ let string_of_instr = function
   | Return -> "return"
   | Function (f,n) -> sptf "function %s %d" f n
   | Call (f,n) -> sptf "call %s %d" f n
-  | Prim s -> sptf "%s" s
+  | Prim s -> string_primitive s
 
-let string_of_code b =
+and string_of_code b =
   String.concat "\n" (List.map string_of_instr b)
+and string_primitive = function
+| Add -> "add"
+| Sub -> "sub"
+| Eq -> "eq"
+| Gt -> "gt"
+| Lt -> "lt"
+| And -> "and"
+| Or -> "or"
+| Not -> "not"

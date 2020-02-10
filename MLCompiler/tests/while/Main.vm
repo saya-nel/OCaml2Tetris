@@ -13,7 +13,7 @@ pop that 0
 push constant 1
 push local 1
 add
-push constant 0
+push constant 5
 pop temp 0
 pop pointer 1
 push temp 0
