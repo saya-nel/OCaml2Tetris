@@ -41,6 +41,7 @@ $ ./ Samples/main.ml
             | <int>
             | ()
             | [||]
+            | <Const>
             | <string>
 
 <op> := + | - | = | < | <= | > | >= | `&&` | `||` | not
