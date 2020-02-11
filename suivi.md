@@ -38,3 +38,10 @@ exposer la plateforme Nand2Tetris -> Objectif changer de langage -> gc -> biblio
 - Ocaml clean pour nettoyer le bytecode 
 - Chaque instruction de la VM est associé a une classe Jack, contenant une méthode apply. 
 
+# Semaine 4 :
+
+- Obytelib pour tranformer en Ocaml du bytecode Ocaml en programme miniml (a la fin : un seul fichier representant la vm (interpretation bytecode + gc), on peut faire des cat et tout rassembler dans un fichier).
+- Continuer de transformer miniml en .vm Nand2Tetris. 
+
+- notes pour GC : 
+  - racines : registre et pile + variables globales.
