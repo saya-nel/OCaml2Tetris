@@ -34,12 +34,14 @@ and expr =
   | Ref of (expr * pos)
   | Access of (expr * pos)
   | Assign of (expr * expr * pos)
+  | Assert of (expr * pos)
 and constant =
   | Unit
   | Int of (int)
   | Bool of (bool)
   | String of (string)
   | Constructor of (string)
+  | Array_empty
 and match_case =
   | Case of (constant * expr * pos)
   | Otherwise of (expr * pos)
@@ -88,6 +90,7 @@ and string_of_constant lvl = function
   | Bool(b) -> sptf "%s%s" (indent_string lvl) (if b then "true" else "false")
   | String(s) -> sptf "%s\"%s\"" (indent_string lvl) s
   | Constructor(s) -> sptf "%s%s" (indent_string lvl) s
+  | Array_empty -> sptf "%s[||]" (indent_string lvl)
 and string_of_primitive = function 
 | Add -> "+"
 | Minus -> "-"
@@ -115,8 +118,9 @@ and string_of_expr (lvl : int) (e : expr) : string =
                        (indent_string lvl) 
                        (string_of_expr 0 f)
                        (String.concat " " (List.map (string_of_expr 0) args))
-  | Seq(e1,e2,_) -> sptf "(%s;\n%s)"
-                  (string_of_expr (lvl) e1)
+  | Seq(e1,e2,_) -> sptf "%s(%s;\n%s)"
+                  (indent_string lvl) 
+                  (string_of_expr 0 e1)
                   (string_of_expr (lvl) e2)
   | BinOp(op,e1,e2,_) -> sptf "%s((%s)%s(%s))"
                            (indent_string lvl)
@@ -186,3 +190,6 @@ and string_of_expr (lvl : int) (e : expr) : string =
                          (indent_string lvl)
                          (string_of_expr 0 x)
                          (string_of_expr 0 e1)
+  | Assert (e,_) -> sptf "%s(assert %s)"
+                    (indent_string lvl)
+                    (string_of_expr 0 e)

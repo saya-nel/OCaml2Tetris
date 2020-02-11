@@ -4,6 +4,7 @@ type token =
   | IF
   | THEN
   | ELSE
+  | ASSERT
   | WHILE
   | FOR
   | DO

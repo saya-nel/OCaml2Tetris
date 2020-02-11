@@ -1,5 +1,4 @@
 open Utils
-(* open Ast *)
 
 let dpos = Parseutils.default_position
    
@@ -28,18 +27,7 @@ and label = string
 and fun_name = string
 
 and vm_primitive = Add | Sub | Eq | Gt | Lt | And | Or | Not
-(*
-let prim_lookup = function
-  | "+" -> "add"
-  | "-" -> "sub" (* manque - unaire *)
-  | "=" -> "eq"
-  | ">" -> "gt"
-  | "<" -> "lt"
-  | "&&" -> "and"
-  | "||" -> "or"  
-  | "not" -> "not" 
-  | _ -> assert false
-*)
+
 (** environnement de compilation *)
 module Env = struct
   module SMap = Map.Make(String)
@@ -94,9 +82,6 @@ module Env = struct
     SMap.find_opt c env.constructors
 end
 
-
-
-
 let prim_lookup = function
   | Ast.Add -> [Prim Add]
   | Ast.Minus -> [Prim Sub]
@@ -107,6 +92,7 @@ let prim_lookup = function
   | Ast.Ge -> [Prim Lt;Prim Not]
   | Ast.And -> [Prim And]
   | Ast.Or -> [Prim Or]
+  | Ast.Not -> [Prim Not]
   | _ -> assert false
 
 let gensym =
@@ -138,7 +124,7 @@ let rec vm_prog mod_name p =
     | h::t-> let env',by = vm_decl env h in
              aux (acc @ by) env' t in aux [] env p 
 and vm_constant env = function
-  | Ast.Unit -> [Pop (Temp(0))]
+  | Ast.Unit -> [Push (Constant 0)]
   | Ast.Int(n) -> [Push (Constant n)]
   | Ast.Bool(b) -> (match b with
                     | true -> [Push (Constant 0); Prim Not]
@@ -152,9 +138,10 @@ and vm_constant env = function
                                            Call ("String.appendChar", 2)]) (k+1) in
                         aux [] 0)
   | Ast.Constructor (s) ->
-     match Env.find_constructor env s with
+     (match Env.find_constructor env s with
      | None -> failwith "constructeur inconnu"
-     | Some n -> [Push (Constant n)]
+     | Some n -> [Push (Constant n)])
+  | Ast.Array_empty -> Ast.Array_create([],dpos) |> vm_expr env
                
 and vm_decl env (d : Ast.decl) : (Env.t * bytecode) =
   match d with
@@ -164,7 +151,7 @@ and vm_decl env (d : Ast.decl) : (Env.t * bytecode) =
      let n = nb_local body in
      let mf = f_with_module env f in  
      (env, [Function (mf,n)] @ body @ [Return])
-  | Ast.Type (t,Sum ctrs,_) ->
+  | Ast.Type (t,Ast.Sum ctrs,_) ->
      let env' = Env.extends_constructors env ctrs in
      (env',[])
   | Ast.External(name,ty,vm_name,_) -> 
@@ -180,7 +167,7 @@ and vm_expr env (e : Ast.expr) : bytecode =
   | Ast.UnOp(op,e,_) -> (vm_expr env e) @ prim_lookup op
   | Ast.App(f,l,_) -> (mapcat (vm_expr env) l) @ 
                         (match f with
-                         | Ident (name,_) ->
+                         | Ast.Ident (name,_) ->
                             (match Env.find_primitive env name with
                              | Some b -> b
                              | None -> [(Call ((f_with_module env name),
@@ -216,7 +203,7 @@ and vm_expr env (e : Ast.expr) : bytecode =
                   | [] -> assert false
                   | Ast.Otherwise (e,pos)::_ -> e
                   | Ast.Case (c,e,pos)::cases ->
-                     Ast.If(Ast.BinOp (Ast.Eq,Ast.Constant(c,dpos),Ident (x,dpos),dpos),e,(transform cases),pos) in 
+                     Ast.If(Ast.BinOp (Ast.Eq,Ast.Constant(c,dpos),Ast.Ident (x,dpos),dpos),e,(transform cases),pos) in 
                 transform cases in
      let env' = Env.extends env [x] in
      Ast.Let(x,e,body,pos) |> (vm_expr env')
@@ -232,28 +219,8 @@ and vm_expr env (e : Ast.expr) : bytecode =
                                        [Goto while_exp_label] @
                                          [Label while_end_label]
   | Ast.Ref(e,_) -> vm_expr env (Ast.Array_create ([e],Parseutils.default_position))
-  (* [Push (Constant 1); Call ("Array.new", 1)] @ (vm_expr env e) @ 
-                      [Pop (Temp 0);
-                       Pop (Pointer 1);
-                       Push (Temp 0);
-                       Pop (That 0);
-                       Push (That 0);
-                       Push (Pointer 1);] *)
-  (* push local 0
-add
-push constant 17*)
   | Ast.Access(e,_) -> vm_expr env (Ast.Array_get (e,Ast.Constant(Ast.Int 0,Parseutils.default_position),Parseutils.default_position))
-  (* (vm_expr env e) @ [Pop (Pointer 1); Push (Temp 0); Push (That 0);]*)
   | Ast.Assign(x,e,_) -> vm_expr env (Ast.Array_assign (x,Ast.Constant(Ast.Int 0,Parseutils.default_position),e,Parseutils.default_position))
-(* (vm_expr env x) @ (* [Push (PushConstant 0)] @ (vm_expr env e) @ add *)
-                           (vm_expr env e) @
-                             [Pop (Temp 0);
-                              Pop (Pointer 1);
-                              Push (Temp 0);
-                              Pop (That 0);
-                              Push (That 0);
-                              Push (Pointer 1);*)
-(* Pop (Temp 0) *)
   | Ast.Array_create (l,_) ->
      let size = List.length l in
      let bloc = (Ast.Constant(Ast.Int size,Parseutils.default_position)) :: l in
@@ -283,7 +250,8 @@ push constant 17*)
                     Pop (Pointer 1);
                     Push (Temp 0);
                     Pop (That 0)]
-    
+  | Ast.Assert (e,pos) -> let oklabel = next_label "assertOk" in
+  (vm_expr env e) @ [IfGoto oklabel;Pop (Temp 0);Call ("Sys.halt",0);Label oklabel;Push (Constant 0);]
 and string_of_segment = function
   | Argument n -> sptf "argument %d" n
   | Constant n -> sptf "constant %d" n

@@ -29,6 +29,7 @@ rule token = parse
 | "if"               { IF }
 | "then"             { THEN }
 | "else"             { ELSE }
+| "assert"           { ASSERT }
 | ['|']              { PIPE }
 | ['_']              { WILDCARD }
 | "match"            { MATCH }

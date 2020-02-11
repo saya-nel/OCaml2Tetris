@@ -7,7 +7,7 @@
 
 
 /* (* reserved words *) */
-%token LET IN IF THEN ELSE WHILE FOR DO DONE MATCH WITH PIPE BEGIN END EXTERNAL
+%token LET IN IF THEN ELSE ASSERT WHILE FOR DO DONE MATCH WITH PIPE BEGIN END EXTERNAL
 %token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY 
 
 %token <string> IDENT IDENT_CAPITALIZE VM_IDENT
@@ -24,7 +24,6 @@
 
 %nonassoc LET 
 %right SEMICOL
-%left apply
 %nonassoc IN
 %nonassoc ARRAY_OPEN ARRAY_CLOSE
 
@@ -59,8 +58,8 @@ prog :
 
 decl : 
  | TYPE IDENT EQ ty             { Type($2,$4,pos()) }
- | LET IDENT args EQ expr       { Decl($2,$3,$5,pos()) }
- | LET REC IDENT args EQ expr   { RecDecl($3,$4,$6,pos()) }
+ | LET IDENT args EQ seq        { Decl($2,$3,$5,pos()) }
+ | LET REC IDENT args EQ seq    { RecDecl($3,$4,$6,pos()) }
  | EXTERNAL IDENT 
    COLON expr_ty EQ STRING { (* let s = String.concat "."  (String.split_on_char '_' $7) in  *)
                                                               External($2,$4,$6,pos()) }
@@ -102,6 +101,8 @@ star_ty :
 star_ty_aux :
 | expr_ty                         {[$1]}
 | expr_ty TIMES star_ty_aux       {$1::$3}
+;
+
 args : 
 | arg       { [$1] }
 | arg args  { $1::$2 }
@@ -121,21 +122,26 @@ ident_in_mod:
 | IDENT_CAPITALIZE DOT ident_in_mod { $1 ^ "." ^ $3 }
 ;
 
+seq :
+| expr                 { $1 }
+| expr SEMICOL seq     { Seq($1,$3,pos()) }
+;
+
 exprs :
  | expr        { [$1] }
  | expr exprs  { $1::$2 }
  ;
 
 expr: 
- | LPAREN expr RPAREN                    { $2 }
- | BEGIN expr END                        { $2 }
+ | LPAREN seq RPAREN                     { $2 }
+ | BEGIN seq END                         { $2 }
  | constant                              { Constant($1,pos()) }
  | IDENT                                 { Ident($1,pos()) }
  | ident_in_mod                          { Ident($1,pos()) }
  | expr exprs                            { App($1,$2,pos()) }
- | LET arg EQ expr IN expr               { Let($2,$4,$6,pos()) }
- | IF expr THEN expr ELSE expr           { If($2,$4,$6,pos())}
- | MATCH expr WITH match_body            { Match($2,$4,pos())}
+ | LET arg EQ seq IN seq                { Let($2,$4,$6,pos()) }
+ | IF seq THEN seq ELSE seq              { If($2,$4,$6,pos())}
+ | MATCH seq WITH match_body            { Match($2,$4,pos())}
  | expr PLUS expr                        { BinOp(Ast.Add, $1, $3,pos()) }
  | expr MINUS expr                       { BinOp(Ast.Minus, $1, $3,pos()) }
  | expr EQ expr                          { BinOp(Ast.Eq, $1, $3,pos()) }
@@ -148,16 +154,15 @@ expr:
  | expr AND expr                         { BinOp(Ast.And, $1, $3,pos()) }
  | NOT expr                              { UnOp(Ast.Not, $2,pos()) }
  | LPAREN MINUS expr RPAREN              { UnOp(Ast.UMinus, $3,pos()) }
-
- | WHILE expr DO expr DONE               { While($2,$4,pos()) }
- | FOR IDENT IN expr DO expr DONE        { For($2,$4,$6,pos()) }
+ | WHILE seq DO seq DONE                 { While($2,$4,pos()) }
+ | FOR IDENT IN seq DO seq DONE          { For($2,$4,$6,pos()) }
  | ARRAY_OPEN array_content ARRAY_CLOSE  { Array_create($2,pos()) }
- | expr ARRAY_ACCESS_OPEN expr RPAREN    { Array_get($1,$3,pos()) }
- | expr ARRAY_ACCESS_OPEN expr RPAREN LEFT_ARROW expr { Array_assign($1,$3,$6,pos()) }
+ | expr ARRAY_ACCESS_OPEN seq RPAREN     { Array_get($1,$3,pos()) }
+ | expr ARRAY_ACCESS_OPEN seq RPAREN LEFT_ARROW expr { Array_assign($1,$3,$6,pos()) }
  | ACCESS expr                           { Access ($2,pos()) } 
  | expr ASSIGN expr                      { Assign ($1,$3,pos()) } 
  | REF expr                              { Ref ($2,pos())} 
- | expr SEMICOL expr                     { Seq($1,$3,pos()) }
+ | ASSERT expr                           { Assert ($2,pos()) }
  | error                                 { raise (Parse_Exception ("malformed expression",pos())) }
 ;
 
@@ -167,6 +172,7 @@ constant:
  | BOOL                                  { Bool($1) }
  | STRING                                { String($1) }
  | constructor                           { Constructor($1) }
+ | ARRAY_OPEN ARRAY_CLOSE                { Array_empty }
  ;
 
 match_body:
