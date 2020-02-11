@@ -3,8 +3,8 @@
 ```
 $ cd MLCompiler
 $ make
-$ ./ Samples/main.ml
-~> créé un fichier Samples/Main.vm contenant le bytecode Nand2Tetris correspondant au programme ml d'entrée
+$ ./MLCompiler.sh file.ml
+~> créé un fichier file.vm contenant le bytecode Nand2Tetris correspondant au programme ml d'entrée
 
 ~> puis, tester Samples/main.vm avec VMEmulator.sh 
 
