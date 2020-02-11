@@ -27,14 +27,23 @@ call Output.printString 1
 pop temp 0
 push constant 0
 not
+if-goto assertOk31
+pop temp 0
+call Sys.halt 0
+label assertOk31
+push constant 0
+pop temp 0
+push constant 0
+not
 if-goto assertOk30
 pop temp 0
 call Sys.halt 0
 label assertOk30
 push constant 0
 pop temp 0
-push constant 0
-not
+push constant 1
+push constant 1
+eq
 if-goto assertOk29
 pop temp 0
 call Sys.halt 0
@@ -476,11 +485,11 @@ pop pointer 1
 push temp 0
 pop that 0
 push local 0
-push constant 3
-eq
 pop pointer 1
 push temp 0
 push that 0
+push constant 3
+eq
 if-goto assertOk6
 pop temp 0
 call Sys.halt 0
@@ -742,23 +751,41 @@ function Main.sum 0
 push argument 0
 push constant 1
 lt
-if-goto IF_TRUE31
-goto IF_FALSE31
-label IF_TRUE31
+if-goto IF_TRUE32
+goto IF_FALSE32
+label IF_TRUE32
 push constant 0
-goto IF_END31
-label IF_FALSE31
+goto IF_END32
+label IF_FALSE32
 push argument 0
 push argument 0
 push constant 1
 sub
 call Main.sum 1
 add
-label IF_END31
+label IF_END32
 return
 function Main.assert_decl 1
 push constant 0
 push constant 0
+eq
+if-goto assertOk41
+pop temp 0
+call Sys.halt 0
+label assertOk41
+push constant 0
+pop temp 0
+push constant 1
+push constant 1
+eq
+if-goto assertOk40
+pop temp 0
+call Sys.halt 0
+label assertOk40
+push constant 0
+pop temp 0
+push constant 2
+push constant 2
 eq
 if-goto assertOk39
 pop temp 0
@@ -767,6 +794,8 @@ label assertOk39
 push constant 0
 pop temp 0
 push constant 1
+push constant 2
+call Main.f 2
 push constant 1
 eq
 if-goto assertOk38
@@ -775,8 +804,12 @@ call Sys.halt 0
 label assertOk38
 push constant 0
 pop temp 0
+push constant 0
+push constant 1
+add
+push constant 1
 push constant 2
-push constant 2
+call Main.f 2
 eq
 if-goto assertOk37
 pop temp 0
@@ -784,10 +817,9 @@ call Sys.halt 0
 label assertOk37
 push constant 0
 pop temp 0
-push constant 1
-push constant 2
-call Main.f 2
-push constant 1
+push constant 10
+call Main.sum 1
+push constant 55
 eq
 if-goto assertOk36
 pop temp 0
@@ -795,45 +827,35 @@ call Sys.halt 0
 label assertOk36
 push constant 0
 pop temp 0
-push constant 10
-call Main.sum 1
-push constant 55
-eq
-if-goto assertOk35
-pop temp 0
-call Sys.halt 0
-label assertOk35
-push constant 0
-pop temp 0
 push constant 1
 pop local 0
 push constant 0
-push local 0
-eq
-if-goto IF_TRUE33
-goto IF_FALSE33
-label IF_TRUE33
-push constant 0
-goto IF_END33
-label IF_FALSE33
-push constant 1
 push local 0
 eq
 if-goto IF_TRUE34
 goto IF_FALSE34
 label IF_TRUE34
 push constant 0
-not
 goto IF_END34
 label IF_FALSE34
+push constant 1
+push local 0
+eq
+if-goto IF_TRUE35
+goto IF_FALSE35
+label IF_TRUE35
 push constant 0
 not
+goto IF_END35
+label IF_FALSE35
+push constant 0
+not
+label IF_END35
 label IF_END34
-label IF_END33
-if-goto assertOk32
+if-goto assertOk33
 pop temp 0
 call Sys.halt 0
-label assertOk32
+label assertOk33
 push constant 0
 return
 function Main.main 0

@@ -128,19 +128,14 @@ seq :
 ;
 
 exprs :
- | expr        { [$1] }
- | expr exprs  { $1::$2 }
+ | exp        { [$1] }
+ | exp exprs  { $1::$2 }
  ;
 
 expr: 
- | LPAREN seq RPAREN                     { $2 }
- | BEGIN seq END                         { $2 }
- | constant                              { Constant($1,pos()) }
- | IDENT                                 { Ident($1,pos()) }
- | ident_in_mod                          { Ident($1,pos()) }
- | expr exprs                            { App($1,$2,pos()) }
+ | exp                                   { $1 } 
  | LET arg EQ seq IN seq                { Let($2,$4,$6,pos()) }
- | IF seq THEN seq ELSE seq              { If($2,$4,$6,pos())}
+ | IF seq THEN expr ELSE expr              { If($2,$4,$6,pos())}
  | MATCH seq WITH match_body            { Match($2,$4,pos())}
  | expr PLUS expr                        { BinOp(Ast.Add, $1, $3,pos()) }
  | expr MINUS expr                       { BinOp(Ast.Minus, $1, $3,pos()) }
@@ -156,16 +151,24 @@ expr:
  | LPAREN MINUS expr RPAREN              { UnOp(Ast.UMinus, $3,pos()) }
  | WHILE seq DO seq DONE                 { While($2,$4,pos()) }
  | FOR IDENT IN seq DO seq DONE          { For($2,$4,$6,pos()) }
- | ARRAY_OPEN array_content ARRAY_CLOSE  { Array_create($2,pos()) }
- | expr ARRAY_ACCESS_OPEN seq RPAREN     { Array_get($1,$3,pos()) }
- | expr ARRAY_ACCESS_OPEN seq RPAREN LEFT_ARROW expr { Array_assign($1,$3,$6,pos()) }
- | ACCESS expr                           { Access ($2,pos()) } 
- | expr ASSIGN expr                      { Assign ($1,$3,pos()) } 
- | REF expr                              { Ref ($2,pos())} 
- | ASSERT expr                           { Assert ($2,pos()) }
  | error                                 { raise (Parse_Exception ("malformed expression",pos())) }
 ;
 
+exp:
+| LPAREN seq RPAREN                     { $2 }
+| exp exprs                            { App($1,$2,pos()) }
+| BEGIN seq END                         { $2 }
+| constant                              { Constant($1,pos()) }
+| IDENT                                 { Ident($1,pos()) }
+| ident_in_mod                          { Ident($1,pos()) }
+| ARRAY_OPEN array_content ARRAY_CLOSE  { Array_create($2,pos()) }
+| expr ARRAY_ACCESS_OPEN seq RPAREN     { Array_get($1,$3,pos()) }
+| expr ARRAY_ACCESS_OPEN seq RPAREN LEFT_ARROW expr { Array_assign($1,$3,$6,pos()) }
+| ACCESS expr                           { Access ($2,pos()) } 
+| expr ASSIGN expr                      { Assign ($1,$3,pos()) } 
+| REF expr                              { Ref ($2,pos())} 
+| ASSERT expr                           { Assert ($2,pos()) }
+;
 constant:
  | LPAREN RPAREN                         { Unit }
  | INT                                   { Int($1) }

@@ -6,6 +6,7 @@ let assert_expr () =
 	assert (true);
 	assert (not false);
 	assert (1 = 1);
+	assert (1 = 1);
 	assert (() = ());
 	assert (true = true);
 	assert (false = false);
@@ -46,8 +47,9 @@ let assert_decl () =
 	assert (A = A);
 	assert (B = B);
 	assert (C = C);
-	assert ((f 1 2) = 1);    (* besoin de parentheses *)
-	assert ((sum 10) = 55);  (* besoin de parentheses *)
+	assert (f 1 2 = 1); 
+    assert (0 + 1 = f 1 2); 
+	assert (sum 10 = 55);
 	assert (match B with
 	        | A -> false
 	        | B -> true
