@@ -8,7 +8,5 @@ let test x =
 	| B -> 42
 	| C -> 28 
 	| _ -> 0 in
-	begin
-	  print_int res;
-	  print_newline ()
-    end
+    print_int res;
+    print_newline ()

@@ -4,6 +4,7 @@ type token =
   | IF
   | THEN
   | ELSE
+  | ASSERT
   | WHILE
   | FOR
   | DO
@@ -13,8 +14,15 @@ type token =
   | PIPE
   | BEGIN
   | END
+  | EXTERNAL
+  | UNIT_TY
+  | BOOL_TY
+  | INT_TY
+  | STRING_TY
+  | ARRAY_TY
   | IDENT of (string)
   | IDENT_CAPITALIZE of (string)
+  | VM_IDENT of (string)
   | STRING of (string)
   | INT of (int)
   | BOOL of (bool)

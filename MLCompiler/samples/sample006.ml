@@ -4,7 +4,5 @@
 let id x = x
 
 let test x =
-	begin
-	  print_int (if id 5 = 5 then 42 else 0);
-	  print_newline ()
-    end
+	print_int (if id 5 = 5 then 42 else 0);
+	print_newline ()

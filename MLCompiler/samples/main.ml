@@ -1,11 +1,11 @@
 let main () = 
-	let t1 = Sample001.test () in
-	let t2 = Sample002.test () in
-	let t3 = Sample003.test () in
-	let t4 = Sample004.test () in
-	let t5 = Sample005.test () in
-	let t6 = Sample006.test () in
-	let t7 = Sample007.test () in
-	let t8 = Sample008.test () in
-	let t9 = Sample009.test () in
+	Sample001.test ();
+	Sample002.test ();
+	Sample003.test ();
+	Sample004.test ();
+	Sample005.test ();
+	Sample006.test ();
+	Sample007.test ();
+	Sample008.test ();
+	Sample009.test ();
 	()
