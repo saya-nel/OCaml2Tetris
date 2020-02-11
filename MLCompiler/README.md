@@ -16,7 +16,7 @@ $ ./ Samples/main.ml
 
 <decl> := let <ident> <ident> ... = <expr> 
         | let rec <ident> <ident> ... = <expr> 
-        | type <ty> = <Constr> | <Constr> | ... # non paramétré
+        | type <ident> = <Constr> | <Constr> | ... # non paramétré
         | external <ident> : <expr_ty> = "<ident>"
         
 <expr> := (<expr>)
