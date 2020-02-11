@@ -46,7 +46,9 @@ $ ./ Samples/main.ml
 
 <op> := + | - | = | < | <= | > | >= | `&&` | `||` | not
 
-# remarque : pour le moment, `=`,`>` et `<` ne fonctionne qu'avec des entiers.     
+# remarque : pour le moment, `=`,`>` et `<` ne fonctionne qu'avec des entiers. 
+
+<primitives> :=  print_char | print_int | print_string | print_newline | read_int | exit | Array.length
 ```
 
 ## Compilation 

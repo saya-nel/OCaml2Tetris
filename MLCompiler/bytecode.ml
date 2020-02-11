@@ -42,7 +42,8 @@ module Env = struct
           |> add "print_newline" [Pop (Temp 0); Call ("Output.println",0)]
           |> add "print_string"  [Call ("Output.printString",1)]
           |> add "Array.length"  [Pop (Pointer 1); Push (Temp 0); Push (That 0)]
-          |> add "read_char"     [Call ("Output.readInt",0)]
+          |> add "read_int"      [Pop (Temp 0); Call ("Output.readInt",0)]
+          |> add "exit"          [Pop (Temp 0); Call ("Sys.halt",0)]
     )
 
   let create ~mod_name () =
