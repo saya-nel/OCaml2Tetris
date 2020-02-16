@@ -1,0 +1,9 @@
+(executable
+	(name bytecodeParser)
+	(libraries obytelib)
+)
+
+;; Avoid unused warning 
+(env
+   (dev (flags :standard -w -27))
+)
