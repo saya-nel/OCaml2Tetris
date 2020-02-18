@@ -1,0 +1,44 @@
+function Main.apply 1
+push argument 0
+push constant 32767
+not
+and
+if-goto fin
+push argument 0
+push constant 1
+eq
+not
+if-goto tmp1
+call Main.closure1 1
+goto fin
+label tmp1
+push argument 0
+label fin
+return
+function Main.closure1 1
+push static 0
+return
+function Main.main 0
+push constant 6
+pop static 0
+push constant 1
+call ML.make_closure 1
+push constant 42
+pop static 1
+pop static 2
+push constant 0
+not
+not
+if-goto THEN1
+push static 1
+goto FI1
+label THEN1
+push argument 0
+label FI1
+call Main.apply 1
+call Main.apply 1
+call Output.printInt 1
+call Main.apply 1
+call Main.apply 1
+return
+

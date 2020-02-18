@@ -1,0 +1,6 @@
+function ML.apply 0
+push argument 0
+return
+function ML.make_closure 0
+push argument 0
+return
