@@ -1,6 +1,6 @@
 (executable
 	(name bytecodeParser)
-	(libraries obytelib)
+	(libraries str)
 )
 
 ;; Avoid unused warning 

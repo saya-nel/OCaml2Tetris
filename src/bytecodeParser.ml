@@ -1,21 +1,10 @@
-open OByteLib
-
-let usage () =
-  Printf.eprintf "Usage: %s <input.byte>\n" Sys.argv.(0);
-  exit 1
-
-let inpath = match Sys.argv with
-  | [| _; inpath |] -> inpath
-  | _ -> usage ()
+open String
+open Str
 
 let () =
-  match Filename.extension inpath with
-  | ".byte" ->
-    let bytefile = Bytefile.read inpath in (* Load the given bytecode file *)
-    Bytefile.print stdout bytefile;        (* Pretty-print its contents    *)
-    Interp.eval_bytefile bytefile;         (* Evaluate its code            *)
-  | ".cmo" ->
-    let cmofile = Cmofile.read inpath in   (* Load the given .cmo file     *)
-    Cmofile.print stdout cmofile           (* Pretty-print its contents    *)
-  | _ ->
-    usage ()
+  try 
+    while true do 
+      let instr = string_after ( trim (read_line ())) 3 in
+      print_endline instr
+    done
+  with End_of_file -> ()
