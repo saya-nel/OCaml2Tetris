@@ -1,2 +1,2 @@
 let a = 3 in 
-  a + 2
+  if a = 3 then 3 + 2 else 0
