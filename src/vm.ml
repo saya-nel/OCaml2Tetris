@@ -1,5 +1,5 @@
 (* etat de la vm *)
-let code = [|"const"; "3"; "push"; "acc"; "0"; "push"; "const"; "3"; "eqint"; "branchifnot"; "17"; "const"; "3"; "offsetint"; "2"; "branch"; "19"; "const"; "0"; "pop"; "1"; "makeblock"; "0"; "0"; "setglobal"; "Test2!"|]
+let code = [|-1; 3; 9; 8; 0; 9; -1; 3; -1; 86; 17; -1; 3; 127; 2; 84; 19; -1; 0; 19; 1; 62; 0; 0; 57; -1|]
 let pc = ref 0
 let acc = ref 0
 let sp = ref 0
