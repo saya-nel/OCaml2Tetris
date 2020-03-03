@@ -1,5 +1,3 @@
-(* etat de la vm *)
-let code = [|"const"; "3"; "push"; "acc"; "0"; "push"; "const"; "3"; "eqint"; "branchifnot"; "17"; "const"; "3"; "offsetint"; "2"; "branch"; "19"; "const"; "0"; "pop"; "1"; "makeblock"; "0"; "0"; "setglobal"; "Test2!"|]
 let pc = ref 0
 let acc = ref 0
 let sp = ref 0
@@ -117,4 +115,3 @@ let () =
   launch_exec ();
   print_endline (string_of_state ())
 ;;
-
