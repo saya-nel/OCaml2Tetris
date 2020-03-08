@@ -1,0 +1,39 @@
+///////////////////////////////////////////////////////////////
+// [exit n]
+///////////////////////////////////////////////////////////////
+function Pervasives.exit 0
+	push argument 0
+	call Sys.error 1 
+	return
+function Pervasives.ref 0
+	push constant 1
+	push argument 0
+	call Array.make 2
+	return
+function Pervasives.ref_contents 0
+	push argument 0
+	push constant 0
+	call Array.get 2
+	return 
+function Pervasives.ref_set_contents 0
+	push argument 0
+	push constant 0
+	push argument 1
+	call Array.set 3
+	return
+function Pervasives.incr 0
+	push argument 0
+	push argument 0
+	call Pervasives.ref_contents 1
+	push constant 1
+	add
+	call Pervasives.ref_set_contents 2
+	return
+function Pervasives.decr 0
+	push argument 0
+	push argument 0
+	call Pervasives.ref_contents 1
+	push constant 1
+	sub
+	call Pervasives.ref_set_contents 2
+	return
