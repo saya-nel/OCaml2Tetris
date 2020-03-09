@@ -1,0 +1,44 @@
+///////////////////////////////////////////////////////////////
+function M2.__voidExpr1 0
+    push static 0
+    return
+///////////////////////////////////////////////////////////////
+function M2.__init____voidExpr1 1
+    //  (<let>
+    //   (<const>
+    push constant 2
+    //   )
+    pop local 0
+    //   (<var>
+    push local 0
+    //   )
+    //  )
+    pop static 0
+    push static 0
+    pop temp 7
+    return
+///////////////////////////////////////////////////////////////
+function M2.f 0
+    // (<app>
+    //  (<const>
+    push constant 17
+    //  )
+    call Pervasives.print_int 1
+    // )
+    return
+///////////////////////////////////////////////////////////////
+function M2.__voidExpr2 0
+    push static 1
+    return
+///////////////////////////////////////////////////////////////
+function M2.__init____voidExpr2 0
+    //  (<app>
+    //   (<const>
+    push constant 0
+    //   )
+    call M2.f 1
+    //  )
+    pop static 1
+    push static 1
+    pop temp 7
+    return

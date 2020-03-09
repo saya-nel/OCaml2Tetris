@@ -1,0 +1,9 @@
+///////////////////////////////////////////////////////////////
+function M1.f 0
+    // (<app>
+    //  (<const>
+    push constant 42
+    //  )
+    call Pervasives.print_int 1
+    // )
+    return

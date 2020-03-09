@@ -100,6 +100,7 @@ sum_type_aux :
 
 constructor :
 |  IDENT_CAPITALIZE                { $1 }
+| IDENT_CAPITALIZE DOT constructor { $1 ^ "." ^ $3}
 ;
 
 expr_ty:

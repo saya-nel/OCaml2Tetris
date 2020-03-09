@@ -7,7 +7,7 @@ let gensym =
 type genv = { mod_name : Ast.name;
               globals : (Ast.name * int) list;
               constrs : (Ast.name * int) list;
-              current_decls : string list;
+              global_funs : string list;
               primitives : (Ast.name * Ast.name) list;
               init : Ast.name list }
 and arity = int
@@ -26,7 +26,7 @@ let primitives () =
 let empty_genv primitives mod_name = {mod_name;
                                       globals=[];
                                       constrs=[];
-                                      current_decls=[];
+                                      global_funs=[];
                                       primitives;init=[]}
 let genv_extend genv x = 
   let i,globals' = match genv.globals with 
@@ -36,7 +36,7 @@ let genv_extend genv x =
 
 let env_extends_constructors genv cstrs =
     let r = ref genv.constrs in
-    List.iteri (fun i x -> r := (x,i) :: !r) cstrs;
+    List.iteri (fun i x -> r := ((genv.mod_name ^ "." ^ x),i) :: !r) cstrs;
     {genv with constrs=(!r)}
 
 type lenv = { arguments : (Ast.name * int) list;
@@ -86,7 +86,7 @@ and rewrite_decl mod_name genv = function
                       Ast.DefFun (name,[],Ast.ReadGlobal(i)) in
      (genv2,(d1 @ d2))
   | Ast.DefFun (name,args,e) ->
-     let genv' = {genv with current_decls = name :: genv.current_decls} in
+     let genv' = {genv with global_funs = (mod_name ^ "." ^ name) :: genv.global_funs} in
      let lenv = frame args in
      let ke = rewrite_exp lenv genv' e in (* genv si non recursif *) 
      let arity = List.length args in
@@ -99,12 +99,13 @@ and rewrite_exp lenv genv = function
          (match List.assoc_opt name lenv.arguments with
           | None ->
              (match List.assoc_opt name genv.globals with
-              | None ->
-                 (if List.mem name genv.current_decls 
-                  then Kast.GFun(genv.mod_name ^ "." ^ name) 
-                  else (match List.assoc_opt name genv.primitives with
-                        | None -> Kast.GFun(name)
-                        | Some f -> Kast.GFun(f)))
+              | None -> let full_name = if (match String.index_opt name '.' with None -> false | _ -> true)
+                                        then name
+                                        else (genv.mod_name ^ "." ^ name) in                
+                 (if List.mem full_name genv.global_funs
+                  then Kast.GFun(full_name)
+                  else let f = List.assoc name genv.primitives in
+                       Kast.GFun(f))
               | Some i -> Kast.App (Kast.GFun(genv.mod_name ^ "." ^ name),[]))
           | Some i -> Kast.Variable(Kast.Argument (i)))
       | Some i -> Kast.Variable(Kast.Local i))
@@ -201,7 +202,9 @@ and rewrite_constant lenv genv = function
   | Ast.Unit -> Kast.Unit
   | Ast.Int n -> Kast.Int n
   | Ast.Char c -> Kast.Int (int_of_char c)
-  | Ast.Constr name -> Kast.Int (List.assoc name genv.constrs)
+  | Ast.Constr name -> Kast.Int (match List.assoc_opt (genv.mod_name ^ "." ^ name) genv.constrs with 
+                                 | None -> (List.assoc name genv.constrs)
+                                 | Some c -> c)
   | Ast.Bool b -> Kast.Bool b 
   | Ast.Array_empty -> Kast.Array_empty
 
