@@ -2,6 +2,7 @@
 type bcmodule = { mod_name : Ast.name ; bc_decls:instr list ;init: Ast.name list}
 and instrs = instr list          
 and instr =
+  | Comment of string
   | Push of segment
   | Pop of segment
   | Label of label

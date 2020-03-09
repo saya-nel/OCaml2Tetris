@@ -25,9 +25,9 @@ $ ./compile file.ml ...
         | let <ident> = <expr> in <expr> 
         | <expr> ; <expr>
         | if <expr> then <expr> else <expr>
-        | match <expr> with | <constant> -> <expr> | ... | _ -> <expr>   # pour le moment, transformé en if imbriqués
+        | match <expr> with | <constant> -> <expr> | ... | _ -> <expr>   # ~> if imbriqués dichotomiques
         | while <expr> do <expr> done
-        | for <ident> = <expr> to <expr> do <expr> done  # pas encore de génération de code
+        | for <ident> = <expr> to <expr> do <expr> done
         | ref <expr>
         | !<expr>
         | <expr> := <expr>

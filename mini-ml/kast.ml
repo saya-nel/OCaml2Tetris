@@ -10,7 +10,6 @@ and exp =
 | Let of (int * exp * exp)
 | App of (exp * exp list)
 | If of (exp * exp * exp)
-| Match of (exp * (patern * exp) list)
 | BinOp of (Ast.binop * exp * exp)
 | UnOp of (Ast.unop * exp)
 | Seq of (exp * exp)
@@ -21,8 +20,6 @@ and constant =
 | Unit 
 | Bool of bool 
 | Int of int 
-| String of string
-(* | String of string *)
 | Array_empty
 and patern = constant
 and var = 

@@ -12,7 +12,7 @@ and exp =
   | Constant of constant
   | Ident of (name)
   | Let of (name * exp * exp)
-  | LetFun of (name * name list * exp * exp)
+(*  | LetFun of (name * name list * exp * exp) *)
   | App of (exp * exp list)
   | If of (exp * exp * exp)
   | Match of (exp * match_case list)

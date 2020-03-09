@@ -1,5 +1,6 @@
 let inputs = ref []
 let action = ref (`Compile : [ `Compile | `ParseOnly])
+let stdlib = ref "stdlib"
 
 let set_action a () = action := a
 
@@ -14,8 +15,9 @@ let () =
        " : compile vers le langage de la VM Nand2Tetris");
     ("-dst", Arg.String (fun s -> destination_folder := (Some s)), 
       " : spécifie le dossier ou seront placés les fichiers compilés");
+    ("-stdlib",Arg.Set_string stdlib, 
+      "chemin vers la bibliothèque d'execution de mini-ml")
     ] add_file "Usage:\n  ./compile [options] <filenames ..>"	
-
 
 let parse filename = 
   let ic = open_in filename in
@@ -43,7 +45,6 @@ let compile_all mdls =
                     (genv',acc @ [bc_mdl]))
    (Ast2kast.empty_genv (Ast2kast.primitives()) "",[]) mdls in 
   Kast2bytecode.bytecode_of_prog bc_mdls
-
 
 let () = 
   let dir = match !destination_folder with 

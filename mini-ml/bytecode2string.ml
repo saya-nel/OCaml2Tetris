@@ -7,6 +7,7 @@ let indent = "    "
 let rec string_of_instrs b =
   String.concat "\n" (List.map string_of_instr b)      
 and string_of_instr = function
+  | Comment s -> indent ^ "// " ^ s
   | Push pt -> indent ^ "push " ^ string_of_segment pt
   | Pop pt -> indent ^ "pop " ^ string_of_segment pt
   | Label k -> sptf "label %s" k

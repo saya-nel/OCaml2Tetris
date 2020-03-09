@@ -1,192 +1,360 @@
 ///////////////////////////////////////////////////////////////
 function Test.check_references 2
-    push constant 4
-    push constant 17
-    call Array.make 2
-    push constant 1
-    call Array.get 2
-    push constant 17
-    eq
-    not
-    if-goto IfFalse1
-    push constant 0
-    goto IfEnd2
-label IfFalse1
-    push constant 1
-    call Sys.error 1
-label IfEnd2
-    pop temp 0
-    push constant 42
-    call Pervasives.ref 1
+    // (<let>
+    //  (<const>
+    push constant 3
+    //  )
     pop local 0
+    //  (<if>
+    //   (<binop>
+    //    (<var>
     push local 0
-    call Pervasives.ref_contents 1
-    push constant 42
-    eq
-    not
-    if-goto IfFalse3
-    push constant 0
-    goto IfEnd4
-label IfFalse3
-    push constant 1
-    call Sys.error 1
-label IfEnd4
-    pop temp 0
-    push constant 42
-    call Pervasives.ref 1
-    pop local 0
-    push local 0
-    push constant 17
-    call Pervasives.ref_set_contents 2
-    pop temp 0
-    push local 0
-    call Pervasives.ref_contents 1
-    push constant 17
-    eq
-    not
-    if-goto IfFalse5
-    push constant 0
-    goto IfEnd6
-label IfFalse5
-    push constant 1
-    call Sys.error 1
-label IfEnd6
-    pop temp 0
-    push constant 42
-    call Pervasives.ref 1
-    pop local 0
-    push local 0
-    pop local 1
-    push local 1
-    push constant 17
-    call Pervasives.ref_set_contents 2
-    pop temp 0
-    push local 0
-    call Pervasives.ref_contents 1
-    push constant 17
-    eq
-    not
-    if-goto IfFalse7
-    push constant 0
-    goto IfEnd8
-label IfFalse7
-    push constant 1
-    call Sys.error 1
-label IfEnd8
-    pop temp 0
-    push constant 42
-    call Pervasives.ref 1
-    pop local 0
-    push local 0
-    pop local 1
-    push local 0
-    push constant 17
-    call Pervasives.ref_set_contents 2
-    pop temp 0
-    push local 1
-    call Pervasives.ref_contents 1
-    push constant 17
-    eq
-    not
-    if-goto IfFalse9
-    push constant 0
-    goto IfEnd10
-label IfFalse9
-    push constant 1
-    call Sys.error 1
-label IfEnd10
-    pop temp 0
-    push constant 42
-    call Pervasives.ref 1
-    pop local 0
-    push local 0
-    call Pervasives.incr 1
-    pop temp 0
-    push local 0
-    call Pervasives.ref_contents 1
-    push constant 43
-    eq
+    //    )
+    //    (<const>
+    push constant 5
+    //    )
+    lt
+    //   )
     not
     if-goto IfFalse11
+    //   (<if>
+    //    (<binop>
+    //     (<var>
+    push local 0
+    //     )
+    //     (<const>
+    push constant 2
+    //     )
+    lt
+    //    )
+    not
+    if-goto IfFalse3
+    //    (<app>
+    //     (<let>
+    //      (<app>
+    //       (<const>
+    push constant 1
+    //       )
+    call Array.create_uninitialized 1
+    //      )
+    pop local 1
+    //      (<seq>
+    //       (<app>
+    //        (<var>
+    push local 1
+    //        )
+    //        (<const>
     push constant 0
+    //        )
+    //        (<const>
+    push constant 49
+    //        )
+    call Array.set 3
+    //       )
+    pop temp 0
+    //       (<var>
+    push local 1
+    //       )
+    //      )
+    //     )
+    call Pervasives.print_string 1
+    //    )
+    goto IfEnd4
+label IfFalse3
+    //    (<if>
+    //     (<binop>
+    //      (<var>
+    push local 0
+    //      )
+    //      (<const>
+    push constant 2
+    //      )
+    eq
+    //     )
+    not
+    if-goto IfFalse1
+    //     (<app>
+    //      (<let>
+    //       (<app>
+    //        (<const>
+    push constant 1
+    //        )
+    call Array.create_uninitialized 1
+    //       )
+    pop local 1
+    //       (<seq>
+    //        (<app>
+    //         (<var>
+    push local 1
+    //         )
+    //         (<const>
+    push constant 0
+    //         )
+    //         (<const>
+    push constant 50
+    //         )
+    call Array.set 3
+    //        )
+    pop temp 0
+    //        (<var>
+    push local 1
+    //        )
+    //       )
+    //      )
+    call Pervasives.print_string 1
+    //     )
+    goto IfEnd2
+label IfFalse1
+    //     (<app>
+    //      (<let>
+    //       (<app>
+    //        (<const>
+    push constant 2
+    //        )
+    call Array.create_uninitialized 1
+    //       )
+    pop local 1
+    //       (<seq>
+    //        (<app>
+    //         (<var>
+    push local 1
+    //         )
+    //         (<const>
+    push constant 0
+    //         )
+    //         (<const>
+    push constant 111
+    //         )
+    call Array.set 3
+    //        )
+    pop temp 0
+    //        (<seq>
+    //         (<app>
+    //          (<var>
+    push local 1
+    //          )
+    //          (<const>
+    push constant 1
+    //          )
+    //          (<const>
+    push constant 107
+    //          )
+    call Array.set 3
+    //         )
+    pop temp 0
+    //         (<var>
+    push local 1
+    //         )
+    //        )
+    //       )
+    //      )
+    call Pervasives.print_string 1
+    //     )
+label IfEnd2
+    //    )
+label IfEnd4
+    //   )
     goto IfEnd12
 label IfFalse11
-    push constant 1
-    call Sys.error 1
-label IfEnd12
-    pop temp 0
-    push constant 42
-    call Pervasives.ref 1
-    pop local 0
+    //   (<if>
+    //    (<binop>
+    //     (<var>
     push local 0
-    call Pervasives.decr 1
-    pop temp 0
-    push local 0
-    call Pervasives.ref_contents 1
-    push constant 41
+    //     )
+    //     (<const>
+    push constant 5
+    //     )
     eq
+    //    )
     not
-    if-goto IfFalse13
-    push constant 0
-    goto IfEnd14
-label IfFalse13
+    if-goto IfFalse9
+    //    (<app>
+    //     (<let>
+    //      (<app>
+    //       (<const>
     push constant 1
-    call Sys.error 1
-label IfEnd14
-    pop temp 0
-    push constant 42
-    call Pervasives.ref 1
-    pop local 0
-    push local 0
-    pop local 1
-    push local 0
-    call Pervasives.incr 1
-    pop temp 0
-    push local 0
-    push local 1
-    eq
-    push local 0
-    call Pervasives.ref_contents 1
-    push local 1
-    call Pervasives.ref_contents 1
-    eq
-    and
-    not
-    if-goto IfFalse15
-    push constant 0
-    goto IfEnd16
-label IfFalse15
-    push constant 1
-    call Sys.error 1
-label IfEnd16
-    pop temp 0
-    push constant 2
+    //       )
     call Array.create_uninitialized 1
-    pop local 0
-    push local 0
+    //      )
+    pop local 1
+    //      (<seq>
+    //       (<app>
+    //        (<var>
+    push local 1
+    //        )
+    //        (<const>
     push constant 0
-    push constant 111
+    //        )
+    //        (<const>
+    push constant 49
+    //        )
     call Array.set 3
+    //       )
     pop temp 0
-    push local 0
-    push constant 1
-    push constant 107
-    call Array.set 3
-    pop temp 0
-    push local 0
+    //       (<var>
+    push local 1
+    //       )
+    //      )
+    //     )
     call Pervasives.print_string 1
+    //    )
+    goto IfEnd10
+label IfFalse9
+    //    (<if>
+    //     (<binop>
+    //      (<var>
+    push local 0
+    //      )
+    //      (<const>
+    push constant 8
+    //      )
+    lt
+    //     )
+    not
+    if-goto IfFalse7
+    //     (<app>
+    //      (<let>
+    //       (<app>
+    //        (<const>
+    push constant 1
+    //        )
+    call Array.create_uninitialized 1
+    //       )
+    pop local 1
+    //       (<seq>
+    //        (<app>
+    //         (<var>
+    push local 1
+    //         )
+    //         (<const>
+    push constant 0
+    //         )
+    //         (<const>
+    push constant 50
+    //         )
+    call Array.set 3
+    //        )
     pop temp 0
-    push constant 65
-    call Pervasives.print_char 1
+    //        (<var>
+    push local 1
+    //        )
+    //       )
+    //      )
+    call Pervasives.print_string 1
+    //     )
+    goto IfEnd8
+label IfFalse7
+    //     (<if>
+    //      (<binop>
+    //       (<var>
+    push local 0
+    //       )
+    //       (<const>
+    push constant 8
+    //       )
+    eq
+    //      )
+    not
+    if-goto IfFalse5
+    //      (<app>
+    //       (<let>
+    //        (<app>
+    //         (<const>
+    push constant 1
+    //         )
+    call Array.create_uninitialized 1
+    //        )
+    pop local 1
+    //        (<seq>
+    //         (<app>
+    //          (<var>
+    push local 1
+    //          )
+    //          (<const>
+    push constant 0
+    //          )
+    //          (<const>
+    push constant 50
+    //          )
+    call Array.set 3
+    //         )
+    pop temp 0
+    //         (<var>
+    push local 1
+    //         )
+    //        )
+    //       )
+    call Pervasives.print_string 1
+    //      )
+    goto IfEnd6
+label IfFalse5
+    //      (<app>
+    //       (<let>
+    //        (<app>
+    //         (<const>
+    push constant 2
+    //         )
+    call Array.create_uninitialized 1
+    //        )
+    pop local 1
+    //        (<seq>
+    //         (<app>
+    //          (<var>
+    push local 1
+    //          )
+    //          (<const>
+    push constant 0
+    //          )
+    //          (<const>
+    push constant 107
+    //          )
+    call Array.set 3
+    //         )
+    pop temp 0
+    //         (<seq>
+    //          (<app>
+    //           (<var>
+    push local 1
+    //           )
+    //           (<const>
+    push constant 1
+    //           )
+    //           (<const>
+    push constant 111
+    //           )
+    call Array.set 3
+    //          )
+    pop temp 0
+    //          (<var>
+    push local 1
+    //          )
+    //         )
+    //        )
+    //       )
+    call Pervasives.print_string 1
+    //      )
+label IfEnd6
+    //     )
+label IfEnd8
+    //    )
+label IfEnd10
+    //   )
+label IfEnd12
+    //  )
+    // )
     return
 ///////////////////////////////////////////////////////////////
-function Test.__voidExpr2 0
+function Test.__voidExpr9 0
     push static 0
     return
 ///////////////////////////////////////////////////////////////
-function Test.__init____voidExpr2 0
+function Test.__init____voidExpr9 0
+    //  (<app>
+    //   (<const>
     push constant 0
+    //   )
     call Test.check_references 1
+    //  )
     pop static 0
     push static 0
     pop temp 7
