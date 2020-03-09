@@ -84,7 +84,7 @@ decl :
 
 ty :
  | sum_type                      { Sum($1) }
- /* | expr_ty                       { Ty_expr($1) }*/
+ | expr_ty                       { $1 }
  ;
 
 

@@ -1,5 +1,14 @@
+type foo = (int -> int -> int * int)
+
+type t = A | B | C | D
 
 let check_references () = 
+  assert ((match C with A -> 1 | B -> 2 | C -> 42 | D -> 3) = 42);
+  assert ((match 5 with 5 -> 42) = 42);
+  assert ((match 5 with _ -> 42) = 42);
+  assert ((match 5 with 5 -> 42 | _ -> 17) = 42);
+  assert ((match 5 with 2 -> 18 | 5 -> 42 | _ -> 17) = 42);
+  assert ((match 5 with 2 -> 18 | 5 -> 42 | 1 -> 62 | _ -> 17) = 42);
   match 3 with
   | 2 -> print_string "2"
   | 1 -> print_string "1"

@@ -12,13 +12,14 @@ let mapcat c f l = String.concat c (List.map f l)
 let get_indent_level s lvl =
   let lvl' = match String.rindex_opt s '\n' with
     | None -> lvl + String.length s
-    | Some i -> String.length s - i in lvl'
+    | Some i -> String.length s - i in lvl' + 1
 
 let rec sprint_prog ms = List.map (sprint_module 0) ms
 and sprint_module lvl {mod_name;decls} =
   sptf "%smodule %s = struct\n%s ;;\n%send" (indent_string lvl) mod_name 
     (mapcat " ;;\n\n" (sprint_decl (next lvl)) decls) (indent_string lvl) 
 and sprint_decl lvl = function
+  | Type (name,ty) -> sptf "%stype %s = " (indent_string lvl)  name ^ (sprint_ty lvl ty)
   | DefVar (name,e) ->
      sptf "%slet %s = %s" (indent_string lvl) name (sprint_exp (next lvl) e)
   | DefFun (name,args,e) ->
@@ -34,21 +35,24 @@ and sprint_exp lvl = function
                          (sprint_exp (lvl + z) e1)
                          (indent_string (next lvl))
                          (sprint_exp (next lvl) e2)
-  | BinOp(op,e1,e2) -> let s = "(" ^ sprint_exp lvl e1 in
+  | BinOp(op,e1,e2) -> let lvl = lvl + 1 in (* pour la parenthèse ouvrante *)
+                       let s = "(" ^ sprint_exp lvl e1 in
                        let lvl' = get_indent_level s lvl in
                        let ops = " " ^ sprint_binop lvl' op ^ " " in
                        let opz = String.length ops in
                        s ^ ops ^ (sprint_exp (lvl'+opz) e2) ^ ")"
-  | UnOp(op,e1) -> let s = "(" ^ sprint_unop lvl op ^ " " in
-                   let z = String.length s in
-                   sptf "%s%s)" s (sprint_exp (lvl+z+1) e1)
-  | App(e,args) -> sptf "(%s %s)"
-                     (sprint_exp lvl e)
-                     (mapcat " " (sprint_exp ((next lvl)+1)) args) 
-  | If(e1,e2,e3) -> sptf "(if %s\n%sthen %s \n%selse %s)"
+  | UnOp(op,e1) -> let lvl = lvl + 1 in (* pour la parenthèse ouvrante *)
+                   let s = "(" ^ sprint_unop lvl op ^ " " in
+                   let lvl' = get_indent_level s lvl in
+                   sptf "%s%s)" s (sprint_exp lvl' e1)
+  | App(e,args) -> let s = sptf "(%s " (sprint_exp lvl e) in
+                   let lvl' = get_indent_level s lvl in 
+                     s ^ (mapcat " " (sprint_exp lvl') args) ^ ")"    (* à revoir, indentation pas terrible si plusieurs "gros" arguments *)
+  | If(e1,e2,e3) -> let lvl = lvl + 1 in (* pour la parenthèse ouvrante *)
+                    sptf "(if %s\n%sthen %s \n%selse %s)"
                       (sprint_exp lvl e1)
-                      (indent_string (lvl+1)) (sprint_exp (lvl+1) e2)
-                      (indent_string (lvl+1)) (sprint_exp (lvl+1) e3)
+                      (indent_string lvl) (sprint_exp lvl e2)
+                      (indent_string lvl) (sprint_exp lvl e3)
   | Ref(e) -> sptf "(ref %s)" (sprint_exp 0 e)
   | Ref_access(e1) -> sptf "(! %s)" (sprint_exp 0 e1)
   | Ref_assign(e1,e2) -> sptf "(%s := %s)" (sprint_exp 0 e1) (sprint_exp 0 e2)
@@ -66,9 +70,12 @@ and sprint_exp lvl = function
   | For(x,e1,e2,e3) -> sptf "for %s = %s to %s do\n%s\n%sdone" x
                          (sprint_exp 0 e1) (sprint_exp lvl e2) (sprint_exp (next lvl) e3) 
                          (indent_string lvl)
-  | Assert(e) -> sptf "(assert %s)" (sprint_exp lvl e)
+  | Assert(e) -> let s = sptf "(assert " in
+                 let lvl' = get_indent_level s lvl in 
+                  s ^ (sprint_exp lvl' e) ^ ")"
   | Match(e1,cases) ->
-     sptf "match %s with\n%s"
+     let lvl = lvl + 1 in (* pour la parenthèse ouvrante *)
+     sptf "(match %s with\n%s"
        (sprint_exp 0 e1)
        (String.concat "\n"
           (List.map 
@@ -83,8 +90,9 @@ and sprint_exp lvl = function
                            (indent_string lvl) in
                  let lvl' = get_indent_level s lvl in
                  s ^ (sprint_exp lvl' e))
-             cases))
-  | Array_alloc _ | SetGlobal _ | ReadGlobal _ -> failwith "bug : AST interne (noeud temporaire pour la réécriture en Kast), ne devrait pas pouvoir être construit par le parseur, ni affiché ..."
+             cases)) ^ ")"
+  | Array_alloc _ | SetGlobal _ | ReadGlobal _ -> 
+    failwith "bug : AST interne (noeud temporaire pour la réécriture en Kast), ne devrait pas pouvoir être construit par le parseur, ni affiché ..."
 and sprint_constant lvl = function
   | Unit -> sptf "()"
   | Bool b -> sptf "%b" b
@@ -109,3 +117,10 @@ and sprint_binop lvl = function
 and sprint_unop lvl = function
   | Not -> "not"
   | UMinus -> "-"  
+and sprint_ty lvl = function
+| Sum (names) -> String.concat " | " names
+| Ident_ty (name) -> name
+| Star_ty (lty) -> sptf "(%s)" (mapcat " * " (sprint_ty lvl) lty)
+| Arrow_ty (t1,t2) -> sptf "(%s -> %s)" (sprint_ty lvl t1) (sprint_ty lvl t2)
+
+

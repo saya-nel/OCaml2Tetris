@@ -34,6 +34,11 @@ let genv_extend genv x =
     | (_,i)::_ -> let j = i + 1 in (j,((x,j)::genv.globals)) in
   (i,{genv with globals=globals'})
 
+let env_extends_constructors genv cstrs =
+    let r = ref genv.constrs in
+    List.iteri (fun i x -> r := (x,i) :: !r) cstrs;
+    {genv with constrs=(!r)}
+
 type lenv = { arguments : (Ast.name * int) list;
               locals : (Ast.name * int) list ;
               nexts : lenv option }
@@ -65,7 +70,10 @@ and rewrite_decls mod_name genv ds =
                      | (genv,kds) -> (genv,kds @ acc)) (genv,[]) ds in
   (genv,List.rev kds)
 and rewrite_decl mod_name genv = function
-  (* | Ast.TypeEnum (_,names) -> let genv' = List.fold_left Env.add_constr genv names in (env',None) *)
+  | Ast.Type (name,ty) -> (match ty with 
+                           | Ast.Sum(names) -> 
+                             let genv' = env_extends_constructors genv names in (genv',[])
+                           | _ -> (genv,[]))
   | Ast.Exp (e) -> rewrite_decl mod_name genv @@
                      let name = gensym ~prefix:"voidExpr" in Ast.DefVar (name,e)
   | Ast.DefVar (name,e) ->

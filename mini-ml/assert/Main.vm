@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////
 function Main.main 0
-    call Test.__init____voidExpr9 0
+    call Test.__init____voidExpr15 0
     push constant 0
     return
