@@ -1,12 +1,14 @@
 ///////////////////////////////////////////////////////////////
-// [Array.length a n]
-// Return the length (number of elements) of the given array.
+// val length : 'a array -> int
+// [Array.length a n] Return the length (number of elements) 
+// of the given array.
 ///////////////////////////////////////////////////////////////
 function Array.length 0 
 	push argument 0
 	call Memory.peek 1
-return
+	return
 ///////////////////////////////////////////////////////////////
+// val get : 'a array -> int -> 'a
 // [Array.get a n] returns the element number n of array a. 
 // The first element has number 0. The last element has number 
 // Array.length a - 1. 
@@ -19,8 +21,9 @@ function Array.get 0
 	push constant 1
 	add
 	call Memory.peek 1
-return
+	return
 ///////////////////////////////////////////////////////////////
+// val set : 'a array -> int -> 'a -> unit
 // [Array.set a n x] modifies array a in place, replacing 
 // element number n with x. 
 // You can also write a.(n) <- x instead of Array.set a n x.
@@ -34,8 +37,9 @@ function Array.set 0
 	push argument 2
 	call Memory.poke 2
 	push constant 0
-return
+	return
 ///////////////////////////////////////////////////////////////
+// val create_uninitialized : int -> 'a array
 // [Array.create_uninitialized n] returns a new Array of length n. 
 // The Array is uninitialized and contains arbitrary values.
 ///////////////////////////////////////////////////////////////
@@ -49,8 +53,9 @@ function Array.create_uninitialized 1
     push argument 0
     call Memory.poke 2
     push local 0
-return 
+	return 
 ///////////////////////////////////////////////////////////////
+// val make : int -> 'a -> 'a array
 // [Array.make n x] returns a fresh array of length n, initialized with x. 
 // All the elements of this new array are initially physically equal to x
 // (in the sense of the == predicate). Consequently, if x is mutable, 
@@ -63,11 +68,11 @@ function Array.make 2
 	pop local 0
 	push constant 0
 	pop local 1
-label begin
+label L1
 	push argument 0
 	push local 1
 	lt
-	if-goto end
+	if-goto L2
 	push local 0
 	push local 1
 	push argument 1
@@ -77,16 +82,7 @@ label begin
 	push constant 1
 	add 
 	pop local 1
-	goto begin
-label end
+	goto L1
+label L2
 	push local 0
-	return
-///////////////////////////////////////////////////////////////
-// Deprecated. 
-// Array.create is an alias for Array.make.
-///////////////////////////////////////////////////////////////
-function Array.create 2
-	push argument 0
-	push argument 1
-	call Array.make 2
 	return

@@ -1,0 +1,193 @@
+///////////////////////////////////////////////////////////////
+function Test.check_references 2
+    push constant 4
+    push constant 17
+    call Array.make 2
+    push constant 1
+    call Array.get 2
+    push constant 17
+    eq
+    not
+    if-goto IfFalse1
+    push constant 0
+    goto IfEnd2
+label IfFalse1
+    push constant 1
+    call Sys.error 1
+label IfEnd2
+    pop temp 0
+    push constant 42
+    call Pervasives.ref 1
+    pop local 0
+    push local 0
+    call Pervasives.ref_contents 1
+    push constant 42
+    eq
+    not
+    if-goto IfFalse3
+    push constant 0
+    goto IfEnd4
+label IfFalse3
+    push constant 1
+    call Sys.error 1
+label IfEnd4
+    pop temp 0
+    push constant 42
+    call Pervasives.ref 1
+    pop local 0
+    push local 0
+    push constant 17
+    call Pervasives.ref_set_contents 2
+    pop temp 0
+    push local 0
+    call Pervasives.ref_contents 1
+    push constant 17
+    eq
+    not
+    if-goto IfFalse5
+    push constant 0
+    goto IfEnd6
+label IfFalse5
+    push constant 1
+    call Sys.error 1
+label IfEnd6
+    pop temp 0
+    push constant 42
+    call Pervasives.ref 1
+    pop local 0
+    push local 0
+    pop local 1
+    push local 1
+    push constant 17
+    call Pervasives.ref_set_contents 2
+    pop temp 0
+    push local 0
+    call Pervasives.ref_contents 1
+    push constant 17
+    eq
+    not
+    if-goto IfFalse7
+    push constant 0
+    goto IfEnd8
+label IfFalse7
+    push constant 1
+    call Sys.error 1
+label IfEnd8
+    pop temp 0
+    push constant 42
+    call Pervasives.ref 1
+    pop local 0
+    push local 0
+    pop local 1
+    push local 0
+    push constant 17
+    call Pervasives.ref_set_contents 2
+    pop temp 0
+    push local 1
+    call Pervasives.ref_contents 1
+    push constant 17
+    eq
+    not
+    if-goto IfFalse9
+    push constant 0
+    goto IfEnd10
+label IfFalse9
+    push constant 1
+    call Sys.error 1
+label IfEnd10
+    pop temp 0
+    push constant 42
+    call Pervasives.ref 1
+    pop local 0
+    push local 0
+    call Pervasives.incr 1
+    pop temp 0
+    push local 0
+    call Pervasives.ref_contents 1
+    push constant 43
+    eq
+    not
+    if-goto IfFalse11
+    push constant 0
+    goto IfEnd12
+label IfFalse11
+    push constant 1
+    call Sys.error 1
+label IfEnd12
+    pop temp 0
+    push constant 42
+    call Pervasives.ref 1
+    pop local 0
+    push local 0
+    call Pervasives.decr 1
+    pop temp 0
+    push local 0
+    call Pervasives.ref_contents 1
+    push constant 41
+    eq
+    not
+    if-goto IfFalse13
+    push constant 0
+    goto IfEnd14
+label IfFalse13
+    push constant 1
+    call Sys.error 1
+label IfEnd14
+    pop temp 0
+    push constant 42
+    call Pervasives.ref 1
+    pop local 0
+    push local 0
+    pop local 1
+    push local 0
+    call Pervasives.incr 1
+    pop temp 0
+    push local 0
+    push local 1
+    eq
+    push local 0
+    call Pervasives.ref_contents 1
+    push local 1
+    call Pervasives.ref_contents 1
+    eq
+    and
+    not
+    if-goto IfFalse15
+    push constant 0
+    goto IfEnd16
+label IfFalse15
+    push constant 1
+    call Sys.error 1
+label IfEnd16
+    pop temp 0
+    push constant 2
+    call Array.create_uninitialized 1
+    pop local 0
+    push local 0
+    push constant 0
+    push constant 111
+    call Array.set 3
+    pop temp 0
+    push local 0
+    push constant 1
+    push constant 107
+    call Array.set 3
+    pop temp 0
+    push local 0
+    call Pervasives.print_string 1
+    pop temp 0
+    push constant 65
+    call Pervasives.print_char 1
+    return
+///////////////////////////////////////////////////////////////
+function Test.__voidExpr2 0
+    push static 0
+    return
+///////////////////////////////////////////////////////////////
+function Test.__init____voidExpr2 0
+    push constant 0
+    call Test.check_references 1
+    pop static 0
+    push static 0
+    pop temp 7
+    return

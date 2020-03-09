@@ -12,6 +12,7 @@
 
 %token <string> IDENT IDENT_CAPITALIZE VM_IDENT
 %token <string> STRING
+%token <char> CHAR
 %token <int> INT
 %token <bool> BOOL
 
@@ -138,7 +139,7 @@ seq :
 
 expression : 
 | ACCESS expr                            { Ref_access($2) } 
-| NOT expr                              { UnOp(Not,$2) }
+| NOT expr                               { UnOp(Not,$2) }
 | expr                                   { $1 }
 | LET arg EQ seq IN seq                  { Let($2,$4,$6) }
 | IF seq THEN expression ELSE expression { If($2,$4,$6)}
@@ -182,6 +183,7 @@ exp:
 | LPAREN seq RPAREN                     { $2 }
 | BEGIN seq END                         { $2 }
 | constant                              { Constant($1) }
+| STRING                                { String($1) }
 | IDENT                                 { Ident($1) }
 | ident_in_mod                          { Ident($1) }
 | ARRAY_OPEN array_content ARRAY_CLOSE  { Array_create($2) }
@@ -192,8 +194,8 @@ exp:
 constant:
  | LPAREN RPAREN                         { Unit }
  | INT                                   { Int($1) }
+ | CHAR                                  { Char($1) }
  | BOOL                                  { Bool($1) }
- | STRING                                { String($1) }
  | constructor                           { Constr($1) }
  | ARRAY_OPEN ARRAY_CLOSE                { Array_empty }
  ;

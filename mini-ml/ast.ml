@@ -25,6 +25,7 @@ and exp =
   | Ref of (exp)
   | Ref_access of (exp)
   | Ref_assign of (exp * exp)
+  | String of string
   | Seq of (exp * exp)
   | While of (exp * exp)
   | For of (name * exp * exp * exp)
@@ -35,9 +36,9 @@ and constant =
   | Unit
   | Bool of bool
   | Int of int
+  | Char of char
   | Constr of string
   | Array_empty
-  | String of string
 and patern = constant
 and match_case =
   | Case of (constant * exp)

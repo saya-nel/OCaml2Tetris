@@ -25,6 +25,7 @@ type token =
   | IDENT_CAPITALIZE of (string)
   | VM_IDENT of (string)
   | STRING of (string)
+  | CHAR of (char)
   | INT of (int)
   | BOOL of (bool)
   | PLUS

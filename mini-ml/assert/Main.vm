@@ -1,0 +1,5 @@
+///////////////////////////////////////////////////////////////
+function Main.main 0
+    call Test.__init____voidExpr2 0
+    push constant 0
+    return

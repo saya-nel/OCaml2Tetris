@@ -1,7 +1,6 @@
 type prog = { modules : tmodule list }
 and tmodule = { mod_name : Ast.name ; decls: decl list ; init : Ast.name list }
 and decl = 
-| DefVar of (Ast.name)
 | DefFun of (Ast.name * arity * exp)
 and arity = int
 and exp = 

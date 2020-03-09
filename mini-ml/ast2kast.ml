@@ -13,18 +13,15 @@ type genv = { mod_name : Ast.name;
 and arity = int
 
 let primitives () =
-  ["incr",("Pervasives.incr");
-   "decr",("Pervasives.decr");
+  ["exit",("Pervasives.exit");
    "ref",("Pervasives.ref");
    "ref_contents",("Pervasives.ref_contents");
    "ref_set_contents",("Pervasives.ref_set_contents");
-   "print_char",("Output.printChar");
-   "print_string",("Output.printString");
-   "print_int", ("Output.printInt");
-   "peek",("Memory.peek");
-   "poke",("Memory.poke");
-   "alloc",("Memory.alloc");
-   "error",("Sys.error");]
+   "incr",("Pervasives.incr");
+   "decr",("Pervasives.decr");
+   "print_char",("Pervasives.print_char");
+   "print_string",("Pervasives.print_string");
+   "print_int", ("Pervasives.print_int");]
 
 let empty_genv primitives mod_name = {mod_name;globals=[];constrs=[];current_decls=[];primitives;init=[]}
 let genv_extend genv x = 
@@ -80,19 +77,8 @@ and rewrite_decl mod_name genv = function
                                 let arity = List.length args in
                                 (genv',[Kast.DefFun (name,arity,ke)])  
 and rewrite_exp lenv genv = function
-(*let len = String.length s in
-                 rewrite_exp lenv genv @@ 
-                 let x = gensym ~prefix:"tmp" in
-                 let rec aux = function 
-                 | 0 -> Ast.Bloc_alloc(Ast.Constant(Ast.Int(len)))
-                 | n -> Ast.App(Ast.Ident("String.appendChar"),
-                        let u = aux (n-1) in 
-                        [u;Ast.Constant(Ast.Int(n));Ast.Constant(Ast.Int(Char.code s.[n]))]) in aux (len-1)*)
-                       (*  let rec aux n = if n = len then Ast.Ident(x) else
-                         Ast.Seq(Ast.App(Ast.Ident("String.setCharAt"),
-                           [Ast.Constant(Ast.Int(n));Ast.Constant(Ast.Int(Char.code s.[n]));Ast.Ident(x);]), aux (n+1)) in aux 0) *) 
   | Ast.Constant c -> Kast.Constant(rewrite_constant lenv genv c)
-  | (Ast.Ident (name) as f) ->
+  | Ast.Ident (name) ->
      (match List.assoc_opt name lenv.locals with
       | None ->
          (match List.assoc_opt name lenv.arguments with
@@ -109,11 +95,7 @@ and rewrite_exp lenv genv = function
       | Some i -> Kast.Variable(Kast.Local i))
   | Ast.Let(name,e1,e2) ->
      let i,lenv' = lenv_extend name lenv in 
-     Kast.Let(i,rewrite_exp lenv' genv e1, rewrite_exp lenv' genv e2)
-  (*| Ast.LetFun(name,args,e1,e2) -> let lenv' = frame ~lenv args in
-                                   let free_variables = f e1 in
-                                   Ast.LetFun(name,free_variables @ args,e1,add_arguments e2)
-   *)                         
+     Kast.Let(i,rewrite_exp lenv' genv e1, rewrite_exp lenv' genv e2)         
   | Ast.App(e,args) -> Kast.App(rewrite_exp lenv genv e, List.map (rewrite_exp lenv genv) args)
   | Ast.If(e1,e2,e3) -> Kast.If(rewrite_exp lenv genv e1,
                                 rewrite_exp lenv genv e2,
@@ -122,10 +104,9 @@ and rewrite_exp lenv genv = function
   | Ast.UnOp(op,e1) -> Kast.UnOp(op,rewrite_exp lenv genv e1)
   | Ast.Ref_access(e1) -> rewrite_exp lenv genv @@ 
                           Ast.App(Ast.(Ident("Pervasives.ref_contents"),[e1]))
-                           (* Ast.Array_access(e1,Ast.Constant(Ast.Int(0))) *)
   | Ast.Ref_assign(e1,e2) -> rewrite_exp lenv genv @@  
-                             Ast.App(Ast.(Ident("Pervasives.ref_set_contents"),[e1;e2]))(*    Ast.Array_assign(e1,Ast.Constant(Ast.Int(0)), e2) *)
-  | Ast.Ref(e) -> rewrite_exp lenv genv @@ Ast.App(Ast.(Ident("Pervasives.ref"),[e])) (* Ast.Array_create([e]) *)
+                             Ast.App(Ast.(Ident("Pervasives.ref_set_contents"),[e1;e2]))
+  | Ast.Ref(e) -> rewrite_exp lenv genv @@ Ast.App(Ast.(Ident("Pervasives.ref"),[e]))
   | Ast.Array_access(e1,e2) -> rewrite_exp lenv genv @@ Ast.App(Ast.(Ident("Array.get"),[e1;e2])) 
   | Ast.Array_assign(e1,e2,e3) -> rewrite_exp lenv genv @@ Ast.App(Ast.(Ident("Array.set"),[e1;e2;e3])) 
   | Ast.Array_alloc(e) -> rewrite_exp lenv genv @@ Ast.App(Ast.(Ident("Array.create_uninitialized"),[e])) 
@@ -137,6 +118,8 @@ and rewrite_exp lenv genv = function
                               | [] -> Ast.Ident(a)
                               | e::es -> Ast.Seq(Ast.Array_assign(Ast.Ident(a),Ast.Constant(Ast.Int(i)),e),
                                                  aux (i+1) es) in aux 0 xs)                        
+  | Ast.String(s) -> let xs = ref [] in String.iter (fun c -> xs := (c :: !xs)) s;
+                     rewrite_exp lenv genv @@ Ast.Array_create(List.rev_map (fun c -> Ast.Constant(Ast.Char(c))) !xs)
   | Ast.Seq(e1,e2) -> Kast.Seq(rewrite_exp lenv genv e1,
                                rewrite_exp lenv genv e2)
   | Ast.While(e1,e2) -> Kast.While(rewrite_exp lenv genv e1,
@@ -157,15 +140,14 @@ and rewrite_exp lenv genv = function
                                            BinOp(Add,Ref_access(Ident(name_zz)),
                                                  Constant(Int(1)))))))))
 | Ast.Assert(e) -> rewrite_exp lenv genv @@ 
-                   Ast.If(e,Ast.Constant(Ast.Unit),Ast.App(Ast.Ident("error"),[Ast.Constant (Ast.Int(1))]))
+                   Ast.If(e,Ast.Constant(Ast.Unit),Ast.App(Ast.Ident("Sys.error"),[Ast.Constant (Ast.Int(1))]))
 | Ast.SetGlobal(e,i) -> Kast.SetGlobal (rewrite_exp lenv genv e,i)
 | Ast.ReadGlobal(i) -> Kast.ReadGlobal(i)
 and rewrite_constant lenv genv = function
   | Ast.Unit -> Kast.Unit
   | Ast.Int n -> Kast.Int n
+  | Ast.Char c -> Kast.Int (int_of_char c)
   | Ast.Constr name -> Kast.Int (List.assoc name genv.constrs)
   | Ast.Bool b -> Kast.Bool b 
-  | Ast.String(s) -> Kast.String(s)
-(*  | Ast.String s -> Kast.String s*)
   | Ast.Array_empty -> Kast.Array_empty
 

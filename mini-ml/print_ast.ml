@@ -57,6 +57,7 @@ and sprint_exp lvl = function
                     (sprint_exp (next lvl) e2)
                     (sprint_exp (next lvl) e3)
 | Array_access(e1,e2) -> sptf "%s.(%s)" (sprint_exp 0 e1) (sprint_exp 0 e2)
+| String s -> sptf "\"%s\"" s
 | Seq(e1,e2) -> sptf "(%s;\n%s%s)" (sprint_exp lvl e1) (indent_string lvl) (sprint_exp (lvl) e2)
 | While(e1,e2) -> sptf "while %s do\n%s\n%sdone"
                (sprint_exp lvl e1) (sprint_exp (lvl+1) e2) (indent_string lvl)
@@ -68,9 +69,9 @@ and sprint_constant lvl = function
 | Unit -> sptf "()"
 | Bool b -> sptf "%b" b
 | Int n -> sptf "%d" n
+| Char c -> sptf "%c" c
 | Constr name -> name
 | Array_empty -> sptf "[||]"
-| String s -> sptf "\"%s\"" s
 and sprint_binop lvl = function
 | Add -> "+"
 | Minus -> "-"
