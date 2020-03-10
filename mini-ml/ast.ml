@@ -6,8 +6,8 @@ and tmodule = { mod_name : name ;
 and decl = 
   | Exp of (exp)
   | DefVar of (name * exp)
-  | DefFun of (name * name list * exp)
-  | DefFunRec of (name * name list * exp)
+  | DefFun of    ((name * name list * exp) list)
+  | DefFunRec of ((name * name list * exp) list)
   | Type of (name * ty)
 and exp = 
   | Constant of constant

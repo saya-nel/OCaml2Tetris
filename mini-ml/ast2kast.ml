@@ -70,18 +70,20 @@ and rewrite_decl mod_name genv = function
      let i,genv' = genv_extend genv name in
      let genv0 = {genv' with init = (mod_name ^ "." ^ name_init) :: genv'.init} in
      let genv1,d1 = rewrite_decl mod_name genv0 @@
-                      Ast.DefFun (name_init,[],Ast.SetGlobal(e,i)) in
+                      Ast.DefFun ([name_init,[],Ast.SetGlobal(e,i)]) in
      let genv2,d2 = rewrite_decl mod_name genv1 @@
-                      Ast.DefFun (name,[],Ast.ReadGlobal(i)) in
+                      Ast.DefFun ([name,[],Ast.ReadGlobal(i)]) in
      (genv2,(d1 @ d2))
-  | Ast.DefFun (name,args,e) -> rewrite_defun mod_name genv name args e
-  | Ast.DefFunRec (name,args,e) -> rewrite_defun mod_name genv ~recflag:true name args e
-and rewrite_defun mod_name genv ?(recflag=false) name args e =
-     let genv' = {genv with global_funs = (mod_name ^ "." ^ name) :: genv.global_funs} in
+  | Ast.DefFun l -> rewrite_defun mod_name genv l
+  | Ast.DefFunRec l -> rewrite_defun mod_name genv ~recflag:true l
+and rewrite_defun mod_name genv ?(recflag=false) dfs =
+     let gnames = List.map (fun (name,args,e) -> mod_name ^ "." ^ name)  dfs in
+     let genv' = {genv with global_funs = gnames @ genv.global_funs} in
+     let by = List.concat (List.map (fun (name,args,e) ->
      let lenv = frame args in
      let ke = rewrite_exp lenv (if recflag then genv' else genv) e in (* genv si non recursif *) 
      let arity = List.length args in
-     (genv',[Kast.DefFun (name,arity,ke)])
+     [Kast.DefFun (name,arity,ke)]) dfs) in (genv',by)
 and rewrite_exp lenv genv = function
   | Ast.Constant c -> Kast.Constant(rewrite_constant lenv genv c)
   | Ast.Ident (name) ->

@@ -23,13 +23,15 @@ and sprint_decl lvl = function
   | DefVar (name,e) ->
      sptf "%slet %s = %s" (indent_string lvl) name (sprint_exp (next lvl) e)
   | Exp (e) ->  sptf "%slet _ = %s" (indent_string lvl) (sprint_exp lvl e)
-  | DefFun (name,args,e) ->
-      sprint_fun lvl name args e
-  | DefFunRec (name,args,e) -> sprint_fun ~recflag:true lvl name args e
-and sprint_fun ?(recflag=false) lvl name args e =
+  | DefFun (dfs) ->
+      sprint_fun lvl dfs
+  | DefFunRec (dfs) -> sprint_fun ~recflag:true lvl dfs
+and sprint_fun ?(recflag=false) lvl l =
+    String.concat "\n" @@
+    List.map (fun (name,args,e) ->
      let s = sptf "%slet %s%s %s = " (if recflag then "rec " else "") 
                                     (indent_string lvl) name (String.concat " " args) in
-      s ^ "\n" ^ (indent_string (next lvl)) ^ (sprint_exp (next lvl) e)
+      s ^ "\n" ^ (indent_string (next lvl)) ^ (sprint_exp (next lvl) e)) l
 and sprint_exp lvl = function
   | Constant(c) -> sprint_constant lvl c
   | Ident name -> name

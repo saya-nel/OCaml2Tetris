@@ -25,6 +25,7 @@ rule token = parse
 | '.'                { DOT }
 | ','                { COMMA }
 | "let"              { LET }
+| "and"              { AND_KW }
 | "rec"              { REC }
 | "in"               { IN }
 | "if"               { IF }

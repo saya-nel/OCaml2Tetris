@@ -16,6 +16,7 @@ type token =
   | BEGIN
   | END
   | EXTERNAL
+  | AND_KW
   | UNIT_TY
   | BOOL_TY
   | INT_TY

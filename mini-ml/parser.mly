@@ -5,7 +5,7 @@
 
 
 /* (* reserved words *) */
-%token LET IN IF THEN ELSE ASSERT WHILE FOR TO DO DONE MATCH WITH PIPE BEGIN END EXTERNAL
+%token LET IN IF THEN ELSE ASSERT WHILE FOR TO DO DONE MATCH WITH PIPE BEGIN END EXTERNAL AND_KW
 %token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY
 
 %token <string> IDENT IDENT_CAPITALIZE VM_IDENT
@@ -71,22 +71,23 @@ decls :
 decl : 
  | LET ignore EQ seq                          { Exp($4) }
  | LET IDENT EQ seq                           { DefVar($2,$4) }
- | LET IDENT args EQ seq                      { DefFun($2,$3,$5) }
- | LET REC IDENT args EQ seq                  { DefFunRec($3,$4,$6) }
+ | LET defuns                                 { DefFun($2) }
+ | LET REC defuns                                 { DefFunRec($3) }
  | TYPE IDENT EQ ty                           { Type($2,$4) }
  | LET ignore COLON expr_ty EQ seq            { Exp($6) }
  | LET IDENT COLON expr_ty EQ seq             { DefVar($2,$6) }
- | LET IDENT args COLON expr_ty EQ seq        { DefFun($2,$3,$7) }
- | LET REC IDENT args COLON expr_ty EQ seq    { DefFunRec($3,$4,$8) }
  | LET error { error_exit (pos()) "déclaration `let` malformée. J'attend {let <ident> [...] = <expr> in <expr>}" }
  | error { error_exit (pos()) "déclaration malformée (`let` ou `type` attendu)" }
- /*| EXTERNAL IDENT 
-   COLON expr_ty EQ STRING { (* let s = String.concat "."  (String.split_on_char '_' $7) in  *)
-                                                              External($2,$4,$6) }*/
- /*| EXTERNAL IDENT COLON expr_ty EQ error                         { raise (Parse_Exception ("malformed external :")) }*/
- /*| error                        { raise (Parse_Exception ("malformed declaration :")) }*/
  ;
 
+defun:
+| IDENT args EQ seq { ($1,$2,$4) }
+| IDENT args COLON expr_ty EQ seq { ($1,$2,$6) }
+;
+defuns:
+| defun                {[$1]}
+| defun AND_KW defuns  {$1::$3}
+;
 ignore:
 | WILDCARD {}
 | LPAREN RPAREN {}
