@@ -27,11 +27,11 @@ and sprint_decl lvl = function
       sprint_fun lvl dfs
   | DefFunRec (dfs) -> sprint_fun ~recflag:true lvl dfs
 and sprint_fun ?(recflag=false) lvl l =
-    String.concat "\n" @@
+    (indent_string lvl) ^ (if recflag then "let rec" else "let") ^
+    String.concat ("\n" ^ indent_string lvl ^ "and") @@
     List.map (fun (name,args,e) ->
-     let s = sptf "%slet %s%s %s = " (if recflag then "rec " else "") 
-                                    (indent_string lvl) name (String.concat " " args) in
-      s ^ "\n" ^ (indent_string (next lvl)) ^ (sprint_exp (next lvl) e)) l
+              let s = sptf " %s %s = " name (String.concat " " args) in
+               s ^ "\n" ^ (indent_string (next lvl)) ^ (sprint_exp (next lvl) e)) l
 and sprint_exp lvl = function
   | Constant(c) -> sprint_constant lvl c
   | Ident name -> name
