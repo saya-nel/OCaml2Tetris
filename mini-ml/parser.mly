@@ -72,11 +72,12 @@ decl :
  | LET ignore EQ seq                          { Exp($4) }
  | LET IDENT EQ seq                           { DefVar($2,$4) }
  | LET IDENT args EQ seq                      { DefFun($2,$3,$5) }
- | LET REC IDENT args EQ seq                  { DefFun($3,$4,$6) }
+ | LET REC IDENT args EQ seq                  { DefFunRec($3,$4,$6) }
  | TYPE IDENT EQ ty                           { Type($2,$4) }
  | LET ignore COLON expr_ty EQ seq            { Exp($6) }
  | LET IDENT COLON expr_ty EQ seq             { DefVar($2,$6) }
  | LET IDENT args COLON expr_ty EQ seq        { DefFun($2,$3,$7) }
+ | LET REC IDENT args COLON expr_ty EQ seq    { DefFunRec($3,$4,$8) }
  | LET error { error_exit (pos()) "déclaration `let` malformée. J'attend {let <ident> [...] = <expr> in <expr>}" }
  | error { error_exit (pos()) "déclaration malformée (`let` ou `type` attendu)" }
  /*| EXTERNAL IDENT 

@@ -74,12 +74,14 @@ and rewrite_decl mod_name genv = function
      let genv2,d2 = rewrite_decl mod_name genv1 @@
                       Ast.DefFun (name,[],Ast.ReadGlobal(i)) in
      (genv2,(d1 @ d2))
-  | Ast.DefFun (name,args,e) ->
+  | Ast.DefFun (name,args,e) -> rewrite_defun mod_name genv name args e
+  | Ast.DefFunRec (name,args,e) -> rewrite_defun mod_name genv ~recflag:true name args e
+and rewrite_defun mod_name genv ?(recflag=false) name args e =
      let genv' = {genv with global_funs = (mod_name ^ "." ^ name) :: genv.global_funs} in
      let lenv = frame args in
-     let ke = rewrite_exp lenv genv' e in (* genv si non recursif *) 
+     let ke = rewrite_exp lenv (if recflag then genv' else genv) e in (* genv si non recursif *) 
      let arity = List.length args in
-     (genv',[Kast.DefFun (name,arity,ke)])  
+     (genv',[Kast.DefFun (name,arity,ke)])
 and rewrite_exp lenv genv = function
   | Ast.Constant c -> Kast.Constant(rewrite_constant lenv genv c)
   | Ast.Ident (name) ->

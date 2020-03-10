@@ -7,6 +7,7 @@ and decl =
   | Exp of (exp)
   | DefVar of (name * exp)
   | DefFun of (name * name list * exp)
+  | DefFunRec of (name * name list * exp)
   | Type of (name * ty)
 and exp = 
   | Constant of constant
