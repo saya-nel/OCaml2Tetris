@@ -56,6 +56,8 @@ type token =
   | LBRACKET
   | RBRACKET
   | SEMICOL
+  | COMMA
+  | OF
   | ARRAY_OPEN
   | ARRAY_CLOSE
   | ARRAY_ACCESS_OPEN

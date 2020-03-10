@@ -1,5 +1,12 @@
 open Bytecode
 
+exception Cannot_generate_bytecode of string
+
+type trace = { mutable status : status }
+and status = On | Off
+
+let _TRACE = { status = On }
+
 let mapcat f l = List.concat (List.map f l)
 
 let gensym = 
@@ -9,8 +16,11 @@ let gensym =
 let indent_string = Print_ast.indent_string
 
 (* annote le bytecode *)
-let comment name lvl by = let s = 
-  indent_string lvl in [Comment (s ^ "(" ^ name) ] @ by @ [Comment (s ^ ")") ]
+let comment name lvl by = 
+  match _TRACE with
+  | {status=On} -> let s = indent_string lvl in
+                   [Comment (s ^ "(" ^ name) ] @ by @ [Comment (s ^ ")") ]
+  | _ -> by
 
 let rec bytecode_of_prog bc_mdls =
   let accgb = ref [] in
@@ -64,7 +74,7 @@ and bytecode_of_exp lvl = function
                       mapcat (bytecode_of_exp (lvl+1)) args @ 
                       (match f with
                        | Kast.GFun (name) -> [Call(name,arity)]
-                       | _ -> assert false))
+                       | _ -> raise (Cannot_generate_bytecode "limite d'implantation : seules les fonctions globales peuvent être appliquées")))
 | Kast.BinOp(op,e1,e2) -> comment "<binop>" lvl (
                           let bc_e1 = bytecode_of_exp (lvl+1) e1 
                           and bc_e2 = bytecode_of_exp (lvl+1) e2 in
@@ -75,7 +85,7 @@ and bytecode_of_exp lvl = function
 | Kast.SetGlobal (e1,i) -> let bc_e1 = bytecode_of_exp (lvl+1) e1 in
                            bc_e1 @ [Pop (Static(i))] @ [Push (Static(i));Pop (Temp(7))]
 | Kast.ReadGlobal (i) -> [Push (Static(i))]
-| Kast.GFun (name) -> [Call (name,0)] (* !!!!! variables globales *)
+| Kast.GFun (name) -> [Call (name,0)] (* !!!!! variables globales, bof *)
 and bytecode_of_constant = function
 | Kast.Unit -> [Push (Constant 0)]
 | Kast.Int n -> [Push (Constant n)]

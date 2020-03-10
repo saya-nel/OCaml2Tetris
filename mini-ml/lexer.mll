@@ -23,6 +23,7 @@ rule token = parse
 | ';'                { SEMICOL }
 | ";;"               { TERMINAISON }
 | '.'                { DOT }
+| ','                { COMMA }
 | "let"              { LET }
 | "rec"              { REC }
 | "in"               { IN }
@@ -34,6 +35,7 @@ rule token = parse
 | ['_']              { WILDCARD }
 | "match"            { MATCH }
 | "with"             { WITH }
+| "of"               { OF }
 | "while"            { WHILE }
 | "for"              { FOR }
 | "to"               { TO }
@@ -73,7 +75,7 @@ rule token = parse
 | [' ' '\t']         { token lexbuf }    (* skip blanks *)
 | "(*"               { comment lexbuf }  (* Comment until closing *)
 | eof | "eof"              { EOF }
-| _  as lxm          { raise (Parse_Exception (Printf.sprintf "Unexpected character: %c"  lxm,  default_position)) }
+| _  as lxm          { raise (Parse_Exception (Printf.sprintf "Unexpected character: %c"  lxm,  Parseutils.pos())) }
 
 
 and comment = parse 

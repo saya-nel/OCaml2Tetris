@@ -24,20 +24,27 @@ let parse filename =
   let mod_name = String.capitalize_ascii @@ 
                  Filename.remove_extension @@ 
                  Filename.basename filename in
-  let lexbuf = Lexing.from_channel ic in
-  let decls = Parser.tmodule Lexer.token lexbuf in 
-  let mdl = Ast.{mod_name;decls} in
-  Print_ast.sprint_module 0 mdl |> Printf.printf "%s";
-  close_in ic;
-  mdl
+  try 
+    let lexbuf = Lexing.from_channel ic in
+    let decls = Parser.tmodule Lexer.token lexbuf in 
+    let mdl = Ast.{mod_name;decls} in
+    Print_ast.sprint_module 0 mdl |> Printf.printf "%s";
+    close_in ic;
+    mdl
+  with Parseutils.Parse_Exception(s,pos) -> 
+  (close_in ic; Parseutils.error_exit pos s) ;;
+  
 
 let parse_modules fs = List.map parse fs
 
 let compile genv mdl = 
-  let genv0 = Ast2kast.{genv with mod_name=Ast.(mdl.mod_name); init=[]} in
-  let genv',kast = Ast2kast.rewrite_tmodule genv0 mdl in
-  let bc_mdl = Kast2bytecode.bytecode_of_tmodule genv' kast in
-  (genv',bc_mdl)
+  try 
+    let genv0 = Ast2kast.{genv with mod_name=Ast.(mdl.mod_name); init=[]} in
+    let genv',kast = Ast2kast.rewrite_tmodule genv0 mdl in
+    let bc_mdl = Kast2bytecode.bytecode_of_tmodule genv' kast in
+    (genv',bc_mdl)
+  with Kast2bytecode.Cannot_generate_bytecode msg -> 
+       (Printf.printf "connot generate bytecode.\n%s\n" msg; exit 1)
 
 let compile_all mdls =
  let (genv2,bc_mdls) = List.fold_left (fun (genv,acc) mdl -> 

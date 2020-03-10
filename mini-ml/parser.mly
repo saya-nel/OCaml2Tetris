@@ -1,8 +1,6 @@
 %{
   open Parseutils
   open Ast
-  let pos () = 
-    make_position (Parsing.symbol_start_pos ()) (Parsing.symbol_end_pos ())
 %}
 
 
@@ -19,7 +17,7 @@
 %token PLUS MINUS TIMES DIV AND OR LAND LOR EQ NEQ GT LT GE LE NOT TRUE FALSE TYPE
 %token REC
 /* (* control characters *) */
-%token EOF TERMINAISON DOT COLON LPAREN RPAREN LBRACKET RBRACKET SEMICOL BEGIN END
+%token EOF TERMINAISON DOT COLON LPAREN RPAREN LBRACKET RBRACKET SEMICOL BEGIN END COMMA OF
 %token ARRAY_OPEN ARRAY_CLOSE ARRAY_ACCESS_OPEN LEFT_ARROW RIGHT_ARROW ASSIGN ACCESS REF WILDCARD
 
 
@@ -61,20 +59,26 @@ decls :
  | EOF                       { [] }
  | decl decls              { $1::$2 }
  | decl terminaison decls  { $1::$3 }
+ | { error_exit (pos()) "programme malformé" }
  ;
 
  terminaison:
  |                         {}
- | TERMINAISON terminaison {} 
+ | TERMINAISON terminaison {}
+ | error { error_exit (pos()) "fin de phrase. `;;` attendues." }
  ;
 
 decl : 
- | LET LPAREN RPAREN EQ seq     { Exp($5) }
- | LET WILDCARD EQ seq          { Exp($4) }
- | LET IDENT EQ seq             { DefVar($2,$4) }
- | LET IDENT args EQ seq        { DefFun($2,$3,$5) }
- | LET REC IDENT args EQ seq    { DefFun($3,$4,$6) }
- | TYPE IDENT EQ ty             { Type($2,$4) }
+ | LET ignore EQ seq                          { Exp($4) }
+ | LET IDENT EQ seq                           { DefVar($2,$4) }
+ | LET IDENT args EQ seq                      { DefFun($2,$3,$5) }
+ | LET REC IDENT args EQ seq                  { DefFun($3,$4,$6) }
+ | TYPE IDENT EQ ty                           { Type($2,$4) }
+ | LET ignore COLON expr_ty EQ seq            { Exp($6) }
+ | LET IDENT COLON expr_ty EQ seq             { DefVar($2,$6) }
+ | LET IDENT args COLON expr_ty EQ seq        { DefFun($2,$3,$7) }
+ | LET error { error_exit (pos()) "déclaration `let` malformée. J'attend {let <ident> [...] = <expr> in <expr>}" }
+ | error { error_exit (pos()) "déclaration malformée (`let` ou `type` attendu)" }
  /*| EXTERNAL IDENT 
    COLON expr_ty EQ STRING { (* let s = String.concat "."  (String.split_on_char '_' $7) in  *)
                                                               External($2,$4,$6) }*/
@@ -82,20 +86,25 @@ decl :
  /*| error                        { raise (Parse_Exception ("malformed declaration :")) }*/
  ;
 
-ty :
- | sum_type                      { Sum($1) }
- | expr_ty                       { $1 }
- ;
-
-
-sum_type :
-| sum_type_aux { $1 }
-| PIPE sum_type_aux { $2 }
+ignore:
+| WILDCARD {}
+| LPAREN RPAREN {}
 ;
 
-sum_type_aux :
- | constructor               { [$1] }
- | constructor PIPE sum_type_aux { $1::$3 }
+ty :
+ | sum_type   { Sum($1) }
+ | expr_ty    { $1 }
+ ;
+
+sum_type:
+| sum_ty {$1} 
+| PIPE sum_ty {$2} 
+;
+
+sum_ty :
+ | constructor             { [$1] }
+ | constructor PIPE sum_ty { $1::$3 }
+ | constructor OF            { error_exit (pos()) "constructeur paramétré non supporté" }
  ;
 
 constructor :
@@ -109,6 +118,7 @@ expr_ty:
  | ident_in_mod                  { Ident_ty($1) }
  | star_ty                       { Star_ty($1) }
  | expr_ty RIGHT_ARROW expr_ty   { Arrow_ty($1,$3) }
+ | error { error_exit (pos()) "expression de type malformée." }
 ;
 
 star_ty :
@@ -120,12 +130,15 @@ star_ty_aux :
 ;
 
 args : 
-| arg       { [$1] }
+| arg                             { [$1] }
+| LPAREN arg COLON expr_ty RPAREN { [$2] }
 | arg args  { $1::$2 }
+| error { error_exit (pos()) "liste d'arguments malformée." }
 ;
 arg : 
 | IDENT          { $1 }
 | LPAREN RPAREN  { "_" }
+| error { error_exit (pos()) "argument malformé." }
 ;
 
 ident_in_mod:
@@ -139,6 +152,7 @@ seq :
 ;
 
 expression : 
+| LPAREN expression COLON expr_ty RPAREN { $2 }
 | ACCESS expr                            { Ref_access($2) } 
 | NOT expr                               { UnOp(Not,$2) }
 | expr                                   { $1 }
@@ -190,6 +204,7 @@ exp:
 | ARRAY_OPEN array_content ARRAY_CLOSE  { Array_create($2) }
 | exp ARRAY_ACCESS_OPEN seq RPAREN     { Array_access($1,$3) }
 | exp ARRAY_ACCESS_OPEN seq RPAREN LEFT_ARROW expr { Array_assign($1,$3,$6) }
+| error { error_exit (pos()) "expression malformée." }
 ;
 
 constant:

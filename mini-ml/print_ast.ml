@@ -16,7 +16,7 @@ let get_indent_level s lvl =
 
 let rec sprint_prog ms = List.map (sprint_module 0) ms
 and sprint_module lvl {mod_name;decls} =
-  sptf "%smodule %s = struct\n%s ;;\n%send" (indent_string lvl) mod_name 
+  sptf "%smodule %s = struct\n%s ;;\n%send\n\n" (indent_string lvl) mod_name 
     (mapcat " ;;\n\n" (sprint_decl (next lvl)) decls) (indent_string lvl) 
 and sprint_decl lvl = function
   | Type (name,ty) -> sptf "%stype %s = " (indent_string lvl)  name ^ (sprint_ty lvl ty)
@@ -25,12 +25,12 @@ and sprint_decl lvl = function
   | DefFun (name,args,e) ->
      let s = sptf "%slet %s %s = " (indent_string lvl)  name (String.concat " " args) in
      s ^ "\n" ^ (indent_string (next lvl)) ^ (sprint_exp (next lvl) e)
-  | Exp (e) ->  sptf "let () = %s" (sprint_exp lvl e)
+  | Exp (e) ->  sptf "%slet _ = %s" (indent_string lvl) (sprint_exp lvl e)
 and sprint_exp lvl = function
   | Constant(c) -> sprint_constant lvl c
   | Ident name -> name
   | Let(name,e1,e2) -> let w = sptf "(let %s = " name in
-                       let z = String.length w in
+                       let z = get_indent_level w lvl in
                        sptf "%s%s in\n%s%s)" w
                          (sprint_exp (lvl + z) e1)
                          (indent_string (next lvl))
@@ -39,7 +39,7 @@ and sprint_exp lvl = function
                        let s = "(" ^ sprint_exp lvl e1 in
                        let lvl' = get_indent_level s lvl in
                        let ops = " " ^ sprint_binop lvl' op ^ " " in
-                       let opz = String.length ops in
+                       let opz = get_indent_level ops lvl in
                        s ^ ops ^ (sprint_exp (lvl'+opz) e2) ^ ")"
   | UnOp(op,e1) -> let lvl = lvl + 1 in (* pour la parenthèse ouvrante *)
                    let s = "(" ^ sprint_unop lvl op ^ " " in

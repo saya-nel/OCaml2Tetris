@@ -21,7 +21,19 @@ let primitives () =
    "decr",("Pervasives.decr");
    "print_char",("Pervasives.print_char");
    "print_string",("Pervasives.print_string");
-   "print_int", ("Pervasives.print_int") ]
+   "print_int", ("Pervasives.print_int");
+   "Array.set", ("Array.set");
+   "Array.get", ("Array.get");
+   "Array.create_uninitialized",("Array.create_uninitialized");
+   "Pervasives.exit",("Pervasives.exit");
+   "Pervasives.ref",("Pervasives.ref");
+   "Pervasives.ref_contents",("Pervasives.ref_contents");
+   "Pervasives.ref_set_contents",("Pervasives.ref_set_contents");
+   "Pervasives.incr",("Pervasives.incr");
+   "Pervasives.decr",("Pervasives.decr");
+   "Pervasives.print_char",("Pervasives.print_char");
+   "Pervasives.print_string",("Pervasives.print_string");
+   "Pervasives.print_int", ("Pervasives.print_int");  ]
 
 let empty_genv primitives mod_name = {mod_name;
                                       globals=[];
@@ -104,7 +116,7 @@ and rewrite_exp lenv genv = function
                                         else (genv.mod_name ^ "." ^ name) in                
                  (if List.mem full_name genv.global_funs
                   then Kast.GFun(full_name)
-                  else let f = List.assoc name genv.primitives in
+                  else let f = (try List.assoc name genv.primitives with Not_found -> failwith ("cannot find " ^ name)) in
                        Kast.GFun(f))
               | Some i -> Kast.App (Kast.GFun(genv.mod_name ^ "." ^ name),[]))
           | Some i -> Kast.Variable(Kast.Argument (i)))
@@ -145,14 +157,12 @@ and rewrite_exp lenv genv = function
                                                      Ast.Constant(Ast.Int(i)),e),
                                     aux (i+1) es) in aux 0 xs)                        
   | Ast.String(s) ->
-     let xs = ref [] in
-     String.iter (fun c -> xs := (c :: !xs)) s;
+     let rev_xs = ref [] in
+     String.iter (fun c -> rev_xs := (c :: !rev_xs)) s;
      rewrite_exp lenv genv @@
-       Ast.Array_create(List.rev_map (fun c -> Ast.Constant(Ast.Char(c))) !xs)
-  | Ast.Seq(e1,e2) -> Kast.Seq(rewrite_exp lenv genv e1,
-                               rewrite_exp lenv genv e2)
-  | Ast.While(e1,e2) -> Kast.While(rewrite_exp lenv genv e1,
-                                   rewrite_exp lenv genv e2)
+     Ast.Array_create(List.rev_map (fun c -> Ast.Constant(Ast.Char(c))) !rev_xs)
+  | Ast.Seq(e1,e2) -> Kast.Seq(rewrite_exp lenv genv e1, rewrite_exp lenv genv e2)
+  | Ast.While(e1,e2) -> Kast.While(rewrite_exp lenv genv e1, rewrite_exp lenv genv e2)
   | Ast.For(name,e0,e1,e2) -> 
      rewrite_exp lenv genv @@
        let name_zz = gensym ~prefix:name in
@@ -161,13 +171,9 @@ and rewrite_exp lenv genv = function
        Let(name_zz, 
            Ref(e0),
            Let(len_zz,e1,
-               While(BinOp (Le,Ref_access(Ident(name_zz)),
-                            Ident(len_zz)),
-                     Let(name,
-                         Ref_access(Ident(name_zz)),
-                         Seq(e2,Ref_assign(Ident(name_zz),
-                                           BinOp(Add,Ref_access(Ident(name_zz)),
-                                                 Constant(Int(1)))))))))
+               While(BinOp (Le,Ref_access(Ident(name_zz)),Ident(len_zz)),
+                     Let(name, Ref_access(Ident(name_zz)),
+                         Seq(e2,App(Ast.Ident("Pervasives.incr"),[Ident(name_zz)]))))))
   | Ast.Match (e,ms) -> 
      let ms',otherw = let rec aux acc = function
                         | [] -> (acc,None)
@@ -179,7 +185,10 @@ and rewrite_exp lenv genv = function
      rewrite_exp lenv genv @@
        Ast.Let(var,e,
            let rec aux = function
-             | [] -> (match otherw with None -> Ast.Constant(Ast.Unit) | Some e -> e)
+             | [] -> (match otherw with 
+                      | None -> Ast.App(Ast.Ident("Pervasives.exit"),
+                                       [Ast.Constant (Ast.Int(1))]) (* match failure *)
+                      | Some e -> e)
              | [(_,h)] -> h
              | ms -> let (md,e') = List.nth ms (List.length ms / 2) in
                      let l1,l2 = List.partition (fun (c,_) -> c < md) ms in
