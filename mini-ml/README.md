@@ -3,8 +3,15 @@
 ```
 $ cd mini-ml
 $ make
-$ ./compile file.ml ...
+$ ./compile -src=exemple/src -dst=exemple/bin   m1.ml m2.ml
+$ VMEmulator.sh
+~> click File->Load Script->exemple/bin/Main.tst
+{click "animate" : No Animation}
+{click "view" : Screen}
+~> click Run->Run-> (Yes)
 ```
+
+Par defaut, -src="", dst="generated_files"
 
 ```
 <prog> := <decl> <prog> 
@@ -14,18 +21,18 @@ $ ./compile file.ml ...
         | let _ = <expr> 
         | let g = <expr> 
         |let <ident> <ident> ... = <expr> 
+        | type <ident> = <Constr> | <Constr> | ... # non paramétré
       //| let rec <ident> <ident> ... = <expr> 
-      //| type <ident> = <Constr> | <Constr> | ... # non paramétré
-      //| external <ident> : <expr_ty> = "<ident>"
 
 <expr> := (<expr>)
+        | (<expr> : <expr_ty>)
         | <constant>
         | <expr> <op> <expr>
         | <op> <expr>
         | let <ident> = <expr> in <expr> 
         | <expr> ; <expr>
         | if <expr> then <expr> else <expr>
-        | match <expr> with | <constant> -> <expr> | ... | _ -> <expr>   # ~> if imbriqués dichotomiques
+        | match <expr> with | <constant> -> <expr> | ... | _ -> <expr>  # (if imbriqués dichotomiques)
         | while <expr> do <expr> done
         | for <ident> = <expr> to <expr> do <expr> done
         | ref <expr>
@@ -41,12 +48,18 @@ $ ./compile file.ml ...
             | <int>
             | ()
             | [||]
-            | <Const>
+            | <Constr>
             | <string>
 
-<op> := + | - | = | < | <= | > | >= | `&&` | `||` | not
-# remarque : `=`,`>` et `<` ne fonctionne qu'avec des entiers. 
+<expr_ty> := <ident>
+           | <expr_ty> * ... * <expr_ty>
+           | <expr_ty> -> <expr_ty>
 
-<primitives> :=  print_char | print_int | print_string | print_newline | read_int | exit | Array.length | Array.get | Array.set | Array.make | Pervasives.incr | Pervasives.decr | incr | decr
+<binop> := + | - | = | < | <= | > | >= | '&&' | '||'
+<unop> := - | not
+# remarque : =, > et < ne fonctionne qu'avec des entiers. 
+
+<primitives> :=  print_char | print_int | print_string | print_newline | read_int | exit | incr | decr | Array.length | Array.get | Array.set | Array.make | String.get | String.make
 ...
+
 ```

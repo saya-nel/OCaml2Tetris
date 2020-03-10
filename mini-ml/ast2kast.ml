@@ -12,29 +12,6 @@ type genv = { mod_name : Ast.name;
               init : Ast.name list }
 and arity = int
 
-let primitives () =
-  ["exit",("Pervasives.exit");
-   "ref",("Pervasives.ref");
-   "ref_contents",("Pervasives.ref_contents");
-   "ref_set_contents",("Pervasives.ref_set_contents");
-   "incr",("Pervasives.incr");
-   "decr",("Pervasives.decr");
-   "print_char",("Pervasives.print_char");
-   "print_string",("Pervasives.print_string");
-   "print_int", ("Pervasives.print_int");
-   "Array.set", ("Array.set");
-   "Array.get", ("Array.get");
-   "Array.create_uninitialized",("Array.create_uninitialized");
-   "Pervasives.exit",("Pervasives.exit");
-   "Pervasives.ref",("Pervasives.ref");
-   "Pervasives.ref_contents",("Pervasives.ref_contents");
-   "Pervasives.ref_set_contents",("Pervasives.ref_set_contents");
-   "Pervasives.incr",("Pervasives.incr");
-   "Pervasives.decr",("Pervasives.decr");
-   "Pervasives.print_char",("Pervasives.print_char");
-   "Pervasives.print_string",("Pervasives.print_string");
-   "Pervasives.print_int", ("Pervasives.print_int");  ]
-
 let empty_genv primitives mod_name = {mod_name;
                                       globals=[];
                                       constrs=[];

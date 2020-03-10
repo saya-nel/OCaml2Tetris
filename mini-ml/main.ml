@@ -5,7 +5,8 @@ let stdlib = ref "stdlib"
 let set_action a () = action := a
 
 let add_file f = inputs := !inputs @ [f] 
-let destination_folder = ref None
+let source_dir = ref ""
+let destination_dir = ref "generated_files"
 
 let () =
   Arg.parse [
@@ -13,8 +14,10 @@ let () =
        " : affiche l'AST en syntaxe Caml");
     ("-compile", Arg.Unit (set_action `Compile), 
        " : compile vers le langage de la VM Nand2Tetris");
-    ("-dst", Arg.String (fun s -> destination_folder := (Some s)), 
-      " : spécifie le dossier ou seront placés les fichiers compilés");
+    ("-src", Arg.Set_string source_dir,
+      " : spécifie où chercher les fichiers sources à compiler");
+    ("-dst", Arg.Set_string destination_dir, 
+      " : spécifie le dossier où seront placés les fichiers compilés");
     ("-stdlib",Arg.Set_string stdlib, 
       "chemin vers la bibliothèque d'execution de mini-ml")
     ] add_file "Usage:\n  ./compile [options] <filenames ..>"	
@@ -50,23 +53,19 @@ let compile_all mdls =
  let (genv2,bc_mdls) = List.fold_left (fun (genv,acc) mdl -> 
                     let genv',bc_mdl = compile genv mdl in 
                     (genv',acc @ [bc_mdl]))
-   (Ast2kast.empty_genv (Ast2kast.primitives()) "",[]) mdls in 
+   (Ast2kast.empty_genv (Runtime.primitives()) "",[]) mdls in 
   Kast2bytecode.bytecode_of_prog bc_mdls
 
 let () = 
-  let dir = match !destination_folder with 
-              | None -> (match !inputs with 
-                         | [] -> "" 
-                         | file::_ -> Filename.dirname file)
-              | Some s -> s in
-  let mdls = parse_modules !inputs in 
+  let dir = !destination_dir in
+  let files = List.map (Filename.concat !source_dir) !inputs in
+  let mdls = parse_modules files in 
   (* let (genv,bc_mdls) = compile_all mdls in
   let bc = List.map (function Bytecode.{bc_decls} -> bc_decls) bc_mdls in *)
   List.iter (fun (name,bc) ->
     let oc = open_out (Filename.concat dir (name ^ ".vm")) in
     Printf.fprintf oc "%s\n" (Bytecode2string.string_of_instrs bc);
     close_out oc) (compile_all mdls);
-  begin
-  Utils.link_test_file dir;
-  Utils.link_runtime dir
-  end
+ 
+  Runtime.init dir 
+  
