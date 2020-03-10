@@ -52,7 +52,7 @@ let () =
                          | [] -> "" 
                          | file::_ -> Filename.dirname file)
               | Some s -> s in
-  let mdls = parse_modules !inputs in
+  let mdls = parse_modules !inputs in 
   (* let (genv,bc_mdls) = compile_all mdls in
   let bc = List.map (function Bytecode.{bc_decls} -> bc_decls) bc_mdls in *)
   List.iter (fun (name,bc) ->
@@ -60,54 +60,6 @@ let () =
     Printf.fprintf oc "%s\n" (Bytecode2string.string_of_instrs bc);
     close_out oc) (compile_all mdls);
   begin
-    let oc = open_out (Filename.concat dir ("Main.tst")) in
-    Printf.fprintf oc "%s\n" "load, output-file Main.out, output-list RAM[12]%D1.6.1;
-
-repeat 2500000 { vmstep; }";
-    close_out oc
+  Utils.link_test_file dir;
+  Utils.link_runtime dir
   end
- (* set sp 256, set local 300, set argument 500, set this 590, set that 600,
-let parse0 file_name = 
-	let ic = open_in file_name in
-	let lexbuf = Lexing.from_channel ic in
-	  (* close_in ic;*)
-  let result = Parser.tmodule Lexer.token lexbuf in 
-  
-  let mod_name = String.capitalize_ascii @@ Filename.remove_extension @@ Filename.basename file_name in
-  (file_name,mod_name,result)
-  (*Printf.printf "(* module %s *)\n%s\n" mod_name txt;
-  match !action with 
-  | `ParseOnly -> ()
-  | `Compile ->
-    let by = Bytecode.vm_prog mod_name result |> Bytecode.string_of_code in
-    let dir = match !destination_folder with 
-              | None -> Filename.dirname input 
-              | Some s -> s in
-    let name = Filename.concat dir (mod_name ^ ".vm") in
-    let oc = open_out name in
-    Printf.fprintf oc "%s\n\n" by;
-    close_out oc *)
-
-let compile (lfile : ('a * 'b * 'c) list) =
-  let bys,main = Bytecode.vm_prog lfile in
-  List.iter2 (fun by (file_name,mod_name,result) -> 
-
-               let txt = Ast.string_of_prog result in 
-                Printf.printf "(* module %s *)\n%s\n" mod_name txt;
-                
-                let dir = match !destination_folder with 
-                 | None -> Filename.dirname file_name 
-                 | Some s -> s in
-                let name = Filename.concat dir (mod_name ^ ".vm") in
-                let oc = open_out name in
-                let by' = if mod_name = "Main" then by @ main else by in
-                Printf.fprintf oc "%s\n\n" (Bytecode.string_of_code by');
-                close_out oc) bys lfile
-
-c
-   try 
-     compile @@ List.map parse0 !inputs 
-   with Parseutils.Parse_Exception (s,pos) -> 
-        Printf.printf "Parse_error : %s   at %s\n" s (Parseutils.string_of_position pos); exit 1
-
-      *)
