@@ -23,7 +23,7 @@ let interp () =
     | 8 (* Acc *) -> 
        incr pc;
        let n = code.(!pc) in 
-       if n >= Array.length stack || n < 0 then assert false (* failwith "stack pleine" *)
+       if n >= Array.length stack || n < 0 then failwith "stack pleine"
        else acc := stack.(n);
        incr pc
     | 9 (* Push *) -> 
@@ -53,7 +53,7 @@ let interp () =
     | 20 (* Assign *) -> 
        incr pc;
        let n = code.(!pc) in 
-       if n >= Array.length stack || n < 0 then assert false (* failwith "stack pleine" *)
+       if n >= Array.length stack || n < 0 then failwith "stack pleine"
        else begin stack.(n) <- !acc;
                   acc := 0
             end;
@@ -61,18 +61,18 @@ let interp () =
     | 19 (* Pop *) -> 
        incr pc;
        let n = code.(!pc) in 
-       if n >= Array.length stack || n < 0 then assert false (* failwith "Stack pleine " *)
+       if n >= Array.length stack || n < 0 then failwith "Stack pleine "
        else sp := !sp - n;
        incr pc
     | 84 (* Branch *) -> 
        incr pc;
        let n = code.(!pc) in 
-       if n >= Array.length code then assert false (* failwith "Instr array out of bounds" *)
+       if n >= Array.length code then failwith "Instr array out of bounds"
        else pc := !pc + n
     | 85 (* Branchif *) -> 
        incr pc;
        let n = code.(!pc) in 
-       if n >= Array.length code then assert false (* failwith "Instr array out of bounds" *)
+       if n >= Array.length code then failwith "Instr array out of bounds"
        else pc := if !acc = 1 then !pc + n else !pc + 1
     | 112 (* MULINT *) -> 
        acc := stack.(!sp) * !acc;
