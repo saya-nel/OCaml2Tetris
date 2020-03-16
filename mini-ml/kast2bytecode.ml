@@ -5,7 +5,7 @@ exception Cannot_generate_bytecode of string
 type trace = { mutable status : status }
 and status = On | Off
 
-let _TRACE = { status = On }
+let _TRACE = { status = Off }
 
 let mapcat f l = List.concat (List.map f l)
 

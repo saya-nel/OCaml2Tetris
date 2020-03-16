@@ -185,7 +185,7 @@ expr:
  | expression LOR expression             { BinOp(Lor,$1,$3) }
  | expression LAND expression            { BinOp(Land,$1,$3) }
  | expr ASSIGN expression                { Ref_assign($1,$3) } 
- | LPAREN MINUS expr RPAREN              { UnOp(UMinus,$3) }
+ | MINUS expr                            { UnOp(UMinus,$2) }
 /* | error                                 { raise (Parse_Exception ("malformed expression ")) }*/
 ;
 
@@ -205,7 +205,7 @@ exp:
 | ident_in_mod                          { Ident($1) }
 | ARRAY_OPEN array_content ARRAY_CLOSE  { Array_create($2) }
 | exp ARRAY_ACCESS_OPEN seq RPAREN     { Array_access($1,$3) }
-| exp ARRAY_ACCESS_OPEN seq RPAREN LEFT_ARROW expr { Array_assign($1,$3,$6) }
+| exp ARRAY_ACCESS_OPEN seq RPAREN LEFT_ARROW expression { Array_assign($1,$3,$6) }
 | error { error_exit (pos()) "expression malformée." }
 ;
 

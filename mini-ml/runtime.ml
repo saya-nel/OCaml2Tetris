@@ -21,7 +21,8 @@ let link_test_file dir =
 let link_runtime dir = 
   mv "stdlib/ML_array.vm" (Filename.concat dir "ML_array.vm");
   mv "stdlib/ML_pervasives.vm" (Filename.concat dir "ML_pervasives.vm");
-  mv "stdlib/ML_string.vm" (Filename.concat dir "ML_string.vm")
+  mv "stdlib/ML_string.vm" (Filename.concat dir "ML_string.vm");
+  mv "stdlib/ML_obj.vm" (Filename.concat dir "ML_obj.vm")
 
 
 let init dir = 
@@ -31,6 +32,7 @@ let init dir =
 let primitives () =
   let openned_ml_pervasives =
   ["exit",("ML_pervasives.exit");
+   "failwith",("ML_pervasives.failwith");
    "ref",("ML_pervasives.ref");
    "ref_contents",("ML_pervasives.ref_contents");
    "ref_set_contents",("ML_pervasives.ref_set_contents");
@@ -41,6 +43,7 @@ let primitives () =
    "print_int", ("ML_pervasives.print_int") ] in
   let ml_pervasives = 
     ["Pervasives.exit",("ML_pervasives.exit");
+     "Pervasives.failwith",("ML_pervasives.failwith");
      "Pervasives.ref",("ML_pervasives.ref");
      "Pervasives.ref_contents",("ML_pervasives.ref_contents");
      "Pervasives.ref_set_contents",("ML_pervasives.ref_set_contents");
@@ -50,12 +53,16 @@ let primitives () =
      "Pervasives.print_string",("ML_pervasives.print_string");
      "Pervasives.print_int", ("ML_pervasives.print_int") ] in
   let ml_array =
-   ["Array.set", ("ML_array.set");
-   "Array.get", ("ML_array.get");
-   "Array.make", ("ML_array.make");
-   "Array.create_uninitialized",("ML_array.create_uninitialized") ] in
+   ["Array.length", ("ML_array.length");
+    "Array.set", ("ML_array.set");
+    "Array.get", ("ML_array.get");
+    "Array.make", ("ML_array.make");
+    "Array.create_uninitialized",("ML_array.create_uninitialized") ] in
   let ml_string = 
-    ["String.get", ("ML_string.get");
+    ["String.length", ("ML_string.length");
+     "String.get", ("ML_string.get");
      "String.make", ("ML_string.make")] in
-  openned_ml_pervasives @ ml_pervasives @ ml_array @ ml_string
+  let ml_obj = 
+    [ "Obj.magic", ("ML_obj.magic") ] in
+  openned_ml_pervasives @ ml_pervasives @ ml_array @ ml_string @ ml_obj
      
