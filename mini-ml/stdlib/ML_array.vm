@@ -71,7 +71,8 @@ function ML_array.make 2
 label L1
 	push argument 0
 	push local 1
-	lt
+	gt
+	not // ie. '<='
 	if-goto L2
 	push local 0
 	push local 1

@@ -11,6 +11,15 @@ function ML_pervasives.exit 0
 	call Sys.error 1 
 	return
 ///////////////////////////////////////////////////////////////
+// val failwith : string -> 'a
+///////////////////////////////////////////////////////////////
+function ML_pervasives.failwith 0
+    push argument 0
+	call ML_pervasives.print_string 1
+	push constant 1
+	call ML_pervasives.exit 1
+	return
+///////////////////////////////////////////////////////////////
 // val ref : 'a -> 'a ref
 ///////////////////////////////////////////////////////////////
 function ML_pervasives.ref 0
@@ -78,7 +87,7 @@ function ML_pervasives.print_char 0
 ///////////////////////////////////////////////////////////////
 function ML_pervasives.print_string 2
 	push argument 0
-	call String.length 1
+	call ML_string.length 1
 	pop local 0
 	push constant 0
 	pop local 1
@@ -90,7 +99,7 @@ label L1
 	if-goto L2
 	push argument 0
 	push local 1
-	call String.get 2
+	call ML_string.get 2
 	call Output.printChar 1
 	push constant 1
 	push local 1
