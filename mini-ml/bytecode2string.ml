@@ -37,6 +37,7 @@ and string_of_op = function
 | Or -> indent ^  "or"
 | Not -> indent ^  "not"
 | Mult -> string_of_instrs [Call ("Math.multiply",2)]
+| Div -> string_of_instrs [Call ("Math.divide",2)]
 | Access -> string_of_instrs [Call ("Memory.peek",1)]
 | Assign -> string_of_instrs [Call ("Memory.poke",2)]
 | Alloc -> string_of_instrs [Call ("Memory.alloc",1)]

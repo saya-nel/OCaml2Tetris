@@ -10,7 +10,7 @@ let ident_capitalize = ['A'-'Z'] ['a'-'z''A'-'Z''0'-'9''_']*
 let module_ident = ['A'-'Z'] ['a'-'z''A'-'Z''0'-'9''_']*
 
 rule token = parse
-| ['0'-'9']+ as lxm  { INT(int_of_string lxm) }
+| ("0x"?)['0'-'9']+ as lxm  { INT(int_of_string lxm) }
 | "type"             { TYPE }
 | "external"         { EXTERNAL } (* external int_of_string : string -> int = f *)
 | "true"             { BOOL(true) }

@@ -174,6 +174,7 @@ expr:
  | expression PLUS expression            { BinOp(Add,$1,$3) }
  | expression MINUS expression           { BinOp(Minus,$1,$3) }
  | expression TIMES expression           { BinOp(Mult,$1,$3) }
+ | expression DIV expression             { BinOp(Div,$1,$3) }
  | expression EQ expression              { BinOp(Eq,$1,$3) }
  | expression NEQ expression             { BinOp(Neq,$1,$3) }
  | expression GT expression              { BinOp(Gt,$1,$3) }

@@ -99,6 +99,7 @@ and bytecode_of_binop = function
 | Ast.Add -> [Op Add]
 | Ast.Minus -> [Op Sub]
 | Ast.Mult -> [Op Mult]
+| Ast.Div -> [Op Div]
 | Ast.Eq -> [Op Eq] 
 | Ast.Neq -> [Op Eq;Op Not] 
 | Ast.Gt -> [Op Gt]

@@ -110,6 +110,7 @@ and sprint_binop lvl = function
   | Add -> "+"
   | Minus -> "-"
   | Mult -> "*"
+  | Div -> "/"
   | Eq -> "="
   | Neq -> "<>"
   | Gt -> ">"

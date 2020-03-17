@@ -25,4 +25,4 @@ and segment =
 and label = string
 and fun_name = string
 
-and vm_operator = Add | Sub | Mult | Eq | Gt | Lt | And | Or | Not | Access | Assign | Alloc
+and vm_operator = Add | Sub | Mult | Div | Eq | Gt | Lt | And | Or | Not | Access | Assign | Alloc

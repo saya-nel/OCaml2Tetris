@@ -53,6 +53,7 @@ and binop =
   | Add
   | Minus
   | Mult
+  | Div
   | Lt
   | Le
   | Neq
