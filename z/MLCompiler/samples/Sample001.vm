@@ -1,9 +1,0 @@
-function Sample001.test 0
-push constant 42
-call Output.printInt 1
-pop temp 0
-pop temp 0
-pop temp 0
-call Output.println 0
-return
-
