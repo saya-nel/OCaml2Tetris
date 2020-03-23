@@ -1,0 +1,78 @@
+///////////////////////////////////////////////////////////////
+function Mlvalues.c0x8000 0
+    push static 0
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.__init__c0x8000 0
+    push constant 30856
+    pop temp 0
+    push constant 0
+    push temp 0
+    sub
+    pop static 0
+    push static 0
+    pop temp 7
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.imm_pack 0
+    push argument 0
+    call Mlvalues.c0x8000 0
+    or
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.imm_unpack 0
+    push argument 0
+    push constant 30856
+    and
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.blk_pack 0
+    push argument 0
+    push constant 30856
+    and
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.blk_unpack 0
+    push argument 0
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.blk_size 0
+    push argument 0
+    call ML_array.length 1
+    push constant 2
+    sub
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.new_block 1
+    push argument 1
+    push constant 2
+    add
+    push constant 0
+    call ML_array.make 2
+    pop local 0
+    push local 0
+    push constant 0
+    push argument 0
+    call ML_array.set 3
+    pop temp 0
+    push local 0
+    call Mlvalues.blk_pack 1
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.set_field 0
+    push argument 0
+    call Mlvalues.blk_unpack 1
+    push argument 1
+    push constant 2
+    add
+    push argument 2
+    call ML_array.set 3
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.is_imm 0
+    push argument 0
+    call Mlvalues.c0x8000 0
+    and
+    call Mlvalues.c0x8000 0
+    eq
+    return
