@@ -1,19 +1,21 @@
 #!/bin/bash
 
-# Dinstr launch
-# dune build src/bytecodeParser.exe 
-# cd samples
-# ocamlc -dinstr $@ &> res.txt 
-# cat res.txt | ../_build/default/src/bytecodeParser.exe
+# lancement make mini-ml
+cd mini-ml
+make
+cd ..
 
-# Obytelib launch
+# lancement obytelibParser
 dune build src/obytelibParser.exe
 cd samples
+ocamlc *.ml
+rm a.out
+rm *.cmi
 ../_build/default/src/obytelibParser.exe $@
-
 cd .. 
-# Clean folders
-# dune clean 
-# rm samples/*.cmi 
-# rm samples/a.out
-# rm samples/res.txt
+
+# lancement compilation vers mini-ml
+cd mini-ml
+mkdir generated_files
+./compile ../src/zam/mlvalues.ml ../src/zam/prims.ml ../src/zam/interp.ml
+cd ..

@@ -2,9 +2,6 @@ open OByteLib
 open OByteLib.Instr
 open Printf
 
-(* let labels = ref []
-let code = ref [] *)
-
 (* 
   Retourne l'op code d'une instruction donnée en string, si  
   l'instruciton n'existe pas, retourne int_of_string de l'argument  
@@ -259,20 +256,20 @@ let replace_labels_indexes (instrs : string list) : string list =
     | t::q -> (replace_label_index instrs t)::(aux q)
   in aux instrs
 
-(* écrit le tableau d'instructions dans un nouveau fichier src/vm.ml *)
+(* écrit le tableau d'instructions dans un nouveau fichier src/zam/interp.ml *)
 let write_instr_array (instr_array : string) : unit =
-  let oc = open_out "../src/vm.ml" in
+  let oc = open_out "../src/zam/interp.ml" in
     fprintf oc "(* etat de la vm *)\nlet code = %s\n" instr_array;
     close_out oc
 
 (* écrit le contenu du fichier src/vm_code.ml a la fin du fichier src/vm.ml *)
 let write_vm_code () : unit =
-  (* string du fichier src/vm_code.ml *)
-  let ic = open_in "../src/vm_code.ml" in
+  (* string to_write du fichier src/zam/interp_code.ml *)
+  let ic = open_in "../src/zam/interp_code.ml" in
   let to_write = really_input_string ic (in_channel_length ic) in
   close_in ic;
   (* on écrit le contenu de to_write dans src/vm.ml *)
-  let oc = open_out_gen [Open_append] 0o666 "../src/vm.ml" in
+  let oc = open_out_gen [Open_append] 0o666 "../src/zam/interp.ml" in
     fprintf oc "%s\n" to_write
 
 
