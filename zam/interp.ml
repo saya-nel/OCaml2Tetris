@@ -1,11 +1,3 @@
-(* etat de la vm *)
-let code = [|102; 10; 132; 3; 10; 102; 127; 2; 84; 11; 99; 19; 1; 58; 57; 0|]
-
-(* let code = [|99;100;101;102;103;42;143|] *)
-
-(* let code = [|103;42;9;103;17;123;9;0;143|] [|102; 10; 132; 3; 10; 102; 127; 2; 84; 11; 99; 19; 1; 58; 57; 0|] *)
-(*  const 42 ; push ; const 17 ; ltint ; push ; acc0 ; stop *)
-
 let stack_size = 1024
 
 let pc = ref 0
@@ -39,9 +31,9 @@ let interp () =
   (* env := make_empty_env (); *)
   sp := 0;
   print_int (!acc);
-  while !pc < Array.length code do
+  while !pc < Array.length Input.code do
     debug_print_state ();
-    match code.(!pc) with
+    match Input.code.(!pc) with
     | 0 (* ACC0 *) -> acc := stack.(0); incr pc
     | 1 (* ACC1 *) -> acc := stack.(1); incr pc
     | 2 (* ACC2 *) -> acc := stack.(2); incr pc
@@ -52,7 +44,7 @@ let interp () =
     | 7 (* ACC7 *) -> acc := stack.(7); incr pc   
     | 8 (* ACC *) -> 
        incr pc;
-       let n = code.(!pc) in
+       let n = Input.code.(!pc) in
        if n >= Array.length stack || n < 0 then failwith "stack pleine"
        else acc := stack.(n);
        incr pc
@@ -76,17 +68,17 @@ let interp () =
       incr sp; stack.(!sp) <- !acc; acc := stack.(7); incr pc
     | 18 (* PUSHACC *) -> 
       incr pc; 
-      let n = code.(!pc) in
+      let n = Input.code.(!pc) in
       incr sp; stack.(!sp) <- !acc; acc := stack.(n); incr pc
     | 19 (* POP *) -> 
       incr pc;
-      let n = code.(!pc) in 
+      let n = Input.code.(!pc) in 
       if n >= Array.length stack || n < 0 then failwith "Stack pleine "
       else sp := !sp - n;
       incr pc
     | 20 (* ASSIGN *) -> 
       incr pc;
-      let n = code.(!pc) in 
+      let n = Input.code.(!pc) in 
       if n >= Array.length stack || n < 0 then failwith "stack pleine"
       else begin stack.(n) <- !acc;
                   acc := 0
@@ -98,7 +90,7 @@ let interp () =
     | 24 (* ENVACC4 *) -> acc := Mlvalues.get_field (!env) 4; incr pc
     | 25 (* ENVACC *) -> 
       incr pc;
-      let n = code.(!pc) in 
+      let n = Input.code.(!pc) in 
       acc := Mlvalues.get_field (!env) n;
       incr pc
     | 26 (* PUSHENVACC1 *) ->
@@ -111,26 +103,26 @@ let interp () =
       incr sp; stack.(!sp) <- !acc; acc := Mlvalues.get_field (!env) 4; incr pc
     | 30 (* PUSHENVACC *) -> (* Equivalent to PUSH then ENVACC *)
       incr pc;
-      let n = code.(!pc) in
+      let n = Input.code.(!pc) in
       incr sp; stack.(!sp) <- !acc; 
       acc := Mlvalues.get_field (!env) n;
       incr pc
     | 31 (* PUSH-RETADDR *) ->
       incr pc;
-      let ofs = code.(!pc) in
+      let ofs = Input.code.(!pc) in
       failwith "todo"
     | 32 (* APPLY *) -> 
       incr pc;
-      let args = code.(!pc) in
+      let args = Input.code.(!pc) in
       extra_args := (!args) - 1;
       pc := Mlvalues.addr_closure (acc); (* todo ? *)
       env := Mlvalues.env_closure (acc)
     failwith "todo"
     | 62 (* MAKEBLOCK *) -> 
       incr pc;
-      let tag = code.(!pc) in
+      let tag = Input.code.(!pc) in
       incr pc;
-      let sz = code.(!pc) in     (* attention à l'ordre des arguments (tag et pc) dans la pile *)
+      let sz = Input.code.(!pc) in     (* attention à l'ordre des arguments (tag et pc) dans la pile *)
       let blk = Mlvalues.new_block tag sz in
       Mlvalues.set_field blk 0 (!acc);
       for i = 1 to sz - 1 do 
@@ -148,11 +140,11 @@ let interp () =
     | 70 (* GETFIELD3 *) -> acc := Mlvalues.get_field (!acc) 4; incr pc
     | 71 (* GETFIELD *) ->
       incr pc;
-      let n = code.(!pc) in 
+      let n = Input.code.(!pc) in 
       acc := Mlvalues.get_field (!acc) n;
       incr pc
     
-    (* GETFLOATFIELD (opcode: 72) *)
+    (* GETFLOATFIELD (opInput.code: 72) *)
     
     | 73 (* SETFIELD0 *) ->
       Mlvalues.set_field (!acc) 0 stack.(!sp);
@@ -172,7 +164,7 @@ let interp () =
       incr pc
     | 77 (* SETFIELD *) ->
       incr pc;
-      let n = code.(!pc) in 
+      let n = Input.code.(!pc) in 
       Mlvalues.set_field (!acc) n stack.(!sp);
       decr sp;
       incr pc
@@ -183,18 +175,18 @@ let interp () =
       incr pc
     | 84 (* BRANCH *) -> 
        incr pc;
-       let n = code.(!pc) in 
-       if n >= Array.length code then failwith "Instr array out of bounds"
+       let n = Input.code.(!pc) in 
+       if n >= Array.length Input.code then failwith "Instr array out of bounds"
        else pc := !pc + n
     | 85 (* BRANCHIF *) -> 
        incr pc;
-       let n = code.(!pc) in 
-       if n >= Array.length code then failwith "Instr array out of bounds"
+       let n = Input.code.(!pc) in 
+       if n >= Array.length Input.code then failwith "Instr array out of bounds"
        else pc := if Mlvalues.long_val (!acc) = 1 then (!pc) + n else !pc + 1
     | 85 (* BRANCHIFNOT *) -> 
        incr pc;
-       let n = code.(!pc) in 
-       if n >= Array.length code then failwith "Instr array out of bounds"
+       let n = Input.code.(!pc) in 
+       if n >= Array.length Input.code then failwith "Instr array out of bounds"
        else pc := if Mlvalues.long_val (!acc) = 0 then (!pc) + n else !pc + 1
     
     (* | 92 à 98 -> interop avec C *)
@@ -212,7 +204,7 @@ let interp () =
        incr pc
     | 103 (* ConstInt *) -> 
        incr pc;
-       let n = code.(!pc) in
+       let n = Input.code.(!pc) in
        acc := Mlvalues.val_long n;
        incr pc
     | 109 (*NEGINT*) -> 
@@ -288,7 +280,7 @@ let interp () =
        incr pc
     | 127 (* OFFSETINT *) -> 
       incr pc; 
-      let ofs = code.(!pc) in
+      let ofs = Input.code.(!pc) in
       acc := Prims.addint ofs (!acc);
       incr pc
     | 128 (* OFFSETREF *) -> failwith "todo"
@@ -296,39 +288,39 @@ let interp () =
     | 130 (* GETMETHOD *) -> failwith "todo"
     | 131 (* BEQ *) -> 
       incr pc; 
-      let v = code.(!pc) in
+      let v = Input.code.(!pc) in
       incr pc;
-      let ofs = code.(!pc) in
+      let ofs = Input.code.(!pc) in
       pc := (!pc) + (if Prims.compare_imm v (!acc) = 0 then ofs else 1)
     | 132 (* BNEQ *) ->
       incr pc; 
-      let v = code.(!pc) in
+      let v = Input.code.(!pc) in
       incr pc;
-      let ofs = code.(!pc) in
+      let ofs = Input.code.(!pc) in
       pc := (!pc) + (if Prims.compare_imm v (!acc) <> 0 then ofs else 1)
     | 133 (* BLTINT *) ->
       incr pc; 
-      let v = code.(!pc) in
+      let v = Input.code.(!pc) in
       incr pc;
-      let ofs = code.(!pc) in
+      let ofs = Input.code.(!pc) in
       pc := (!pc) + (if Prims.compare_imm v (!acc) < 0 then ofs else 1)
     | 134 (* BLEINT *) ->
       incr pc; 
-      let v = code.(!pc) in
+      let v = Input.code.(!pc) in
       incr pc;
-      let ofs = code.(!pc) in
+      let ofs = Input.code.(!pc) in
       pc := (!pc) + (if Prims.compare_imm v (!acc) <= 0 then ofs else 1)
     | 135 (* BGTINT *) ->
       incr pc; 
-      let v = code.(!pc) in
+      let v = Input.code.(!pc) in
       incr pc;
-      let ofs = code.(!pc) in
+      let ofs = Input.code.(!pc) in
       pc := (!pc) + (if Prims.compare_imm v (!acc) > 0 then ofs else 1)
     | 136 (* BGEINT *) ->
       incr pc; 
-      let v = code.(!pc) in
+      let v = Input.code.(!pc) in
       incr pc;
-      let ofs = code.(!pc) in
+      let ofs = Input.code.(!pc) in
       pc := (!pc) + (if Prims.compare_imm v (!acc) >= 0 then ofs else 1)
     | 137 (* ULTINT *) ->
       acc := Prims.ultint stack.(!sp) (!acc);
@@ -338,8 +330,9 @@ let interp () =
       acc := Prims.ugeint stack.(!sp) (!acc);
       decr sp;
       incr pc
-    | 143 (* STOP *) -> pc := Array.length code
+    | 143 (* STOP *) -> pc := Array.length Input.code
   done
 
 let () =
   interp ()
+

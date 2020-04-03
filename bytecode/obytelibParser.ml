@@ -257,21 +257,10 @@ let replace_labels_indexes (instrs : string list) : string list =
   in aux instrs
 
 (* écrit le tableau d'instructions dans un nouveau fichier src/zam/interp.ml *)
-let write_instr_array (instr_array : string) : unit =
-  let oc = open_out "../src/zam/interp.ml" in
+let write_instr_array ?(dst="../zam/input.ml") (instr_array : string) : unit =
+  let oc = open_out dst in
     fprintf oc "(* etat de la vm *)\nlet code = %s\n" instr_array;
     close_out oc
-
-(* écrit le contenu du fichier src/vm_code.ml a la fin du fichier src/vm.ml *)
-let write_vm_code () : unit =
-  (* string to_write du fichier src/zam/interp_code.ml *)
-  let ic = open_in "../src/zam/interp_code.ml" in
-  let to_write = really_input_string ic (in_channel_length ic) in
-  close_in ic;
-  (* on écrit le contenu de to_write dans src/vm.ml *)
-  let oc = open_out_gen [Open_append] 0o666 "../src/zam/interp.ml" in
-    fprintf oc "%s\n" to_write
-
 
 (* MAIN *)
 let () = 
@@ -302,11 +291,8 @@ let () =
   (* on recupère le tableau serializé, avec instructions remplacés par op codes *)
   let serial = string_list_to_string to_send in
 
-   (* on écrit dans le fichier src/vm_code.ml le tableau d'instructions *)
-  write_instr_array serial;
-
-  (* on écrit a la fin du fichier le contenu de src/vm_code.ml *)
-  write_vm_code ()
+   (* on écrit dans le fichier ../zam/input.ml le tableau d'instructions *)
+  write_instr_array ~dst:"../zam/input.ml" serial
 
   (* pour afficher le bytecode :  *)
   (* Code.print data symb prim stdout code ; *)

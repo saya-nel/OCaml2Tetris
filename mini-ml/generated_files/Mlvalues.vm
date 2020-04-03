@@ -1,0 +1,109 @@
+///////////////////////////////////////////////////////////////
+function Mlvalues.val_long 0
+    push argument 0
+    push constant 0
+    push constant 32767
+    sub
+    or
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.long_val 0
+    push argument 0
+    push constant 32767
+    and
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.blk_pack 0
+    push argument 0
+    push constant 32767
+    and
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.blk_unpack 0
+    push argument 0
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.blk_size 0
+    push argument 0
+    call ML_array.length 1
+    push constant 2
+    sub
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.is_imm 0
+    push argument 0
+    push constant 0
+    push constant 32767
+    sub
+    and
+    push constant 0
+    push constant 32767
+    sub
+    eq
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.size 0
+    push argument 0
+    call ML_array.length 1
+    push constant 2
+    sub
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.unit 0
+    push static 0
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.__init__unit 0
+    push constant 0
+    pop static 0
+    push static 0
+    pop temp 7
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.new_block 1
+    push argument 1
+    push constant 2
+    add
+    push constant 0
+    call ML_array.make 2
+    pop local 0
+    push local 0
+    push constant 0
+    push argument 0
+    call ML_array.set 3
+    pop temp 0
+    push local 0
+    call Mlvalues.blk_pack 1
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.get_field 0
+    push argument 0
+    call Mlvalues.blk_unpack 1
+    push argument 1
+    push constant 2
+    add
+    call ML_array.get 2
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.set_field 0
+    push argument 0
+    call Mlvalues.blk_unpack 1
+    push argument 1
+    push constant 2
+    add
+    push argument 2
+    call ML_array.set 3
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.addr_closure 0
+    push argument 0
+    push constant 1
+    call Mlvalues.get_field 2
+    call Mlvalues.long_val 1
+    return
+///////////////////////////////////////////////////////////////
+function Mlvalues.env_closure 0
+    push argument 0
+    push constant 2
+    call Mlvalues.get_field 2
+    return

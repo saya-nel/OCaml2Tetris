@@ -1,21 +1,20 @@
 #!/bin/bash
 
 # lancement make mini-ml
-cd mini-ml
-make
-cd ..
+
+make -C mini-ml
 
 # lancement obytelibParser
-dune build src/obytelibParser.exe
+dune build bytecode/obytelibParser.exe
 cd samples
 ocamlc *.ml
 rm a.out
 rm *.cmi
-../_build/default/src/obytelibParser.exe $@
+../_build/default/bytecode/obytelibParser.exe $@
 cd .. 
 
 # lancement compilation vers mini-ml
 cd mini-ml
 mkdir generated_files
-./compile ../src/zam/mlvalues.ml ../src/zam/prims.ml ../src/zam/interp.ml
+./compile ../zam/mlvalues.ml ../zam/prims.ml ../zam/input.ml ../zam/interp.ml
 cd ..

@@ -102,7 +102,7 @@ and sprint_exp lvl = function
 and sprint_constant lvl = function
   | Unit -> sptf "()"
   | Bool b -> sptf "%b" b
-  | Int n -> sptf "%d" n
+  | Int n -> sptf (if n >= 0 then "%d" else "(%d)") n
   | Char c -> sptf "%c" c
   | Constr name -> name
   | Array_empty -> sptf "[||]"
