@@ -1,8 +1,5 @@
 (* etat de la vm *)
 let code = [|102; 10; 132; 3; 10; 102; 127; 2; 84; 11; 99; 19; 1; 58; 57; 0|]
-(* let code = [|103;42;9;103;17;123;9;0;143|] [|102; 10; 132; 3; 10; 102; 127; 2; 84; 11; 99; 19; 1; 58; 57; 0|] *)
-(*  const 42 ; push ; const 17 ; ltint ; push ; acc0 ; stop *)
-(* etat de la vm *)
 
 (* let code = [|99;100;101;102;103;42;143|] *)
 
@@ -32,7 +29,7 @@ let debug_print_state () =
   print_int (Mlvalues.long_val (!acc));
   print_string " sp: "; 
   print_int (!sp);
-  print_string "\n"
+  print_newline ()
 
 let interp () =
   let extra_args = ref 0 in

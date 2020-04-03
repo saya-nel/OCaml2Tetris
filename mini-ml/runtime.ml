@@ -40,18 +40,9 @@ let primitives () =
    "decr",("ML_pervasives.decr");
    "print_char",("ML_pervasives.print_char");
    "print_string",("ML_pervasives.print_string");
-   "print_int", ("ML_pervasives.print_int") ] in
-  let ml_pervasives = 
-    ["Pervasives.exit",("ML_pervasives.exit");
-     "Pervasives.failwith",("ML_pervasives.failwith");
-     "Pervasives.ref",("ML_pervasives.ref");
-     "Pervasives.ref_contents",("ML_pervasives.ref_contents");
-     "Pervasives.ref_set_contents",("ML_pervasives.ref_set_contents");
-     "Pervasives.incr",("ML_pervasives.incr");
-     "Pervasives.decr",("ML_pervasives.decr");
-     "Pervasives.print_char",("ML_pervasives.print_char");
-     "Pervasives.print_string",("ML_pervasives.print_string");
-     "Pervasives.print_int", ("ML_pervasives.print_int") ] in
+   "print_int", ("ML_pervasives.print_int");
+   "print_newline", ("ML_pervasives.print_newline") ] in
+  let ml_pervasives = List.map (fun (f,c) -> ("Pervasives." ^ f,c)) openned_ml_pervasives in
   let ml_array =
    ["Array.length", ("ML_array.length");
     "Array.set", ("ML_array.set");

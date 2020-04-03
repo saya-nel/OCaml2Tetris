@@ -28,7 +28,7 @@ let debug_print_state () =
   print_int (Mlvalues.long_val (!acc));
   print_string " sp: "; 
   print_int (!sp);
-  print_string "\n"
+  print_newline ()
 
 let interp () =
   let extra_args = ref 0 in

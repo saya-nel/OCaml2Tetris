@@ -88,7 +88,7 @@ and bytecode_of_exp lvl = function
 | Kast.GFun (name) -> [Call (name,0)] (* !!!!! variables globales, bof *)
 and bytecode_of_constant = function
 | Kast.Unit -> [Push (Constant 0)]
-| Kast.Int n -> [Push (Constant n)]
+| Kast.Int n -> if n >= 0 then [Push (Constant n)] else [Push (Constant 0); Push (Constant (- n)); Op(Sub)]
 | Kast.Array_empty -> [Push (Constant 0)]
 | Kast.Bool b -> if not b then [Push(Constant 0)] else [Push(Constant 0);Op(Not)]
 and bytecode_of_variable = function

@@ -7,17 +7,15 @@ type t = int
 
 (* !!! la notation 0x... de mini-ml est erroné !!! *)
 
-let c0x8000 = (- 32767) (* (- 0x7888) *)
+let val_long (n : t) : t = n lor  0x8000 (* pack *)
+let long_val (n : t) : t = n land 0x7FFF;; (* unpack *)
 
-let val_long (n : t) : t = n lor c0x8000      (* pack *)    (* !! constante à convertir en compléments à deux sur 16bit ?? *)
-let long_val (n : t) : t = n land 32767 (* 0x7888 *)      (* unpack *)
-
-let blk_pack (n : t) : t = n land 0x7888
+let blk_pack (n : t) : t = n land 0x7FFF
 let blk_unpack (n : t) : t = n
 
 let blk_size (b : t) = Array.length b - 2
 
-let is_imm (n : t) : bool = (n land c0x8000) = c0x8000
+let is_imm (n : t) : bool = (n land 0x8000) = 0x8000
 
 let size b = Array.length b - 2 
 
