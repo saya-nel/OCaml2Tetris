@@ -2,14 +2,22 @@
 let code = [|102; 10; 132; 3; 10; 102; 127; 2; 84; 11; 99; 19; 1; 58; 57; 0|]
 (* let code = [|103;42;9;103;17;123;9;0;143|] [|102; 10; 132; 3; 10; 102; 127; 2; 84; 11; 99; 19; 1; 58; 57; 0|] *)
 (*  const 42 ; push ; const 17 ; ltint ; push ; acc0 ; stop *)
+(* etat de la vm *)
+
+(* let code = [|99;100;101;102;103;42;143|] *)
+
+(* let code = [|103;42;9;103;17;123;9;0;143|] [|102; 10; 132; 3; 10; 102; 127; 2; 84; 11; 99; 19; 1; 58; 57; 0|] *)
+(*  const 42 ; push ; const 17 ; ltint ; push ; acc0 ; stop *)
 
 let stack_size = 1024
 
-let sp = ref 0
-let stack = Array.make stack_size (Mlvalues.imm_pack 0)
-
 let pc = ref 0
-let acc = ref (Mlvalues.imm_pack 0)
+
+let sp = ref 0
+let stack = Array.make stack_size (Mlvalues.val_long 0)
+
+let acc = ref (Mlvalues.val_long 0)
+let env = ref (Mlvalues.val_long 0)
 
 (* *********************************** *)
 
@@ -21,15 +29,20 @@ let debug_print_state () =
   print_string " pc: "; 
   print_int (!pc);
   print_string " acc: "; 
-  print_int (Mlvalues.imm_unpack (!acc));
+  print_int (Mlvalues.long_val (!acc));
   print_string " sp: "; 
   print_int (!sp);
   print_string "\n"
 
 let interp () =
-  acc := 17;
+  let extra_args = ref 0 in
+  let trap_sp = ref 0 in
+
+  acc := 0;
+  (* env := make_empty_env (); *)
+  sp := 0;
   print_int (!acc);
-  while !pc >= 0 do
+  while !pc < Array.length code do
     debug_print_state ();
     match code.(!pc) with
     | 0 (* ACC0 *) -> acc := stack.(0); incr pc
@@ -75,19 +88,52 @@ let interp () =
       else sp := !sp - n;
       incr pc
     | 20 (* ASSIGN *) -> 
-       incr pc;
-       let n = code.(!pc) in 
-       if n >= Array.length stack || n < 0 then failwith "stack pleine"
-       else begin stack.(n) <- !acc;
+      incr pc;
+      let n = code.(!pc) in 
+      if n >= Array.length stack || n < 0 then failwith "stack pleine"
+      else begin stack.(n) <- !acc;
                   acc := 0
             end;
-       incr pc (* | 21 ENVACC1 -> *)
-
+       incr pc 
+    | 21 (* ENVACC1 *) -> acc := Mlvalues.get_field (!env) 1; incr pc
+    | 22 (* ENVACC2 *) -> acc := Mlvalues.get_field (!env) 2; incr pc
+    | 23 (* ENVACC3 *) -> acc := Mlvalues.get_field (!env) 3; incr pc
+    | 24 (* ENVACC4 *) -> acc := Mlvalues.get_field (!env) 4; incr pc
+    | 25 (* ENVACC *) -> 
+      incr pc;
+      let n = code.(!pc) in 
+      acc := Mlvalues.get_field (!env) n;
+      incr pc
+    | 26 (* PUSHENVACC1 *) ->
+      incr sp; stack.(!sp) <- !acc; acc := Mlvalues.get_field (!env) 1; incr pc
+    | 27 (* PUSHENVACC2 *) ->
+      incr sp; stack.(!sp) <- !acc; acc := Mlvalues.get_field (!env) 2; incr pc
+    | 28 (* PUSHENVACC3 *) ->
+      incr sp; stack.(!sp) <- !acc; acc := Mlvalues.get_field (!env) 3; incr pc
+    | 29 (* PUSHENVACC4 *) ->
+      incr sp; stack.(!sp) <- !acc; acc := Mlvalues.get_field (!env) 4; incr pc
+    | 30 (* PUSHENVACC *) -> (* Equivalent to PUSH then ENVACC *)
+      incr pc;
+      let n = code.(!pc) in
+      incr sp; stack.(!sp) <- !acc; 
+      acc := Mlvalues.get_field (!env) n;
+      incr pc
+    | 31 (* PUSH-RETADDR *) ->
+      incr pc;
+      let ofs = code.(!pc) in
+      failwith "todo"
+    | 32 (* APPLY *) -> 
+      incr pc;
+      let args = code.(!pc) in
+      extra_args := (!args) - 1;
+      pc := Mlvalues.addr_closure (acc); (* todo ? *)
+      env := Mlvalues.env_closure (acc)
+    failwith "todo"
     | 62 (* MAKEBLOCK *) -> 
       incr pc;
       let tag = code.(!pc) in
       incr pc;
-      let sz = code.(!pc) in
+      let sz = code.(!pc) in     (* attention à l'ordre des arguments (tag et pc) dans la pile *)
       let blk = Mlvalues.new_block tag sz in
       Mlvalues.set_field blk 0 (!acc);
       for i = 1 to sz - 1 do 
@@ -95,20 +141,82 @@ let interp () =
       done;
       acc := blk;
       incr pc
-    | 84 (* Branch *) -> 
+
+  (********* MAKEBLOCK 1 2 3 ****************)
+
+
+    | 67 (* GETFIELD0 *) -> acc := Mlvalues.get_field (!acc) 0; incr pc
+    | 68 (* GETFIELD1 *) -> acc := Mlvalues.get_field (!acc) 1; incr pc
+    | 69 (* GETFIELD2 *) -> acc := Mlvalues.get_field (!acc) 2; incr pc 
+    | 70 (* GETFIELD3 *) -> acc := Mlvalues.get_field (!acc) 4; incr pc
+    | 71 (* GETFIELD *) ->
+      incr pc;
+      let n = code.(!pc) in 
+      acc := Mlvalues.get_field (!acc) n;
+      incr pc
+    
+    (* GETFLOATFIELD (opcode: 72) *)
+    
+    | 73 (* SETFIELD0 *) ->
+      Mlvalues.set_field (!acc) 0 stack.(!sp);
+      decr sp;
+      incr pc 
+    | 74 (* SETFIELD1 *) ->
+      Mlvalues.set_field (!acc) 1 stack.(!sp);
+      decr sp;
+      incr pc 
+    | 75 (* SETFIELD2 *) ->
+      Mlvalues.set_field (!acc) 2 stack.(!sp);
+      decr sp;
+      incr pc    
+    | 76 (* SETFIELD3 *) ->
+      Mlvalues.set_field (!acc) 3 stack.(!sp);
+      decr sp;
+      incr pc
+    | 77 (* SETFIELD *) ->
+      incr pc;
+      let n = code.(!pc) in 
+      Mlvalues.set_field (!acc) n stack.(!sp);
+      decr sp;
+      incr pc
+
+
+    | 79 (* VECTLENGTH *) -> 
+      acc := Mlvalues.val_long (Mlvalues.size acc);
+      incr pc
+    | 84 (* BRANCH *) -> 
        incr pc;
        let n = code.(!pc) in 
        if n >= Array.length code then failwith "Instr array out of bounds"
        else pc := !pc + n
-    | 85 (* Branchif *) -> 
+    | 85 (* BRANCHIF *) -> 
        incr pc;
        let n = code.(!pc) in 
        if n >= Array.length code then failwith "Instr array out of bounds"
-       else pc := if Mlvalues.imm_unpack (!acc) = 1 then (!pc) + n else !pc + 1
+       else pc := if Mlvalues.long_val (!acc) = 1 then (!pc) + n else !pc + 1
+    | 85 (* BRANCHIFNOT *) -> 
+       incr pc;
+       let n = code.(!pc) in 
+       if n >= Array.length code then failwith "Instr array out of bounds"
+       else pc := if Mlvalues.long_val (!acc) = 0 then (!pc) + n else !pc + 1
+    
+    (* | 92 à 98 -> interop avec C *)
+    | 99 (* Const0 *) -> 
+       acc := Mlvalues.val_long 0;
+       incr pc
+    | 100 (* Const1 *) -> 
+       acc := Mlvalues.val_long 1;
+       incr pc
+    | 101 (* Const2 *) -> 
+       acc := Mlvalues.val_long 2;
+       incr pc
+    | 102 (* Const3 *) -> 
+       acc := Mlvalues.val_long 3;
+       incr pc
     | 103 (* ConstInt *) -> 
        incr pc;
        let n = code.(!pc) in
-       acc := Mlvalues.imm_pack n;
+       acc := Mlvalues.val_long n;
        incr pc
     | 109 (*NEGINT*) -> 
        acc := Prims.negint acc;
@@ -233,9 +341,8 @@ let interp () =
       acc := Prims.ugeint stack.(!sp) (!acc);
       decr sp;
       incr pc
-    | 143 (* STOP *) -> pc := -1
+    | 143 (* STOP *) -> pc := Array.length code
   done
 
 let () =
   interp ()
-

@@ -37,7 +37,7 @@ and sprint_exp lvl = function
   | Ident name -> name
   | Let(name,e1,e2) -> let w = sptf "(let %s = " name in
                        let z = get_indent_level w lvl in
-                       sptf "%s%s in%s%s)" w
+                       sptf "%s%s in\n%s%s)" w
                          (sprint_exp (lvl + z) e1)
                          (indent_string (next lvl))
                          (sprint_exp (next lvl) e2)
@@ -89,7 +89,7 @@ and sprint_exp lvl = function
               | Case (c,e) ->
                  let s = sptf "%s| %s -> "
                            (indent_string lvl) (sprint_constant lvl c) in
-                 let lvl' = get_indent_level s lvl in
+                 let lvl' = get_indent_level s 0 in
                  s ^ (sprint_exp lvl' e)
               | Otherwise (e) ->
                  let s = sptf "%s| _ -> "
