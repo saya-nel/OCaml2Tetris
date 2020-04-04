@@ -197,7 +197,7 @@ module Smap = Map.Make(String)
 
 type env = { bindings : schema Smap.t; fvars : Vset.t }
 
-let empty = { bindings = Smap.empty; fvars = Vset.empty }
+let empty_env = { bindings = Smap.empty; fvars = Vset.empty }
 
 let add gen x t env =
   let vt = fvars t in

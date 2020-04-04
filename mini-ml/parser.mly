@@ -6,7 +6,7 @@
 
 /* (* reserved words *) */
 %token LET WHERE IN IF THEN ELSE ASSERT WHILE FOR TO DO DONE MATCH WITH PIPE BEGIN END EXTERNAL AND_KW CONS
-%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY
+%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT
 
 %token <string> IDENT IDENT_CAPITALIZE VM_IDENT
 %token <string> STRING
@@ -27,6 +27,8 @@
 %nonassoc IN
 %nonassoc ARRAY_OPEN ARRAY_CLOSE
 
+/* ATAT */
+
 %right COLON /* lowest precedence */ 
 %nonassoc  IF
 %right     LEFT_ARROW ASSIGN
@@ -38,7 +40,7 @@
 %left      PLUS MINUS     
 %left      LAND
 %left      LOR 
-left TIMES DIV              
+%left TIMES DIV              
 %left      DOT  
 %left      ACCESS                
 %nonassoc  IDENT LPAREN RPAREN BEGIN END        /* highest precedence */        
@@ -197,6 +199,7 @@ expr:
 app:
  | exp                                   { $1 }
  | exp exprs                             { App($1,$2) }
+ | exp ATAT app                          { App($1,[$3]) }
  | REF exp                               { Ref ($2)} 
  | ASSERT exp                            { Assert ($2) }
  ;
@@ -210,7 +213,6 @@ exp:
 | LPAREN seq RPAREN                     { $2 }
 | BEGIN seq END                         { $2 }
 | constant                              { Constant($1) }
-| STRING                                { String($1) }
 | IDENT                                 { Ident($1) }
 | ident_in_mod                          { Ident($1) }
 | ARRAY_OPEN array_content ARRAY_CLOSE  { Array_create($2) }
@@ -224,6 +226,7 @@ constant:
  | INT                                   { Int($1) }
  | CHAR                                  { Char($1) }
  | BOOL                                  { Bool($1) }
+ | STRING                                { String($1) }
  | constructor                           { Constr($1) }
  | LBRACKET RBRACKET                     { List_empty }
  | ARRAY_OPEN ARRAY_CLOSE                { Array_empty }

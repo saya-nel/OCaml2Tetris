@@ -1,6 +1,5 @@
 ///////////////////////////////////////////////////////////////
 function Main.main 0
-    call M1.__init____voidExpr1 0
-    call M1.__init__g 0
+    call Mlvalues.__init__unit 0
     push constant 0
     return

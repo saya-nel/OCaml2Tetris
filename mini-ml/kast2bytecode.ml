@@ -73,6 +73,7 @@ and bytecode_of_exp lvl = function
                       let arity = List.length args in
                       mapcat (bytecode_of_exp (lvl+1)) args @ 
                       (match f with
+                       | Kast.GFun ("ML_obj.magic") -> [] (* cas particulier : fonction pour influer sur le typeur => pas de calcul *)
                        | Kast.GFun (name) -> [Call(name,arity)]
                        | _ -> raise (Cannot_generate_bytecode "limite d'implantation : seules les fonctions globales peuvent être appliquées")))
 | Kast.BinOp(op,e1,e2) -> comment "<binop>" lvl (

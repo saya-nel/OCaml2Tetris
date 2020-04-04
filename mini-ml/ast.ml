@@ -28,7 +28,6 @@ and exp =
   | Ref of (exp)
   | Ref_access of (exp)
   | Ref_assign of (exp * exp)
-  | String of string
   | Seq of (exp * exp)
   | While of (exp * exp)
   | For of (name * exp * exp * exp)
@@ -40,6 +39,7 @@ and constant =
   | Bool of bool
   | Int of int
   | Char of char
+  | String of string
   | Constr of string
   | List_empty
   | Array_empty

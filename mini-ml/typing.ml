@@ -3,35 +3,32 @@
 open Types
 open Ast
 
-let init primitives =
-  List.fold_right (fun (x,c,ty) env -> add true x ty env) primitives empty;;
+let initial_env primitives =
+  List.fold_right (fun (x,c,ty) env -> add true x ty env) primitives empty_env;;
 
 (* algorithme W *)
-let rec w env = function
-| [] -> Tunit
-| d::ds -> let xs,ts,env' = w_dec env d in
-     List.iter2 (fun x t -> Printf.printf "%s :- %s\n" x (print t)) xs ts; 
-     w env' ds
-
+let rec w env decs = function
+| [] -> decs
+| d::ds -> let xts = w_dec env d in
+     List.iter (fun (x,t) -> Printf.printf "%s : %s\n" x (print t)) xts; 
+     let env' = List.fold_left (fun env (x,t) -> add true x (canon t) env) env xts in
+     w env' (decs @ xts) ds 
 and w_dec env = function
 | Exp (e) -> 
   let t = w_exp env e in 
-  (["_"],[t],env)
-| DefVar (x,e)-> 
+  ([("_",t)])
+| DefVar (x,e) -> 
   let t = w_exp env e in
-  let env' = add true x t env in
-
-  ([x],[t],env')
+  ([(x,t)])
 | DefFun funs -> 
   let funtys = List.map (w_fun env) funs in
-  let env' = List.fold_left2 (fun env t (f,_,_) -> add true f t env) env funtys funs in 
-  (List.map (fun (f,_,_) -> f) funs, funtys,env')
+  (List.map2 (fun (f,_,_) tf -> (f,tf)) funs funtys)
 | DefFunRec funs -> 
   let env' = List.fold_left (fun env ((x,args,e) as f) -> 
                                let t = w_funrec env f in 
                                add true x t env) env funs in
-  (List.map (fun (f,_,_) -> f) funs,List.map (fun (x,_,_) -> find x env') funs,env')
-| Type _ -> ([],[],env)(* failwith "todo" *)
+  List.map (fun (x,_,_) -> (x,find x env')) funs
+| Type _ -> ([])(* failwith "todo" *)
 and w_fun env (f,args,e) = 
   let env' = List.fold_left 
                (fun env xi -> 
@@ -173,6 +170,7 @@ and w_constant = function
 | Bool _ -> Tbool
 | Int _ -> Tint 
 | Char _ -> Tchar
+| String _ -> Tstring
 | List_empty -> let v = Tvar (V.create ()) in Tlist v
 | Array_empty -> let v = Tvar (V.create ()) in Tarray v
 | Constr _ -> failwith "todo" 
@@ -197,7 +195,11 @@ and w_unop = function
 | UMinus -> Tarrow(Tint,Tint)
 | Not -> Tarrow(Tbool,Tbool)
 
-let typeof prog prims = canon (w (init prims) prog)
+(* initial_env prims *) 
 
-let type_check prog prims = 
-  try let _ = typeof prog prims in true with Not_found | UnificationFailure _ -> false
+let type_check Ast.{decls;mod_name} env = 
+  try let decs = w env [] decls in 
+      let env = List.fold_left (fun env (x,t) -> 
+        add true (mod_name ^ "." ^ x) (canon t) env) env decs
+      in 
+  Some env with Not_found | UnificationFailure _ -> None

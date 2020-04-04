@@ -22,8 +22,8 @@ let link_runtime dir =
   mv "stdlib/ML_internal.vm" (Filename.concat dir "ML_internal.vm");
   mv "stdlib/ML_array.vm" (Filename.concat dir "ML_array.vm");
   mv "stdlib/ML_pervasives.vm" (Filename.concat dir "ML_pervasives.vm");
-  mv "stdlib/ML_string.vm" (Filename.concat dir "ML_string.vm")
-
+  mv "stdlib/ML_string.vm" (Filename.concat dir "ML_string.vm");
+  mv "stdlib/ML_obj.vm" (Filename.concat dir "ML_obj.vm")
  
   let init dir = 
     link_test_file dir;
@@ -51,7 +51,7 @@ let link_runtime dir =
 
   let ty_internal_snd = 
    let a,b = v (), v() in 
-   Tarrow(Tproduct(a,b),a)
+   Tarrow(Tproduct(a,b),b)
 
   let ty_exit = 
     Tarrow(Tint,v())
@@ -129,6 +129,9 @@ let link_runtime dir =
 
   let ty_string_set =
     Tarrow(Tstring,Tarrow(Tint,Tarrow(Tchar,Tunit)))
+
+  let ty_obj_magic =
+    Tarrow (v (), v ())
 end
 
 let primitives =
@@ -151,7 +154,7 @@ let primitives =
    ("hd",               "ML_pervasives.hd",               ty_hd);
    ("tl",               "ML_pervasives.tl",               ty_tl);
    ("print_char",       "ML_pervasives.print_char",       ty_print_char);
-  ("print_string",      "ML_pervasives.print_string",     ty_print_string); 
+   ("print_string",     "ML_pervasives.print_string",     ty_print_string); 
    ("print_int",        "ML_pervasives.print_int",        ty_print_int);
    ("print_newline",    "ML_pervasives.print_newline",    ty_print_newline) ] in
   let ml_pervasives = List.map (fun (f,c,ty) -> ("Pervasives." ^ f,c,ty)) openned_ml_pervasives in
@@ -165,4 +168,6 @@ let primitives =
     [("String.length",  "ML_string.length",                ty_string_length);
      ("String.get",     "ML_string.get",                   ty_string_get);
      ("String.make",    "ML_string.make",                  ty_string_set)] in
-  ml_internal @ openned_ml_pervasives @ ml_pervasives @ ml_array @ ml_string
+  let ml_obj = 
+    [ ("Obj.magic",     "ML_obj.magic",                    ty_obj_magic) ] in
+  ml_internal @ openned_ml_pervasives @ ml_pervasives @ ml_array @ ml_string @ ml_obj

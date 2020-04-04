@@ -46,8 +46,10 @@ let parse_modules fs = List.map parse fs
 
 let compile genv mdl = 
   try 
-    if !type_check && not (Typing.type_check Ast.(mdl.decls) Runtime.primitives) 
-    then (Printf.printf "bad typed program\n"; exit 0);
+    let genv = if not !type_check then genv else 
+    match Typing.type_check mdl Ast2kast.(genv.typed_decls) with
+    | None -> (Printf.printf "bad typed program\n"; exit 0);
+    | Some env -> Ast2kast.{genv with typed_decls = env} in
     let genv0 = Ast2kast.{genv with mod_name=Ast.(mdl.mod_name); init=[]} in
     let genv',kast = Ast2kast.rewrite_tmodule genv0 mdl in
     let bc_mdl = Kast2bytecode.bytecode_of_tmodule genv' kast in

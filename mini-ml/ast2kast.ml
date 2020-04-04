@@ -9,6 +9,7 @@ type genv = { mod_name : Ast.name;
               constrs : (Ast.name * int) list;
               global_funs : string list;
               primitives : (Ast.name * Ast.name) list;
+              typed_decls : Types.env;
               init : Ast.name list }
 and arity = int
 
@@ -17,6 +18,7 @@ let empty_genv prims mod_name = {mod_name;
                                  constrs=[];
                                  global_funs=[];
                                  primitives=List.map (fun (x,c,ty) -> (x,c)) prims; (* ignore type *)
+                                 typed_decls=Typing.initial_env (Runtime.primitives);
                                  init=[]}
 let genv_extend genv x = 
   let i,globals' = match genv.globals with 
@@ -86,6 +88,11 @@ and rewrite_defun mod_name genv ?(recflag=false) dfs =
      let arity = List.length args in
      [Kast.DefFun (name,arity,ke)]) dfs) in (genv',by)
 and rewrite_exp lenv genv = function
+  | Ast.Constant(Ast.String(s)) ->
+    let rev_xs = ref [] in
+    String.iter (fun c -> rev_xs := (c :: !rev_xs)) s;
+    rewrite_exp lenv genv @@
+    Ast.Array_create(List.rev_map (fun c -> Ast.Constant(Ast.Char(c))) !rev_xs)
   | Ast.Constant c -> Kast.Constant(rewrite_constant lenv genv c)
   | Ast.Ident (name) ->
      (match List.assoc_opt name lenv.locals with
@@ -140,11 +147,6 @@ and rewrite_exp lenv genv = function
                  | e::es -> Ast.Seq(Ast.Array_assign(Ast.Ident(a),
                                                      Ast.Constant(Ast.Int(i)),e),
                                     aux (i+1) es) in aux 0 xs)                        
-  | Ast.String(s) ->
-     let rev_xs = ref [] in
-     String.iter (fun c -> rev_xs := (c :: !rev_xs)) s;
-     rewrite_exp lenv genv @@
-     Ast.Array_create(List.rev_map (fun c -> Ast.Constant(Ast.Char(c))) !rev_xs)
   | Ast.Seq(e1,e2) -> Kast.Seq(rewrite_exp lenv genv e1, rewrite_exp lenv genv e2)
   | Ast.While(e1,e2) -> Kast.While(rewrite_exp lenv genv e1, rewrite_exp lenv genv e2)
   | Ast.For(name,e0,e1,e2) -> 
@@ -201,4 +203,5 @@ and rewrite_constant lenv genv = function
   | Ast.Bool b -> Kast.Bool b 
   | Ast.Array_empty -> Kast.Array_empty
   | Ast.List_empty -> Kast.List_empty
+  | Ast.String _ -> assert false (* déjà traité *)
 
