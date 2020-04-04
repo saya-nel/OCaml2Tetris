@@ -8,8 +8,9 @@ and decl =
   | DefVar of (name * exp)
   | DefFun of    ((name * name list * exp) list)
   | DefFunRec of ((name * name list * exp) list)
-  | Type of (name * ty)
+  | Type of (name * Types.typ)
 and exp = 
+  | Annotation of (exp * Types.typ)
   | Constant of (constant)
   | Ident of (name)
   | Let of (name * exp * exp)

@@ -10,7 +10,7 @@ let initial_env primitives =
 let rec w env decs = function
 | [] -> decs
 | d::ds -> let xts = w_dec env d in
-     List.iter (fun (x,t) -> Printf.printf "%s : %s\n" x (print t)) xts; 
+     List.iter (fun (x,t) -> Printf.printf "%s : %s\n" x (Print_ast.sprint_ty 0 t)) xts; 
      let env' = List.fold_left (fun env (x,t) -> add true x (canon t) env) env xts in
      w env' (decs @ xts) ds 
 and w_dec env = function
@@ -55,6 +55,10 @@ and w_funrec env (f,args,e) =  (* un peu trop bricoller, ne marche pas *)
   tf
 
 and w_exp env = function
+  | Annotation (e,ty) -> 
+    let t1 = w_exp env e in
+    unify t1 ty;
+    t1
   | Constant c -> (w_constant c)
   | Ident x -> 
       find x env
@@ -201,5 +205,11 @@ let type_check Ast.{decls;mod_name} env =
   try let decs = w env [] decls in 
       let env = List.fold_left (fun env (x,t) -> 
         add true (mod_name ^ "." ^ x) (canon t) env) env decs
-      in 
-  Some env with Not_found | UnificationFailure _ -> None
+      in env
+  with 
+  | UnificationFailure (t1,t2) -> 
+      Printf.printf "Error: This expression has type %s but an expression was expected of type
+         %s\n" (Print_ast.sprint_ty 0 t1) (Print_ast.sprint_ty 0 t2);
+      exit 0
+  | Not_found -> "bad typed program\n"; exit 0
+

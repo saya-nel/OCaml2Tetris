@@ -62,10 +62,10 @@ and rewrite_decls mod_name genv ds =
                      | (genv,kds) -> (genv,kds @ acc)) (genv,[]) ds in
   (genv,List.rev kds)
 and rewrite_decl mod_name genv = function
-  | Ast.Type (name,ty) -> (match ty with 
+  (*| Ast.Type (name,ty) -> (match ty with 
                            | Ast.Sum(names) -> 
                              let genv' = env_extends_constructors genv names in (genv',[])
-                           | _ -> (genv,[]))
+                           | _ -> (genv,[])) *)
   | Ast.Exp (e) -> rewrite_decl mod_name genv @@
                      let name = gensym ~prefix:"voidExpr" in Ast.DefVar (name,e)
   | Ast.DefVar (name,e) ->
@@ -88,6 +88,7 @@ and rewrite_defun mod_name genv ?(recflag=false) dfs =
      let arity = List.length args in
      [Kast.DefFun (name,arity,ke)]) dfs) in (genv',by)
 and rewrite_exp lenv genv = function
+  | Ast.Annotation (e,_) -> rewrite_exp lenv genv e
   | Ast.Constant(Ast.String(s)) ->
     let rev_xs = ref [] in
     String.iter (fun c -> rev_xs := (c :: !rev_xs)) s;

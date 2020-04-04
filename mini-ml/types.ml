@@ -15,21 +15,11 @@ type typ =
   | Tarray of typ
   | Tref of typ
   | Tconstr of (typid * typ list)
-
+  | Tident of string
 
 and tvar =
   { id : int;
     mutable def : typ option }
-
-let rec copy ty = match ty with
-| Tint | Tbool | Tunit | Tchar | Tstring -> ty
-| Tvar {id;def} -> Tvar {id;def}
-| Tarrow (t1,t2) -> Tarrow (copy t1,copy t2)
-| Tproduct (t1,t2) -> Tproduct (copy t1,copy t2)
-| Tlist t -> Tlist (copy t)
-| Tarray t -> Tarray (copy t)
-| Tref t -> Tref (copy t)
-| Tconstr (c,t) -> Tconstr (c,List.map copy t)
 
 (* module V pour les variables de type *)
 
@@ -47,52 +37,13 @@ let rec head = function
 
 (* forme canonique d'un type = on applique head récursivement *)
 let rec canon t = match head t with
-  | Tvar _ | Tint | Tbool | Tunit | Tchar | Tstring as t -> t
+  | Tvar _ | Tident _ | Tint | Tbool | Tunit | Tchar | Tstring as t -> t
   | Tarrow (t1, t2) -> Tarrow (canon t1, canon t2)
   | Tproduct (t1, t2) -> Tproduct (canon t1, canon t2)
   | Tlist t -> Tlist (canon t)
   | Tarray t -> Tarray (canon t)
   | Tref t -> Tref (canon t)
   | Tconstr (c,ts) -> Tconstr (c,List.map canon ts)
-
-(* tests *)
-let rec print = function
-  | Tunit ->  "unit"
-  | Tint -> "int"
-  | Tbool -> "bool"
-  | Tchar -> "char"
-  | Tstring -> "string"
-  | Tarrow (ty1, ty2) -> Printf.sprintf "(%s -> %s)" (print ty1) (print ty2)
-  | Tproduct (ty1, ty2) -> Printf.sprintf "(%s * %s)" (print ty1) (print ty2)
-  | Tvar v -> print_tvar v
-  | Tlist ty -> Printf.sprintf  "(%s list)" (print ty)
-  | Tarray ty -> Printf.sprintf  "(%s array)" (print ty)
-  | Tref ty -> Printf.sprintf  "(%s ref)" (print ty)
-  | Tconstr (c,ty1) -> failwith "todo"
-and print_tvar v =
-  (* Format.fprintf fmt "'%d" v.id;
-  match v.def with None -> () | Some ty -> Format.fprintf fmt "[:=%a]" print ty *)
-   match v.def with 
-   | None -> Printf.sprintf "'v%d" v.id
-   | Some ty -> print ty
-
-let () =
-  let a = V.create () in
-  let b = V.create () in
-  let ta = Tvar a in
-  let tb = Tvar b in
-  assert (head ta == ta);
-  assert (head tb == tb);
-  let ty = Tarrow (ta, tb) in
-  a.def <- Some tb;
-  assert (head ta == tb);
-  assert (head tb == tb);
-  b.def <- Some Tint;
-  assert (head ta = Tint);
-  assert (head tb = Tint);
-  assert (canon ta = Tint);
-  assert (canon tb = Tint);
-  assert (canon ty = Tarrow (Tint, Tint))
 
 (* unification *)
 
@@ -105,7 +56,7 @@ let rec occur v t = match head t with
   | Tarrow (t1, t2) | Tproduct (t1, t2) -> occur v t1 || occur v t2
   | Tlist t1 | Tarray t1 | Tref t1 -> occur v t1
   | Tconstr (_,ts) -> List.for_all (occur v) ts
-  | Tunit | Tint | Tbool | Tchar | Tstring -> false
+  | Tident _ | Tunit | Tint | Tbool | Tchar | Tstring -> false
 
 let rec unify t1 t2 = match head t1, head t2 with
   | Tunit, Tunit -> ()
@@ -113,6 +64,7 @@ let rec unify t1 t2 = match head t1, head t2 with
   | Tbool, Tbool -> ()
   | Tchar, Tchar -> ()
   | Tstring, Tstring -> ()
+  | Tident s, Tident s' -> if s <> s' then unification_error t1 t2                          
   | Tvar v1, Tvar v2 when V.equal v1 v2 -> ()
   | Tvar v1 as t1, t2 ->
       if occur v1 t2 then unification_error t1 t2;
@@ -129,27 +81,6 @@ let rec unify t1 t2 = match head t1, head t2 with
                                       List.iter2 unify ts ts'
   | t1, t2 ->
       unification_error t1 t2
-
-let () =
-  let a = V.create () in
-  let b = V.create () in
-  let ta = Tvar a in
-  let tb = Tvar b in
-  assert (occur a ta);
-  assert (occur b tb);
-  assert (not (occur a tb));
-  let ty = Tarrow (ta, tb) in
-  assert (occur a ty);
-  assert (occur b ty);
-  (* unifie 'a-> 'b et int->int *)
-  unify ty (Tarrow (Tint, Tint));
-  assert (canon ta = Tint);
-  assert (canon ty = Tarrow (Tint, Tint));
-  (* unifie 'c et int->int *)
-  let c = V.create () in
-  let tc = Tvar c in
-  unify tc ty;
-  assert (canon tc = Tarrow (Tint, Tint))
 
 let cant_unify ty1 ty2 =
   try let _ = unify ty1 ty2 in false with UnificationFailure _ -> true
@@ -171,7 +102,7 @@ type schema = { vars : Vset.t; typ : typ }
 (* variables libres *)
 
 let rec fvars t = match head t with
-  | Tunit | Tint | Tbool | Tchar | Tstring -> Vset.empty
+  | Tunit | Tint | Tbool | Tchar | Tstring | Tident _ -> Vset.empty
   | Tarrow (t1, t2) | Tproduct (t1, t2) -> Vset.union (fvars t1) (fvars t2)
   | Tlist t | Tarray t | Tref t -> (fvars t)
   | Tconstr (c,ts) ->  List.fold_left (fun acc t -> Vset.union acc (fvars t)) Vset.empty ts
@@ -180,14 +111,6 @@ let rec fvars t = match head t with
 let norm_varset s =
   Vset.fold (fun v s -> Vset.union (fvars (Tvar v)) s) s Vset.empty
 
-let () =
-  assert (Vset.is_empty (fvars (Tarrow (Tint, Tint))));
-  let a = V.create () in
-  let ta = Tvar a in
-  let ty = Tarrow (ta, ta) in
-  assert (Vset.equal (fvars ty) (Vset.singleton a));
-  unify ty (Tarrow (Tint, Tint));
-  assert (Vset.is_empty (fvars ty))
 
 (* environnement c'est une table bindings (string -> schema),
    et un ensemble de variables de types libres *)
@@ -226,6 +149,7 @@ let find x env =
     | Tbool -> Tbool
     | Tchar -> Tchar
     | Tstring -> Tstring
+    | Tident s -> Tident s
     | Tarrow (t1, t2) -> Tarrow (subst t1, subst t2)
     | Tproduct (t1, t2) -> Tproduct (subst t1, subst t2)
     | Tlist t -> Tlist (subst t)

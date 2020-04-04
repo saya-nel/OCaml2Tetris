@@ -1,6 +1,7 @@
 %{
   open Parseutils
   open Ast
+  open Types
 %}
 
 
@@ -50,7 +51,7 @@
 
 %type <Ast.decl list>  tmodule
 %type <Ast.exp>        expr
-%type <Ast.ty>         ty
+%type <Types.typ>         ty
 %type <Ast.match_case> match_case
 
 %%
@@ -98,20 +99,20 @@ ignore:
 ;
 
 ty :
- | sum_type   { Sum($1) }
+ /* | sum_type   { Sum($1) } */
  | expr_ty    { $1 }
  ;
 
-sum_type:
+/*sum_type:
 | sum_ty {$1} 
 | PIPE sum_ty {$2} 
-;
+;*/
 
-sum_ty :
+/*sum_ty :
  | constructor             { [$1] }
  | constructor PIPE sum_ty { $1::$3 }
  | constructor OF            { error_exit (pos()) "constructeur paramétré non supporté" }
- ;
+ ;*/
 
 constructor :
 |  IDENT_CAPITALIZE                { $1 }
@@ -120,19 +121,17 @@ constructor :
 
 expr_ty:
  | LPAREN expr_ty RPAREN         { $2 }
- | IDENT                         { Ident_ty($1) }
- | ident_in_mod                  { Ident_ty($1) }
- | star_ty                       { Star_ty($1) }
- | expr_ty RIGHT_ARROW expr_ty   { Arrow_ty($1,$3) }
+ | IDENT                         { match $1 with 
+ 	                               | "int" -> Tint
+ 	                               | "unit" -> Tunit
+ 	                               | "bool" -> Tbool
+ 	                               | "char" -> Tchar
+ 	                               | "string" -> Tstring
+ 	                               | s -> Tident(s) }
+ | ident_in_mod                  { Tident($1) }
+ | expr_ty TIMES expr_ty         { Tproduct($1,$3) }
+ | expr_ty RIGHT_ARROW expr_ty   { Tarrow($1,$3) }
  | error { error_exit (pos()) "expression de type malformée." }
-;
-
-star_ty :
-| expr_ty TIMES star_ty_aux      {$1::$3}
-;
-star_ty_aux :
-| expr_ty                         {[$1]}
-| expr_ty TIMES star_ty_aux       {$1::$3}
 ;
 
 args : 
@@ -158,7 +157,6 @@ seq :
 ;
 
 expression : 
-| LPAREN expression COLON expr_ty RPAREN { $2 }
 | ACCESS expr                            { Ref_access($2) } 
 | NOT expr                               { UnOp(Not,$2) }
 | expr                                   { $1 }
@@ -210,6 +208,7 @@ exprs :
  ;
 
 exp:
+| LPAREN expression COLON expr_ty RPAREN { Annotation($2,$4) }
 | LPAREN seq RPAREN                     { $2 }
 | BEGIN seq END                         { $2 }
 | constant                              { Constant($1) }

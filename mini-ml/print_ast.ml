@@ -33,6 +33,7 @@ and sprint_fun ?(recflag=false) lvl l =
               let s = sptf " %s %s = " name (String.concat " " args) in
                s ^ "\n" ^ (indent_string (next lvl)) ^ (sprint_exp (next lvl) e)) l
 and sprint_exp lvl = function
+  | Ast.Annotation (e,ty) -> sptf "(%s : %s)" (sprint_exp (lvl+1) e) (sprint_ty (lvl+1) ty)
   | Constant(c) -> sprint_constant lvl c
   | Ident name -> name
   | Let(name,e1,e2) -> let w = sptf "(let %s = " name in
@@ -127,10 +128,22 @@ and sprint_binop lvl = function
 and sprint_unop lvl = function
   | Not -> "not"
   | UMinus -> "-"  
-and sprint_ty lvl = function
-| Sum (names) -> String.concat " | " names
-| Ident_ty (name) -> name
-| Star_ty (lty) -> sptf "(%s)" (mapcat " * " (sprint_ty lvl) lty)
-| Arrow_ty (t1,t2) -> sptf "(%s -> %s)" (sprint_ty lvl t1) (sprint_ty lvl t2)
-
+and sprint_ty lvl ty = 
+  let open Types in 
+  match ty with
+(*| Sum (names) -> String.concat " | " names *)
+| Tint -> "int"
+| Tbool -> "bool"
+| Tchar -> "char"
+| Tunit -> "unit"
+| Tstring -> "string"
+| Tident (name) -> name 
+| Tproduct (t1,t2) -> sptf "(%s * %s)" (sprint_ty lvl t1) (sprint_ty lvl t2)
+| Tarrow (t1,t2) -> sptf "(%s -> %s)" (sprint_ty lvl t1) (sprint_ty lvl t2)
+| Tlist t -> sptf "(%s list)" (sprint_ty lvl t)
+| Tarray t -> sptf "(%s array)" (sprint_ty lvl t)
+| Tref t -> sptf "(%s ref)" (sprint_ty lvl t)
+| Tvar v -> match v.def with 
+                  | None -> Printf.sprintf "'a%d" v.id
+                  | Some ty -> sprint_ty lvl ty
 
