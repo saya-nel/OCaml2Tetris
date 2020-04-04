@@ -17,8 +17,9 @@ and w_dec env = function
 | Exp (e) -> 
   let t = w_exp env e in 
   ([("_",t)])
-| DefVar (x,e) -> 
+| DefVar ((x,tyopt),e) -> 
   let t = w_exp env e in
+  (match tyopt with None -> () | Some ty -> unify t ty);
   ([(x,t)])
 | DefFun funs -> 
   let funtys = List.map (w_fun env) funs in
@@ -28,7 +29,7 @@ and w_dec env = function
                                let t = w_funrec env f in 
                                add true x t env) env funs in
   List.map (fun (x,_,_) -> (x,find x env')) funs
-| Type _ -> ([])(* failwith "todo" *)
+| Type _ -> ([]) (* failwith "todo" *)
 and w_fun env (f,args,e) = 
   let env' = List.fold_left 
                (fun env xi -> 
@@ -62,10 +63,11 @@ and w_exp env = function
   | Constant c -> (w_constant c)
   | Ident x -> 
       find x env
-  | Let (x, e1, e2) ->
+  | Let ((x,tyopt), e1, e2) ->
       let t1 = w_exp env e1 in
-      let env = add true x t1 env in
-      w_exp env e2
+      (match tyopt with None -> () | Some ty -> unify t1 ty);
+      let env' = match x with s -> add true s t1 env in
+      w_exp env' e2
   | App (ef, es) ->
       let t1 = w_exp env ef in
       let ts = List.map (w_exp env) es in
@@ -209,7 +211,6 @@ let type_check Ast.{decls;mod_name} env =
   with 
   | UnificationFailure (t1,t2) -> 
       Printf.printf "Error: This expression has type %s but an expression was expected of type
-         %s\n" (Print_ast.sprint_ty 0 t1) (Print_ast.sprint_ty 0 t2);
-      exit 0
-  | Not_found -> "bad typed program\n"; exit 0
+         %s\n" (Print_ast.sprint_ty 0 t1) (Print_ast.sprint_ty 0 t2); exit 0
+  | Unbound_value x -> Printf.printf "Error: Unbound value %s\n" x; exit 0
 

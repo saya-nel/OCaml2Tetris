@@ -1,11 +1,13 @@
-type name = string
 
 type prog = tmodule list
 and tmodule = { mod_name : name ;
                 decls : decl list }
+and name = string
+and patern = (name * Types.typ option)
+
 and decl = 
   | Exp of (exp)
-  | DefVar of (name * exp)
+  | DefVar of (patern * exp)
   | DefFun of    ((name * name list * exp) list)
   | DefFunRec of ((name * name list * exp) list)
   | Type of (name * Types.typ)
@@ -13,7 +15,7 @@ and exp =
   | Annotation of (exp * Types.typ)
   | Constant of (constant)
   | Ident of (name)
-  | Let of (name * exp * exp)
+  | Let of (patern * exp * exp)
 (*  | LetFun of (name * name list * exp * exp) *)
   | App of (exp * exp list)
   | If of (exp * exp * exp)
@@ -44,7 +46,6 @@ and constant =
   | Constr of string
   | List_empty
   | Array_empty
-and patern = constant
 and match_case =
   | Case of (constant * exp)
   | Otherwise of (exp)

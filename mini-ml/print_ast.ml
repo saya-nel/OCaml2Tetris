@@ -21,7 +21,7 @@ and sprint_module lvl {mod_name;decls} =
 and sprint_decl lvl = function
   | Type (name,ty) -> sptf "%stype %s = " (indent_string lvl)  name ^ (sprint_ty lvl ty)
   | DefVar (name,e) ->
-     sptf "%slet %s = %s" (indent_string lvl) name (sprint_exp (next lvl) e)
+     sptf "%slet %s = %s" (indent_string lvl) (sprint_patern lvl name) (sprint_exp (next lvl) e)
   | Exp (e) ->  sptf "%slet _ = %s" (indent_string lvl) (sprint_exp lvl e)
   | DefFun (dfs) ->
       sprint_fun lvl dfs
@@ -36,7 +36,7 @@ and sprint_exp lvl = function
   | Ast.Annotation (e,ty) -> sptf "(%s : %s)" (sprint_exp (lvl+1) e) (sprint_ty (lvl+1) ty)
   | Constant(c) -> sprint_constant lvl c
   | Ident name -> name
-  | Let(name,e1,e2) -> let w = sptf "(let %s = " name in
+  | Let(pat,e1,e2) -> let w = sptf "(let %s = " (sprint_patern lvl pat) in
                        let z = get_indent_level w lvl in
                        sptf "%s%s in\n%s%s)" w
                          (sprint_exp (lvl + z) e1)
@@ -146,4 +146,9 @@ and sprint_ty lvl ty =
 | Tvar v -> match v.def with 
                   | None -> Printf.sprintf "'a%d" v.id
                   | Some ty -> sprint_ty lvl ty
+and sprint_patern lvl (p,opt) = 
+match opt with 
+| None -> p
+| Some ty -> sptf "(%s : %s)" p (sprint_ty lvl ty)
+
 

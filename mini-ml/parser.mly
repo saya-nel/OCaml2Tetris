@@ -61,9 +61,9 @@ decls {$1}
 ;
 
 decls :
- | EOF                       { [] }
- | decl decls              { $1::$2 }
- | decl terminaison decls  { $1::$3 }
+ | EOF                      { [] }
+ | decl decls               { $1::$2 }
+ | decl terminaison decls   { $1::$3 }
  | { error_exit (pos()) "programme malformé" }
  ;
 
@@ -74,13 +74,13 @@ decls :
  ;
 
 decl : 
- | LET ignore EQ seq                          { Exp($4) }
- | LET IDENT EQ seq                           { DefVar($2,$4) }
+ | LET argu EQ seq                            { match $2 with 
+		                                       | None,None -> Exp($4)
+		                                       | None,Some t -> Exp(Annotation($4,t))
+		                                       | Some x,tyopt -> DefVar((x,tyopt),$4) }
  | LET defuns                                 { DefFun($2) }
  | LET REC defuns                             { DefFunRec($3) }
  | TYPE IDENT EQ ty                           { Type($2,$4) }
- | LET ignore COLON expr_ty EQ seq            { Exp($6) }
- | LET IDENT COLON expr_ty EQ seq             { DefVar($2,$6) }
  | LET error { error_exit (pos()) "déclaration `let` malformée. J'attend {let <ident> [...] = <expr> in <expr>}" }
  | error { error_exit (pos()) "déclaration malformée (`let` ou `type` attendu)" }
  ;
@@ -115,7 +115,7 @@ ty :
  ;*/
 
 constructor :
-|  IDENT_CAPITALIZE                { $1 }
+| IDENT_CAPITALIZE                { $1 }
 | IDENT_CAPITALIZE DOT constructor { $1 ^ "." ^ $3}
 ;
 
@@ -160,15 +160,30 @@ expression :
 | ACCESS expr                            { Ref_access($2) } 
 | NOT expr                               { UnOp(Not,$2) }
 | expr                                   { $1 }
-| LET arg EQ seq IN seq                  { Let($2,$4,$6) }
-| expression WHERE arg EQ seq            { Let($3,$5,$1) }
-| LET ignore EQ seq IN seq               { Seq($4,$6) }
-| expression WHERE ignore EQ seq         { Seq($5,$1) }
+| LET argu EQ seq IN seq                 { match $2 with 
+	                                       | None,None -> Seq($4,$6)
+	                                       | None,Some t -> Seq(Annotation($4,t),$6)
+	                                       | Some x,tyopt -> Let((x,tyopt),$4,$6) }
+| expression WHERE argu EQ seq           { match $3 with 
+	                                       | None,None -> Seq($5,$1)
+	                                       | None,Some t -> Seq(Annotation($5,t),$1)
+	                                       | Some x,tyopt -> Let((x,tyopt),$5,$1) }
 | IF seq THEN expression ELSE expression { If($2,$4,$6)}
 | IF seq THEN expression                 { If($2,$4,Constant(Unit))}
 | MATCH seq WITH match_body              { Match($2,$4)}
 | WHILE seq DO seq DONE                  { While($2,$4) }
 | FOR IDENT EQ seq TO seq DO seq DONE    { For($2,$4,$6,$8) }
+;
+
+argu:
+| argu_aux                               { $1 }
+| argu_aux COLON expr_ty                 { let (c,_) = $1 in (c,Some $3) }
+;
+argu_aux:
+| IDENT                                  { (Some $1,None) }
+| WILDCARD                               { (None,None) }
+| LPAREN RPAREN                          { (None,Some Tunit)}
+| LPAREN argu RPAREN                     { $2 }
 ;
 
 expr: 

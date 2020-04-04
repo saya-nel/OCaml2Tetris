@@ -135,9 +135,13 @@ let add gen x t env =
 
 module Vmap = Map.Make(V)
 
+exception Unbound_value of string
+
 (* find x env donne une instance fraîche de env(x) *)
 let find x env =
-  let tx = Smap.find x env.bindings in
+  let tx = 
+    try Smap.find x env.bindings with 
+    | Not_found -> raise (Unbound_value x) in
   let s =
     Vset.fold (fun v s -> Vmap.add v (Tvar (V.create ())) s)
       tx.vars Vmap.empty

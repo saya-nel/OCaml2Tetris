@@ -67,8 +67,8 @@ and rewrite_decl mod_name genv = function
                              let genv' = env_extends_constructors genv names in (genv',[])
                            | _ -> (genv,[])) *)
   | Ast.Exp (e) -> rewrite_decl mod_name genv @@
-                     let name = gensym ~prefix:"voidExpr" in Ast.DefVar (name,e)
-  | Ast.DefVar (name,e) ->
+                     let name = gensym ~prefix:"voidExpr" in Ast.DefVar ((name,None),e)
+  | Ast.DefVar ((name,_),e) ->
      let name_init = "__init__" ^ name in
      let i,genv' = genv_extend genv name in
      let genv0 = {genv' with init = (mod_name ^ "." ^ name_init) :: genv'.init} in
@@ -111,10 +111,10 @@ and rewrite_exp lenv genv = function
               | Some i -> Kast.App (Kast.GFun(genv.mod_name ^ "." ^ name),[]))
           | Some i -> Kast.Variable(Kast.Argument (i)))
       | Some i -> Kast.Variable(Kast.Local i))
-  | Ast.Let(name,e1,e2) ->
-     let i,lenv' = lenv_extend name lenv in 
-     Kast.Let(i,rewrite_exp lenv' genv e1, rewrite_exp lenv' genv e2)         
-  | Ast.App(e,args) ->
+  | Ast.Let((name,_),e1,e2) ->
+    let i,lenv' = lenv_extend name lenv in 
+    Kast.Let(i,rewrite_exp lenv' genv e1, rewrite_exp lenv' genv e2)
+  | Ast.App(e,args) -> 
      Kast.App(rewrite_exp lenv genv e, List.map (rewrite_exp lenv genv) args)
   | Ast.If(e1,e2,e3) -> Kast.If(rewrite_exp lenv genv e1,
                                 rewrite_exp lenv genv e2,
@@ -142,7 +142,7 @@ and rewrite_exp lenv genv = function
      rewrite_exp lenv genv @@
        let n = List.length xs in
        let a = gensym ~prefix:"tmp" in
-       Ast.Let(a,Ast.Array_alloc(Ast.Constant(Ast.Int(n))),
+       Ast.Let((a,None),Ast.Array_alloc(Ast.Constant(Ast.Int(n))),
                let rec aux i = function
                  | [] -> Ast.Ident(a)
                  | e::es -> Ast.Seq(Ast.Array_assign(Ast.Ident(a),
@@ -155,11 +155,11 @@ and rewrite_exp lenv genv = function
        let name_zz = gensym ~prefix:name in
        let len_zz = gensym ~prefix:"L" in
        let open Ast in
-       Let(name_zz, 
+       Let((name_zz,None), 
            Ref(e0),
-           Let(len_zz,e1,
+           Let((len_zz, None),e1,
                While(BinOp (Le,Ref_access(Ident(name_zz)),Ident(len_zz)),
-                     Let(name, Ref_access(Ident(name_zz)),
+                     Let((name,None), Ref_access(Ident(name_zz)),
                          Seq(e2,App(Ast.Ident("Pervasives.incr"),[Ident(name_zz)]))))))
   | Ast.Match (e,ms) -> 
      let ms',otherw = let rec aux acc = function
@@ -170,7 +170,7 @@ and rewrite_exp lenv genv = function
      let smst = List.sort (fun (c1,_) (c2,_) -> compare c1 c2) sms in
      let var = gensym ~prefix:"L" in
      rewrite_exp lenv genv @@
-       Ast.Let(var,e,
+       Ast.Let((var, None),e,
            let rec aux = function
              | [] -> (match otherw with 
                       | None -> Ast.App(Ast.Ident("Pervasives.exit"),
