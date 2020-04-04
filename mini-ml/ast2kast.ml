@@ -12,11 +12,12 @@ type genv = { mod_name : Ast.name;
               init : Ast.name list }
 and arity = int
 
-let empty_genv primitives mod_name = {mod_name;
-                                      globals=[];
-                                      constrs=[];
-                                      global_funs=[];
-                                      primitives;init=[]}
+let empty_genv prims mod_name = {mod_name;
+                                 globals=[];
+                                 constrs=[];
+                                 global_funs=[];
+                                 primitives=List.map (fun (x,c,ty) -> (x,c)) prims; (* ignore type *)
+                                 init=[]}
 let genv_extend genv x = 
   let i,globals' = match genv.globals with 
     | [] -> (0,[(x,0)])
@@ -127,6 +128,8 @@ and rewrite_exp lenv genv = function
      rewrite_exp lenv genv @@ Ast.App(Ast.(Ident("Array.set"),[e1;e2;e3])) 
   | Ast.Array_alloc(e) ->
      rewrite_exp lenv genv @@ Ast.App(Ast.(Ident("Array.create_uninitialized"),[e])) 
+  | Ast.Pair(e1,e2) -> rewrite_exp lenv genv @@ Ast.App(Ast.(Ident("__internal.pair"),[e1;e2])) 
+  | Ast.Cons(e1,e2) -> rewrite_exp lenv genv @@ Ast.App(Ast.(Ident("__internal.cons"),[e1;e2])) 
   | Ast.Array_create(xs) ->
      rewrite_exp lenv genv @@
        let n = List.length xs in
@@ -197,4 +200,5 @@ and rewrite_constant lenv genv = function
                                  | Some c -> c)
   | Ast.Bool b -> Kast.Bool b 
   | Ast.Array_empty -> Kast.Array_empty
+  | Ast.List_empty -> Kast.List_empty
 

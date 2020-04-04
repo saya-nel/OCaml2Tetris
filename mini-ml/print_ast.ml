@@ -62,6 +62,8 @@ and sprint_exp lvl = function
   | Ref(e) -> sptf "(ref %s)" (sprint_exp 0 e)
   | Ref_access(e1) -> sptf "(! %s)" (sprint_exp 0 e1)
   | Ref_assign(e1,e2) -> sptf "(%s := %s)" (sprint_exp 0 e1) (sprint_exp 0 e2)
+  | Pair(e1,e2) -> sptf "(%s, %s)" (sprint_exp 0 e1) (sprint_exp 0 e2) 
+  | Cons(e1,e2) -> sptf "(%s :: %s)" (sprint_exp 0 e1) (sprint_exp 0 e2) 
   | Array_create(es) -> "[|" ^ mapcat "; " (sprint_exp 0) es ^ "|]"
   | Array_assign(e1,e2,e3) -> sptf "((%s).(%s) <- %s)" 
                                 (sprint_exp lvl e1)
@@ -105,7 +107,8 @@ and sprint_constant lvl = function
   | Int n -> sptf (if n >= 0 then "%d" else "(%d)") n
   | Char c -> sptf "%c" c
   | Constr name -> name
-  | Array_empty -> sptf "[||]"
+  | List_empty -> "[]"
+  | Array_empty -> "[||]"
 and sprint_binop lvl = function
   | Add -> "+"
   | Minus -> "-"

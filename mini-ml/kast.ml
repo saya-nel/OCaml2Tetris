@@ -21,6 +21,7 @@ and constant =
 | Bool of bool 
 | Int of int 
 | Array_empty
+| List_empty
 and patern = constant
 and var = 
 | Argument of int 

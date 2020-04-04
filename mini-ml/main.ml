@@ -2,6 +2,8 @@ let inputs = ref []
 let action = ref (`Compile : [ `Compile | `ParseOnly])
 let stdlib = ref "stdlib"
 
+let type_check = ref false
+
 let set_action a () = action := a
 
 let add_file f = inputs := !inputs @ [f] 
@@ -12,6 +14,8 @@ let () =
   Arg.parse [
     ("-ast", Arg.Unit (set_action `ParseOnly),
        " : affiche l'AST en syntaxe Caml");
+    ("-typecheck", Arg.Set type_check, 
+      " : type le programme est abandonne si celui-ci est mal typé");
     ("-compile", Arg.Unit (set_action `Compile), 
        " : compile vers le langage de la VM Nand2Tetris");
     ("-src", Arg.Set_string source_dir,
@@ -42,18 +46,20 @@ let parse_modules fs = List.map parse fs
 
 let compile genv mdl = 
   try 
+    if !type_check && not (Typing.type_check Ast.(mdl.decls) Runtime.primitives) 
+    then (Printf.printf "bad typed program\n"; exit 0);
     let genv0 = Ast2kast.{genv with mod_name=Ast.(mdl.mod_name); init=[]} in
     let genv',kast = Ast2kast.rewrite_tmodule genv0 mdl in
     let bc_mdl = Kast2bytecode.bytecode_of_tmodule genv' kast in
     (genv',bc_mdl)
   with Kast2bytecode.Cannot_generate_bytecode msg -> 
-       (Printf.printf "connot generate bytecode.\n%s\n" msg; exit 1)
+       (Printf.printf "cannot generate bytecode.\n%s\n" msg; exit 1)
 
 let compile_all mdls =
  let (genv2,bc_mdls) = List.fold_left (fun (genv,acc) mdl -> 
                     let genv',bc_mdl = compile genv mdl in 
                     (genv',acc @ [bc_mdl]))
-   (Ast2kast.empty_genv (Runtime.primitives()) "",[]) mdls in 
+   (Ast2kast.empty_genv Runtime.primitives "",[]) mdls in 
   Kast2bytecode.bytecode_of_prog bc_mdls
 
 let () = 

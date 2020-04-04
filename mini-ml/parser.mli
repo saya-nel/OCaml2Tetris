@@ -1,5 +1,6 @@
 type token =
   | LET
+  | WHERE
   | IN
   | IF
   | THEN
@@ -17,6 +18,7 @@ type token =
   | END
   | EXTERNAL
   | AND_KW
+  | CONS
   | UNIT_TY
   | BOOL_TY
   | INT_TY

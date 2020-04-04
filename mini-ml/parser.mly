@@ -5,7 +5,7 @@
 
 
 /* (* reserved words *) */
-%token LET IN IF THEN ELSE ASSERT WHILE FOR TO DO DONE MATCH WITH PIPE BEGIN END EXTERNAL AND_KW
+%token LET WHERE IN IF THEN ELSE ASSERT WHILE FOR TO DO DONE MATCH WITH PIPE BEGIN END EXTERNAL AND_KW CONS
 %token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY
 
 %token <string> IDENT IDENT_CAPITALIZE VM_IDENT
@@ -22,6 +22,7 @@
 
 
 %nonassoc LET 
+%nonassoc WHERE 
 %right SEMICOL
 %nonassoc IN
 %nonassoc ARRAY_OPEN ARRAY_CLOSE
@@ -30,6 +31,7 @@
 %nonassoc  IF
 %right     LEFT_ARROW ASSIGN
 /* %right     COMMA */
+%right     CONS /* ??? */
 %left      OR
 %left      AND
 %left      EQ NEQ GT GE LT LE
@@ -72,7 +74,7 @@ decl :
  | LET ignore EQ seq                          { Exp($4) }
  | LET IDENT EQ seq                           { DefVar($2,$4) }
  | LET defuns                                 { DefFun($2) }
- | LET REC defuns                                 { DefFunRec($3) }
+ | LET REC defuns                             { DefFunRec($3) }
  | TYPE IDENT EQ ty                           { Type($2,$4) }
  | LET ignore COLON expr_ty EQ seq            { Exp($6) }
  | LET IDENT COLON expr_ty EQ seq             { DefVar($2,$6) }
@@ -159,15 +161,15 @@ expression :
 | NOT expr                               { UnOp(Not,$2) }
 | expr                                   { $1 }
 | LET arg EQ seq IN seq                  { Let($2,$4,$6) }
+| expression WHERE arg EQ seq            { Let($3,$5,$1) }
+| LET ignore EQ seq IN seq               { Seq($4,$6) }
+| expression WHERE ignore EQ seq         { Seq($5,$1) }
 | IF seq THEN expression ELSE expression { If($2,$4,$6)}
+| IF seq THEN expression                 { If($2,$4,Constant(Unit))}
 | MATCH seq WITH match_body              { Match($2,$4)}
 | WHILE seq DO seq DONE                  { While($2,$4) }
 | FOR IDENT EQ seq TO seq DO seq DONE    { For($2,$4,$6,$8) }
 ;
-exprs :
- | exp        { [$1] }
- | exp exprs  { $1::$2 }
- ;
 
 expr: 
  | app                                   { $1 } 
@@ -187,6 +189,8 @@ expr:
  | expression LAND expression            { BinOp(Land,$1,$3) }
  | expr ASSIGN expression                { Ref_assign($1,$3) } 
  | MINUS expr                            { UnOp(UMinus,$2) }
+ | expression COMMA expression 		     { Pair($1,$3) }
+ | expression CONS expression 		     { Cons($1,$3) }
 /* | error                                 { raise (Parse_Exception ("malformed expression ")) }*/
 ;
 
@@ -195,6 +199,11 @@ app:
  | exp exprs                             { App($1,$2) }
  | REF exp                               { Ref ($2)} 
  | ASSERT exp                            { Assert ($2) }
+ ;
+
+exprs :
+ | exp        { [$1] }
+ | exp exprs  { $1::$2 }
  ;
 
 exp:
@@ -216,6 +225,7 @@ constant:
  | CHAR                                  { Char($1) }
  | BOOL                                  { Bool($1) }
  | constructor                           { Constr($1) }
+ | LBRACKET RBRACKET                     { List_empty }
  | ARRAY_OPEN ARRAY_CLOSE                { Array_empty }
  ;
 
@@ -242,3 +252,4 @@ array_content_aux:
 | expression                            { [$1] }
 | expression SEMICOL array_content_aux  { $1::$3 }
 ;
+

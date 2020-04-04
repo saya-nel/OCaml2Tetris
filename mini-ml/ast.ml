@@ -10,7 +10,7 @@ and decl =
   | DefFunRec of ((name * name list * exp) list)
   | Type of (name * ty)
 and exp = 
-  | Constant of constant
+  | Constant of (constant)
   | Ident of (name)
   | Let of (name * exp * exp)
 (*  | LetFun of (name * name list * exp * exp) *)
@@ -19,6 +19,8 @@ and exp =
   | Match of (exp * match_case list)
   | BinOp of (binop * exp * exp)
   | UnOp of (unop * exp)
+  | Pair of (exp * exp)
+  | Cons of (exp * exp)
   | Array_create of (exp list)
   | Array_alloc of (exp)
   | Array_assign of (exp * exp * exp)
@@ -39,6 +41,7 @@ and constant =
   | Int of int
   | Char of char
   | Constr of string
+  | List_empty
   | Array_empty
 and patern = constant
 and match_case =

@@ -1,13 +1,6 @@
 ///////////////////////////////////////////////////////////////
 function Main.main 0
-    call Mlvalues.__init__unit 0
-    call Input.__init__code 0
-    call Interp.__init__stack_size 0
-    call Interp.__init__pc 0
-    call Interp.__init__sp 0
-    call Interp.__init__stack 0
-    call Interp.__init__acc 0
-    call Interp.__init__env 0
-    call Interp.__init____voidExpr25 0
+    call M1.__init____voidExpr1 0
+    call M1.__init__g 0
     push constant 0
     return

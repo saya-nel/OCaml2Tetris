@@ -24,10 +24,12 @@ rule token = parse
 | '['                { LBRACKET }
 | ']'                { RBRACKET }
 | ';'                { SEMICOL }
+| "::"               { CONS }
 | ";;"               { TERMINAISON }
 | '.'                { DOT }
 | ','                { COMMA }
 | "let"              { LET }
+| "where"            { WHERE }
 | "and"              { AND_KW }
 | "rec"              { REC }
 | "in"               { IN }

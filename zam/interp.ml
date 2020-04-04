@@ -1,3 +1,5 @@
+let l = 1 :: 2 :: 3 :: []
+
 let stack_size = 1024
 
 let pc = ref 0
@@ -11,8 +13,14 @@ let env = ref (Mlvalues.val_long 0)
 (* *********************************** *)
 
 let pop_stack () =
-  decr sp;
-  stack.(!sp+1)
+  let v = stack.(!sp) in decr sp; v
+
+let push_stack v =
+  stack.(!sp) <- v; incr sp
+
+let take_argument () =
+  incr pc;
+  Input.code.(!pc)
 
 let debug_print_state () = 
   print_string " pc: "; 
@@ -32,304 +40,166 @@ let interp () =
   sp := 0;
   print_int (!acc);
   while !pc < Array.length Input.code do
+    incr pc where () = 
     debug_print_state ();
     match Input.code.(!pc) with
-    | 0 (* ACC0 *) -> acc := stack.(0); incr pc
-    | 1 (* ACC1 *) -> acc := stack.(1); incr pc
-    | 2 (* ACC2 *) -> acc := stack.(2); incr pc
-    | 3 (* ACC3 *) -> acc := stack.(3); incr pc    
-    | 4 (* ACC4 *) -> acc := stack.(4); incr pc
-    | 5 (* ACC5 *) -> acc := stack.(5); incr pc
-    | 6 (* ACC6 *) -> acc := stack.(6); incr pc
-    | 7 (* ACC7 *) -> acc := stack.(7); incr pc   
-    | 8 (* ACC *) -> 
-       incr pc;
-       let n = Input.code.(!pc) in
-       if n >= Array.length stack || n < 0 then failwith "stack pleine"
-       else acc := stack.(n);
-       incr pc
-    | 9 (* Push *) -> 
-      incr sp; stack.(!sp) <- !acc; incr pc
-    | 10 (* PUSHACC0 (~ PUSH) *) -> 
-      incr sp; stack.(!sp) <- !acc; incr pc
-    | 11 (* PUSHACC1 *) -> 
-      incr sp; stack.(!sp) <- !acc; acc := stack.(1); incr pc
-    | 12 (* PUSHACC2 *) -> 
-      incr sp; stack.(!sp) <- !acc; acc := stack.(2); incr pc
-    | 13 (* PUSHACC3 *) -> 
-      incr sp; stack.(!sp) <- !acc; acc := stack.(3); incr pc
-    | 14 (* PUSHACC4 *) -> 
-      incr sp; stack.(!sp) <- !acc; acc := stack.(4); incr pc
-    | 15 (* PUSHACC5 *) -> 
-      incr sp; stack.(!sp) <- !acc; acc := stack.(5); incr pc
-    | 16 (* PUSHACC6 *) -> 
-      incr sp; stack.(!sp) <- !acc; acc := stack.(6); incr pc
-    | 17 (* PUSHACC7 *) -> 
-      incr sp; stack.(!sp) <- !acc; acc := stack.(7); incr pc
-    | 18 (* PUSHACC *) -> 
-      incr pc; 
-      let n = Input.code.(!pc) in
-      incr sp; stack.(!sp) <- !acc; acc := stack.(n); incr pc
-    | 19 (* POP *) -> 
-      incr pc;
-      let n = Input.code.(!pc) in 
-      if n >= Array.length stack || n < 0 then failwith "Stack pleine "
-      else sp := !sp - n;
-      incr pc
-    | 20 (* ASSIGN *) -> 
-      incr pc;
-      let n = Input.code.(!pc) in 
-      if n >= Array.length stack || n < 0 then failwith "stack pleine"
-      else begin stack.(n) <- !acc;
-                  acc := 0
-            end;
-       incr pc 
-    | 21 (* ENVACC1 *) -> acc := Mlvalues.get_field (!env) 1; incr pc
-    | 22 (* ENVACC2 *) -> acc := Mlvalues.get_field (!env) 2; incr pc
-    | 23 (* ENVACC3 *) -> acc := Mlvalues.get_field (!env) 3; incr pc
-    | 24 (* ENVACC4 *) -> acc := Mlvalues.get_field (!env) 4; incr pc
-    | 25 (* ENVACC *) -> 
-      incr pc;
-      let n = Input.code.(!pc) in 
-      acc := Mlvalues.get_field (!env) n;
-      incr pc
-    | 26 (* PUSHENVACC1 *) ->
-      incr sp; stack.(!sp) <- !acc; acc := Mlvalues.get_field (!env) 1; incr pc
-    | 27 (* PUSHENVACC2 *) ->
-      incr sp; stack.(!sp) <- !acc; acc := Mlvalues.get_field (!env) 2; incr pc
-    | 28 (* PUSHENVACC3 *) ->
-      incr sp; stack.(!sp) <- !acc; acc := Mlvalues.get_field (!env) 3; incr pc
-    | 29 (* PUSHENVACC4 *) ->
-      incr sp; stack.(!sp) <- !acc; acc := Mlvalues.get_field (!env) 4; incr pc
-    | 30 (* PUSHENVACC *) -> (* Equivalent to PUSH then ENVACC *)
-      incr pc;
-      let n = Input.code.(!pc) in
-      incr sp; stack.(!sp) <- !acc; 
-      acc := Mlvalues.get_field (!env) n;
-      incr pc
-    | 31 (* PUSH-RETADDR *) ->
-      incr pc;
-      let ofs = Input.code.(!pc) in
-      failwith "todo"
-    | 32 (* APPLY *) -> 
-      incr pc;
-      let args = Input.code.(!pc) in
-      extra_args := (!args) - 1;
-      pc := Mlvalues.addr_closure (acc); (* todo ? *)
-      env := Mlvalues.env_closure (acc)
-    failwith "todo"
-    | 62 (* MAKEBLOCK *) -> 
-      incr pc;
-      let tag = Input.code.(!pc) in
-      incr pc;
-      let sz = Input.code.(!pc) in     (* attention à l'ordre des arguments (tag et pc) dans la pile *)
-      let blk = Mlvalues.new_block tag sz in
-      Mlvalues.set_field blk 0 (!acc);
-      for i = 1 to sz - 1 do 
-        Mlvalues.set_field blk i (pop_stack ())
-      done;
-      acc := blk;
-      incr pc
+    | 0 (* ACC0 *) -> acc := stack.(0)
+    | 1 (* ACC1 *) -> acc := stack.(1)
+    | 2 (* ACC2 *) -> acc := stack.(2)
+    | 3 (* ACC3 *) -> acc := stack.(3)
+    | 4 (* ACC4 *) -> acc := stack.(4)
+    | 5 (* ACC5 *) -> acc := stack.(5)
+    | 6 (* ACC6 *) -> acc := stack.(6)
+    | 7 (* ACC7 *) -> acc := stack.(7)
+    | 8 (* ACC *) -> let n = take_argument () in
+                     if n >= Array.length stack || n < 0 then failwith "stack pleine"
+                     else acc := stack.(n)
+    | 9 (* PUSH *) -> push_stack (!acc)
+    | 10 (* PUSHACC0 (~ PUSH) *) -> push_stack (!acc)
+    | 11 (* PUSHACC1 *) -> push_stack (!acc); acc := stack.(1)
+    | 12 (* PUSHACC2 *) -> push_stack (!acc); acc := stack.(2)
+    | 13 (* PUSHACC3 *) -> push_stack (!acc); acc := stack.(3)
+    | 14 (* PUSHACC4 *) -> push_stack (!acc); acc := stack.(4)
+    | 15 (* PUSHACC5 *) -> push_stack (!acc); acc := stack.(5)
+    | 16 (* PUSHACC6 *) -> push_stack (!acc); acc := stack.(6)
+    | 17 (* PUSHACC7 *) -> push_stack (!acc); acc := stack.(7)
+    | 18 (* PUSHACC *) -> let n = take_argument () in
+                          push_stack (!acc); acc := stack.(n)
+    | 19 (* POP *) -> let n = take_argument () in 
+                      if n >= Array.length stack || n < 0 then failwith "Stack pleine "
+                      else sp := !sp - n
+    | 20 (* ASSIGN *) -> let n = take_argument () in 
+                         if n >= Array.length stack || n < 0 then failwith "stack pleine"
+                         else (stack.(n) <- !acc; acc := 0)
+    | 21 (* ENVACC1 *) -> acc := Mlvalues.get_field (!env) 1
+    | 22 (* ENVACC2 *) -> acc := Mlvalues.get_field (!env) 2
+    | 23 (* ENVACC3 *) -> acc := Mlvalues.get_field (!env) 3
+    | 24 (* ENVACC4 *) -> acc := Mlvalues.get_field (!env) 4
+    | 25 (* ENVACC *) -> let n = take_argument () in acc := Mlvalues.get_field (!env) n
+    | 26 (* PUSHENVACC1 *) -> push_stack (!acc); acc := Mlvalues.get_field (!env) 1
+    | 27 (* PUSHENVACC2 *) -> push_stack (!acc); acc := Mlvalues.get_field (!env) 2
+    | 28 (* PUSHENVACC3 *) -> push_stack (!acc); acc := Mlvalues.get_field (!env) 3
+    | 29 (* PUSHENVACC4 *) -> push_stack (!acc); acc := Mlvalues.get_field (!env) 4
+    | 30 (* PUSHENVACC *) -> let n = take_argument () in(* Equivalent to PUSH then ENVACC *)
+                             push_stack (!acc);
+                             acc := Mlvalues.get_field (!env) n
+    | 31 (* PUSH-RETADDR *) -> let ofs = take_argument () in
+                               failwith "todo"
+    | 32 (* APPLY *) -> let args = take_argument () in
+                        extra_args := (!args) - 1;
+                        pc := Mlvalues.addr_closure (acc); (* todo ? *)
+                        env := Mlvalues.env_closure (acc)
+                        failwith "todo"
+    | 62 (* MAKEBLOCK *) -> let tag = take_argument () in
+                            let sz = take_argument () in     (* attention à l'ordre des arguments (tag et pc) dans la pile *)
+                            let blk = Mlvalues.new_block tag sz in
+                            Mlvalues.set_field blk 0 (!acc);
+                            for i = 1 to sz - 1 do 
+                              Mlvalues.set_field blk i (pop_stack ())
+                            done;
+                            acc := blk
+    | 63 (* MAKEBLOCK1 *) -> let tag = take_argument () in
+                             let blk = Mlvalues.new_block tag 1 in
+                             Mlvalues.set_field blk 0 (!acc);
+                             acc := blk
+    | 64 (* MAKEBLOCK2 *) -> let tag = take_argument () in
+                             let blk = Mlvalues.new_block tag 2 in
+                             Mlvalues.set_field blk 0 (!acc);
+                             Mlvalues.set_field blk 1 (pop_stack ())
+                             acc := blk
+    | 65 (* MAKEBLOCK4 *) -> let tag = take_argument () in
+                             let blk = Mlvalues.new_block tag 2 in
+                             Mlvalues.set_field blk 0 (!acc);
+                             Mlvalues.set_field blk 1 (pop_stack ())
+                             Mlvalues.set_field blk 2 (pop_stack ())
+                             acc := blk
 
-  (********* MAKEBLOCK 1 2 3 ****************)
+    (* 66 MAKEFLOATBLOCK *)
 
-
-    | 67 (* GETFIELD0 *) -> acc := Mlvalues.get_field (!acc) 0; incr pc
-    | 68 (* GETFIELD1 *) -> acc := Mlvalues.get_field (!acc) 1; incr pc
-    | 69 (* GETFIELD2 *) -> acc := Mlvalues.get_field (!acc) 2; incr pc 
-    | 70 (* GETFIELD3 *) -> acc := Mlvalues.get_field (!acc) 4; incr pc
-    | 71 (* GETFIELD *) ->
-      incr pc;
-      let n = Input.code.(!pc) in 
-      acc := Mlvalues.get_field (!acc) n;
-      incr pc
+    | 67 (* GETFIELD0 *) -> acc := Mlvalues.get_field (!acc) 0
+    | 68 (* GETFIELD1 *) -> acc := Mlvalues.get_field (!acc) 1
+    | 69 (* GETFIELD2 *) -> acc := Mlvalues.get_field (!acc) 2 
+    | 70 (* GETFIELD3 *) -> acc := Mlvalues.get_field (!acc) 4
+    | 71 (* GETFIELD *) -> let n = Input.code.(!pc) in 
+                           acc := Mlvalues.get_field (!acc) n
     
     (* GETFLOATFIELD (opInput.code: 72) *)
     
-    | 73 (* SETFIELD0 *) ->
-      Mlvalues.set_field (!acc) 0 stack.(!sp);
-      decr sp;
-      incr pc 
-    | 74 (* SETFIELD1 *) ->
-      Mlvalues.set_field (!acc) 1 stack.(!sp);
-      decr sp;
-      incr pc 
-    | 75 (* SETFIELD2 *) ->
-      Mlvalues.set_field (!acc) 2 stack.(!sp);
-      decr sp;
-      incr pc    
-    | 76 (* SETFIELD3 *) ->
-      Mlvalues.set_field (!acc) 3 stack.(!sp);
-      decr sp;
-      incr pc
-    | 77 (* SETFIELD *) ->
-      incr pc;
-      let n = Input.code.(!pc) in 
-      Mlvalues.set_field (!acc) n stack.(!sp);
-      decr sp;
-      incr pc
+    | 73 (* SETFIELD0 *) -> Mlvalues.set_field (!acc) 0 (pop_stack ()) 
+    | 74 (* SETFIELD1 *) -> Mlvalues.set_field (!acc) 1 (pop_stack ()) 
+    | 75 (* SETFIELD2 *) -> Mlvalues.set_field (!acc) 2 (pop_stack ())    
+    | 76 (* SETFIELD3 *) -> Mlvalues.set_field (!acc) 3 (pop_stack ())
+    | 77 (* SETFIELD *) -> let n = take_argument () in 
+                           Mlvalues.set_field (!acc) n (pop_stack ())
 
-
-    | 79 (* VECTLENGTH *) -> 
-      acc := Mlvalues.val_long (Mlvalues.size acc);
-      incr pc
-    | 84 (* BRANCH *) -> 
-       incr pc;
-       let n = Input.code.(!pc) in 
-       if n >= Array.length Input.code then failwith "Instr array out of bounds"
-       else pc := !pc + n
-    | 85 (* BRANCHIF *) -> 
-       incr pc;
-       let n = Input.code.(!pc) in 
-       if n >= Array.length Input.code then failwith "Instr array out of bounds"
-       else pc := if Mlvalues.long_val (!acc) = 1 then (!pc) + n else !pc + 1
-    | 85 (* BRANCHIFNOT *) -> 
-       incr pc;
-       let n = Input.code.(!pc) in 
-       if n >= Array.length Input.code then failwith "Instr array out of bounds"
-       else pc := if Mlvalues.long_val (!acc) = 0 then (!pc) + n else !pc + 1
+    (* 78 *)
+    | 79 (* VECTLENGTH *) -> acc := Mlvalues.val_long (Mlvalues.size acc)
+    | 84 (* BRANCH *) -> let n = take_argument () in 
+                         if n >= Array.length Input.code then failwith "Instr array out of bounds"
+                         else pc := !pc + n
+    | 85 (* BRANCHIF *) -> let n = take_argument () in 
+                           if n >= Array.length Input.code then failwith "Instr array out of bounds"
+                           else pc := if Mlvalues.long_val (!acc) = 1 then (!pc) + n else !pc + 1
+    | 85 (* BRANCHIFNOT *) -> let n = take_argument () in 
+                              if n >= Array.length Input.code then failwith "Instr array out of bounds"
+                              else pc := if Mlvalues.long_val (!acc) = 0 then (!pc) + n else !pc + 1
     
     (* | 92 à 98 -> interop avec C *)
-    | 99 (* Const0 *) -> 
-       acc := Mlvalues.val_long 0;
-       incr pc
-    | 100 (* Const1 *) -> 
-       acc := Mlvalues.val_long 1;
-       incr pc
-    | 101 (* Const2 *) -> 
-       acc := Mlvalues.val_long 2;
-       incr pc
-    | 102 (* Const3 *) -> 
-       acc := Mlvalues.val_long 3;
-       incr pc
-    | 103 (* ConstInt *) -> 
-       incr pc;
-       let n = Input.code.(!pc) in
-       acc := Mlvalues.val_long n;
-       incr pc
-    | 109 (*NEGINT*) -> 
-       acc := Prims.negint acc;
-       incr pc
-    | 110 (* ADDINT *) ->  
-       acc := Prims.addint stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 111 (* SUBINT *) ->  
-       acc := Prims.subint stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 112 (* MULINT *) -> 
-       acc := Prims.mulint stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 113 (* DIVINT *) -> 
-       acc := Prims.divint stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 114 (* MODINT *) -> 
-       acc := Prims.modint stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 115 (* ANDINT *) -> 
-       acc := Prims.andint stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 116 (* ORINT *) -> 
-       acc := Prims.orint stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 117 (* XORINT *) -> 
-       acc := Prims.xorint stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 118 (* LSLINT *) -> 
-       acc := Prims.lslint stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 119 (* LSRINT *) -> 
-       acc := Prims.lsrint stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 120 (* ASRINT *) -> 
-       acc := Prims.asrint stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 121 (* EQ *) ->
-       acc := Prims.eq stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 122 (* NEQ *) ->
-       acc := Prims.neq stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 123 (* LTINT *) -> 
-       acc := Prims.ltint stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 124 (* LEINT *) -> 
-       acc := Prims.leint stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 125 (* GTINT *) ->
-       acc := Prims.gtint stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 126 (* GEINT *) -> 
-       acc := Prims.geint stack.(!sp) (!acc);
-       decr sp;
-       incr pc
-    | 127 (* OFFSETINT *) -> 
-      incr pc; 
-      let ofs = Input.code.(!pc) in
-      acc := Prims.addint ofs (!acc);
-      incr pc
+    | 99  (* CONST0 *) -> acc := Mlvalues.val_long 0
+    | 100 (* CONST1 *) -> acc := Mlvalues.val_long 1
+    | 101 (* CONST2 *) -> acc := Mlvalues.val_long 2
+    | 102 (* CONST3 *) -> acc := Mlvalues.val_long 3
+    | 103 (* CONSTINT *) -> let n = take_argument () in 
+                            acc := Mlvalues.val_long n
+    | 109 (* NEGINT *) -> acc := Prims.negint acc
+    | 110 (* ADDINT *) -> acc := Prims.addint (pop_stack ()) (!acc)
+    | 111 (* SUBINT *) -> acc := Prims.subint (pop_stack ()) (!acc)
+    | 112 (* MULINT *) -> acc := Prims.mulint (pop_stack ()) (!acc)
+    | 113 (* DIVINT *) -> acc := Prims.divint (pop_stack ()) (!acc)
+    | 114 (* MODINT *) -> acc := Prims.modint (pop_stack ()) (!acc)
+    | 115 (* ANDINT *) -> acc := Prims.andint (pop_stack ()) (!acc)
+    | 116 (* ORINT  *) -> acc := Prims.orint  (pop_stack ()) (!acc)
+    | 117 (* XORINT *) -> acc := Prims.xorint (pop_stack ()) (!acc)
+    | 118 (* LSLINT *) -> acc := Prims.lslint (pop_stack ()) (!acc)
+    | 119 (* LSRINT *) -> acc := Prims.lsrint (pop_stack ()) (!acc)
+    | 120 (* ASRINT *) -> acc := Prims.asrint (pop_stack ()) (!acc)
+    | 121 (* EQ     *) -> acc := Prims.eq     (pop_stack ()) (!acc)
+    | 122 (* NEQ    *) -> acc := Prims.neq    (pop_stack ()) (!acc)
+    | 123 (* LTINT  *) -> acc := Prims.ltint  (pop_stack ()) (!acc)
+    | 124 (* LEINT  *) -> acc := Prims.leint  (pop_stack ()) (!acc)
+    | 125 (* GTINT  *) -> acc := Prims.gtint  (pop_stack ()) (!acc)
+    | 126 (* GEINT  *) -> acc := Prims.geint  (pop_stack ()) (!acc)
+    | 127 (* OFFSETINT *) -> let ofs = take_argument () in 
+                             acc := Prims.addint ofs (!acc)
     | 128 (* OFFSETREF *) -> failwith "todo"
     | 129 (* ISINT *) -> acc := Prims.isint (!acc) 
     | 130 (* GETMETHOD *) -> failwith "todo"
-    | 131 (* BEQ *) -> 
-      incr pc; 
-      let v = Input.code.(!pc) in
-      incr pc;
-      let ofs = Input.code.(!pc) in
-      pc := (!pc) + (if Prims.compare_imm v (!acc) = 0 then ofs else 1)
-    | 132 (* BNEQ *) ->
-      incr pc; 
-      let v = Input.code.(!pc) in
-      incr pc;
-      let ofs = Input.code.(!pc) in
-      pc := (!pc) + (if Prims.compare_imm v (!acc) <> 0 then ofs else 1)
+    | 131 (* BEQ *) ->
+      let v = take_argument () in
+      let ofs = take_argument () in
+      if  Prims.compare_imm v (!acc) = 0 then pc := (!pc) + ofs - 1
+    | 132 (* BNEQ *) -> 
+      let v = take_argument () in
+      let ofs = take_argument () in
+      if Prims.compare_imm v (!acc) <> 0 then pc := (!pc) + ofs - 1
     | 133 (* BLTINT *) ->
-      incr pc; 
-      let v = Input.code.(!pc) in
-      incr pc;
-      let ofs = Input.code.(!pc) in
-      pc := (!pc) + (if Prims.compare_imm v (!acc) < 0 then ofs else 1)
+      let v = take_argument () in
+      let ofs = take_argument () in
+      if Prims.compare_imm v (!acc) < 0 then pc := (!pc) + ofs - 1
     | 134 (* BLEINT *) ->
-      incr pc; 
-      let v = Input.code.(!pc) in
-      incr pc;
-      let ofs = Input.code.(!pc) in
-      pc := (!pc) + (if Prims.compare_imm v (!acc) <= 0 then ofs else 1)
+      let v = take_argument () in
+      let ofs = take_argument () in
+      if Prims.compare_imm v (!acc) <= 0 then pc := (!pc) + ofs - 1
     | 135 (* BGTINT *) ->
-      incr pc; 
-      let v = Input.code.(!pc) in
-      incr pc;
-      let ofs = Input.code.(!pc) in
-      pc := (!pc) + (if Prims.compare_imm v (!acc) > 0 then ofs else 1)
+      let v = take_argument () in
+      let ofs = take_argument () in
+      if Prims.compare_imm v (!acc) > 0 then pc := (!pc) + ofs - 1
     | 136 (* BGEINT *) ->
-      incr pc; 
-      let v = Input.code.(!pc) in
-      incr pc;
-      let ofs = Input.code.(!pc) in
-      pc := (!pc) + (if Prims.compare_imm v (!acc) >= 0 then ofs else 1)
-    | 137 (* ULTINT *) ->
-      acc := Prims.ultint stack.(!sp) (!acc);
-      decr sp;
-      incr pc
-    | 138 (* UGEINT *) ->
-      acc := Prims.ugeint stack.(!sp) (!acc);
-      decr sp;
-      incr pc
+      let v = take_argument () in
+      let ofs = take_argument () in
+      if Prims.compare_imm v (!acc) >= 0 then pc := (!pc) + ofs - 1
+    | 137 (* ULTINT *) -> acc := Prims.ultint (pop_stack ()) (!acc)
+    | 138 (* UGEINT *) -> acc := Prims.ugeint (pop_stack ()) (!acc)
     | 143 (* STOP *) -> pc := Array.length Input.code
   done
 
