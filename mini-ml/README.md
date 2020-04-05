@@ -22,7 +22,7 @@ Par defaut, -src="", dst="generated_files"
         | let g = <expr> 
         |let <ident> <ident> ... = <expr> 
         | type <ident> = <Constr> | <Constr> | ... # non paramétré
-      //| let rec <ident> <ident> ... = <expr> 
+        | let rec <ident> <ident> ... = <expr> 
 
 <expr> := (<expr>)
         | (<expr> : <expr_ty>)

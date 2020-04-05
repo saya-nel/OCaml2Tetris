@@ -3,6 +3,10 @@
 open Types
 open Ast
 
+let get_tyopt = function
+| None -> Tvar (V.create ()) 
+| Some ty -> ty
+
 let initial_env primitives =
   List.fold_right (fun (x,c,ty) env -> add true x ty env) primitives empty_env;;
 
@@ -22,15 +26,15 @@ and w_dec env = function
   (match tyopt with None -> () | Some ty -> unify t ty);
   ([(x,t)])
 | DefFun funs -> 
-  let funtys = List.map (w_fun env) funs in
+  let funtys = List.map (w_defun env) funs in
   (List.map2 (fun (f,_,_) tf -> (f,tf)) funs funtys)
 | DefFunRec funs -> 
   let env' = List.fold_left (fun env ((x,args,e) as f) -> 
-                               let t = w_funrec env f in 
+                               let t = w_defunrec env f in 
                                add true x t env) env funs in
   List.map (fun (x,_,_) -> (x,find x env')) funs
 | Type _ -> ([]) (* failwith "todo" *)
-and w_fun env (f,args,e) = 
+and w_defun env (f,args,e) = 
   let env' = List.fold_left 
                (fun env xi -> 
                   let v = Tvar (V.create ()) in
@@ -39,7 +43,7 @@ and w_fun env (f,args,e) =
   let t = List.fold_right (fun xi t -> let ti = find xi env' in Tarrow(ti,t)) args tret in
   t
 
-and w_funrec env (f,args,e) =  (* un peu trop bricoller, ne marche pas *)
+and w_defunrec env (f,args,e) =  (* un peu trop bricoller, ne marche pas *)
   let v0 = Tvar (V.create ()) in
   let env' = List.fold_left 
                (fun env xi -> 
@@ -65,9 +69,15 @@ and w_exp env = function
       find x env
   | Let ((x,tyopt), e1, e2) ->
       let t1 = w_exp env e1 in
-      (match tyopt with None -> () | Some ty -> unify t1 ty);
+      let ty = get_tyopt tyopt in
+      unify t1 ty;
       let env' = match x with s -> add true s t1 env in
       w_exp env' e2
+  | Fun ((x,tyopt), e1) ->
+      let ty = get_tyopt tyopt in
+      let env = add false x ty env in
+      let t1 = w_exp env e1 in
+      Tarrow (ty, t1)
   | App (ef, es) ->
       let t1 = w_exp env ef in
       let ts = List.map (w_exp env) es in

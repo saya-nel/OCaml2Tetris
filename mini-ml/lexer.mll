@@ -31,6 +31,7 @@ rule token = parse
 | "let"              { LET }
 | "where"            { WHERE }
 | "and"              { AND_KW }
+| "fun"              { FUN }
 | "rec"              { REC }
 | "in"               { IN }
 | "if"               { IF }

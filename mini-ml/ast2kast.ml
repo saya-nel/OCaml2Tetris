@@ -13,7 +13,6 @@ type genv = {
     primitives : (Ast.name * Ast.name) list;
     typed_decls : Types.env;
     init : Ast.name list }
-and arity = int
 
 let empty_genv prims mod_name =
   {
@@ -45,18 +44,19 @@ let env_extends_constructors genv cstrs =
   {genv with constrs=(!r)}
 
 type lenv = {
-    arguments : (Ast.name * int) list;
+    arguments : (Ast.name * int) list ;
     locals : (Ast.name * int) list ;
+    free : (Ast.name * int) list ;
     nexts : lenv option
   }
           
 
 let empty_lenv =
-  {arguments=[];locals=[];nexts=None}
+  {arguments=[];locals=[];free=[];nexts=None}
   
 let frame ?lenv args = 
   let a = List.mapi (fun i name -> (name,i)) args in
-  {arguments=a;locals=[];nexts=lenv}
+  {arguments=a;locals=[];free=[];nexts=lenv}
 
 let lenv_extend x lenv = 
   let i2,locals' =
@@ -87,7 +87,7 @@ and rewrite_decl mod_name genv = function
                            | Ast.Sum(names) -> 
                              let genv' = env_extends_constructors genv names in (genv',[])
                            | _ -> (genv,[])) *)
-  | Ast.Exp (e) ->
+  | Ast.Exp(e) ->
      rewrite_decl mod_name genv @@
        let name = gensym ~prefix:"voidExpr" in
        Ast.DefVar ((name,None),e)
@@ -131,6 +131,8 @@ and rewrite_exp lenv genv = function
       | None ->
          (match List.assoc_opt name lenv.arguments with
           | None ->
+             (match List.assoc_opt name lenv.free with
+             | None ->
              (match List.assoc_opt name genv.globals with
               | None -> let full_name =
                           if (match String.index_opt name '.' with
@@ -147,12 +149,22 @@ and rewrite_exp lenv genv = function
                                 with Not_found -> failwith ("cannot find " ^ name)
                               in
                               Kast.GFun(f))
-              | Some i -> Kast.App (Kast.GFun(genv.mod_name ^ "." ^ name),[]))
+              | Some i -> Kast.Variable(Kast.Global (genv.mod_name ^ "." ^ name))) (* Kast.App (Kast.GFun(genv.mod_name ^ "." ^ name),[])) *)
+             | Some i -> Kast.Variable(Kast.Free (i)))
           | Some i -> Kast.Variable(Kast.Argument (i)))
       | Some i -> Kast.Variable(Kast.Local i))
   | Ast.Let((name,_),e1,e2) ->
      let i,lenv' = lenv_extend name lenv in 
      Kast.Let(i,rewrite_exp lenv' genv e1, rewrite_exp lenv' genv e2)
+  | Ast.Fun((name,_),e) ->
+    let lenv' = {lenv with 
+                 free=lenv.locals @ 
+                      (let n = List.length lenv.locals in 
+                       List.map (fun (c,i) -> (c,i+n)) lenv.arguments); 
+                arguments=[(name,0)];
+                locals=[]} in
+    let ke = rewrite_exp lenv' genv @@ e in
+    Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments)
   | Ast.App(e,args) -> 
      Kast.App(rewrite_exp lenv genv e, List.map (rewrite_exp lenv genv) args)
   | Ast.If(e1,e2,e3) ->

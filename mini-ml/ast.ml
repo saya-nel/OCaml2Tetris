@@ -16,6 +16,7 @@ and exp =
   | Constant of (constant)
   | Ident of (name)
   | Let of (var * exp * exp)
+  | Fun of (var * exp)
   (*  | LetFun of (name * name list * exp * exp) *)
   | App of (exp * exp list)
   | If of (exp * exp * exp)

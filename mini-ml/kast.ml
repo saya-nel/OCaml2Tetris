@@ -7,7 +7,9 @@ and tmodule = {
     decls: decl list ;
     init : Ast.name list
   }
-            
+
+
+
 and decl = 
   | DefFun of (Ast.name * arity * exp)
 and arity = int
@@ -15,6 +17,7 @@ and exp =
   | Constant of constant
   | Variable of var
   | GFun of (Ast.name)
+  | Fun of (exp * int * int)
   | Let of (int * exp * exp)
   | App of (exp * exp list)
   | If of (exp * exp * exp)
@@ -30,7 +33,8 @@ and constant =
   | Int of int 
   | Array_empty
   | List_empty
-and patern = constant
 and var = 
+  | Global of string
   | Argument of int 
   | Local of int
+  | Free of int

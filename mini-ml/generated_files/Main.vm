@@ -1,6 +1,0 @@
-///////////////////////////////////////////////////////////////
-function Main.main 0
-    call M1.__init____voidExpr1 0
-    call M1.__init__x 0
-    push constant 0
-    return

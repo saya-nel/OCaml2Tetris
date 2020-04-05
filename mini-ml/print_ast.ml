@@ -27,11 +27,11 @@ and sprint_decl lvl = function
      sptf "%stype %s = "
        (indent_string lvl)
        (name ^ (sprint_ty lvl ty))
-  | DefVar (name,e) ->
-     sptf "%slet %s = %s"
-       (indent_string lvl)
-       (sprint_var lvl name)
-       (sprint_exp (next lvl) e)
+  | DefVar (var,e) ->
+     let w = sptf "let %s = " (sprint_var lvl var) in
+     let z = get_indent_level w lvl in
+     sptf "%s%s" w
+       (sprint_exp z e)
   | Exp (e) ->
      sptf "%slet _ = %s"
        (indent_string lvl)
@@ -55,13 +55,17 @@ and sprint_exp lvl = function
   | Constant(c) ->
      sprint_constant lvl c
   | Ident name -> name
-  | Let(pat,e1,e2) ->
-     let w = sptf "(let %s = " (sprint_var lvl pat) in
+  | Let(var,e1,e2) ->
+     let w = sptf "(let %s = " (sprint_var lvl var) in
      let z = get_indent_level w lvl in
      sptf "%s%s in\n%s%s)" w
-       (sprint_exp (lvl + z) e1)
-       (indent_string (next lvl))
-       (sprint_exp (next lvl) e2)
+       (sprint_exp (z) e1)
+       (indent_string lvl)
+       (sprint_exp lvl e2)
+  | Fun(var,e) ->
+     let w = sptf "(fun %s -> " (sprint_var lvl var) in
+     let z = get_indent_level w lvl in
+     sptf "%s%s)" w (sprint_exp z e)
   | BinOp(op,e1,e2) ->
      let lvl = lvl + 1 in (* pour la parenthèse ouvrante *)
      let s = "(" ^ sprint_exp lvl e1 in

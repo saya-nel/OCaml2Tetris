@@ -25,6 +25,7 @@ type token =
   | STRING_TY
   | ARRAY_TY
   | ATAT
+  | FUN
   | IDENT of (string)
   | IDENT_CAPITALIZE of (string)
   | VM_IDENT of (string)

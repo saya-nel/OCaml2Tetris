@@ -7,7 +7,7 @@
 
 /* (* reserved words *) */
 %token LET WHERE IN IF THEN ELSE ASSERT WHILE FOR TO DO DONE MATCH WITH PIPE BEGIN END EXTERNAL AND_KW CONS
-%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT
+%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT FUN
 
 %token <string> IDENT IDENT_CAPITALIZE VM_IDENT
 %token <string> STRING
@@ -51,7 +51,7 @@
 
 %type <Ast.decl list>  tmodule
 %type <Ast.exp>        expr
-%type <Types.typ>      ty
+%type <Types.typ>         ty
 %type <Ast.match_case> match_case
 
 %%
@@ -160,6 +160,7 @@ expression :
 | ACCESS expr                            { Ref_access($2) } 
 | NOT expr                               { UnOp(Not,$2) }
 | expr                                   { $1 }
+| FUN argu_strict RIGHT_ARROW seq        { Fun($2,$4) }
 | LET argu EQ seq IN seq                 { match $2 with 
 	                                       | None,None -> Seq($4,$6)
 	                                       | None,Some t -> Seq(Annotation($4,t),$6)
@@ -175,6 +176,7 @@ expression :
 | FOR IDENT EQ seq TO seq DO seq DONE    { For($2,$4,$6,$8) }
 ;
 
+
 argu:
 | argu_aux                               { $1 }
 | argu_aux COLON expr_ty                 { let (c,_) = $1 in (c,Some $3) }
@@ -185,6 +187,14 @@ argu_aux:
 | LPAREN RPAREN                          { (None,Some Tunit)}
 | LPAREN argu RPAREN                     { $2 }
 ;
+
+
+argu_strict:
+| LPAREN argu_strict RPAREN                     { $2 }
+| IDENT                                         { ($1,None) }
+| IDENT COLON expr_ty                           { ($1,Some $3) }
+;
+
 
 expr: 
  | app                                   { $1 } 
