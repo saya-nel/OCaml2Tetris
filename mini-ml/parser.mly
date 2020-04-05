@@ -51,7 +51,7 @@
 
 %type <Ast.decl list>  tmodule
 %type <Ast.exp>        expr
-%type <Types.typ>         ty
+%type <Types.typ>      ty
 %type <Ast.match_case> match_case
 
 %%
