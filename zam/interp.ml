@@ -41,14 +41,14 @@ let interp () =
     incr pc where () = 
     debug_print_state ();
     match Input.code.(!pc) with
-    | 0 (* ACC0 *) -> acc := stack.(0)
-    | 1 (* ACC1 *) -> acc := stack.(1)
-    | 2 (* ACC2 *) -> acc := stack.(2)
-    | 3 (* ACC3 *) -> acc := stack.(3)
-    | 4 (* ACC4 *) -> acc := stack.(4)
-    | 5 (* ACC5 *) -> acc := stack.(5)
-    | 6 (* ACC6 *) -> acc := stack.(6)
-    | 7 (* ACC7 *) -> acc := stack.(7)
+    | 0 (* ACC0 *) -> acc := stack.((!sp)-1)
+    | 1 (* ACC1 *) -> acc := stack.((!sp)-2)
+    | 2 (* ACC2 *) -> acc := stack.((!sp)-3)
+    | 3 (* ACC3 *) -> acc := stack.((!sp)-4)
+    | 4 (* ACC4 *) -> acc := stack.((!sp)-5)
+    | 5 (* ACC5 *) -> acc := stack.((!sp)-6)
+    | 6 (* ACC6 *) -> acc := stack.((!sp)-7)
+    | 7 (* ACC7 *) -> acc := stack.((!sp)-8)
     | 8 (* ACC *) -> let n = take_argument () in
                      if n >= Array.length stack || n < 0 then failwith "stack pleine"
                      else acc := stack.(n)
@@ -199,7 +199,9 @@ let interp () =
     | 137 (* ULTINT *) -> acc := Prims.ultint (pop_stack ()) (!acc)
     | 138 (* UGEINT *) -> acc := Prims.ugeint (pop_stack ()) (!acc)
     | 143 (* STOP *) -> pc := Array.length Input.code
-  done
+  done;
+  print_string "fin programme :";
+  debug_print_state ()
 
 let () =
   interp ()

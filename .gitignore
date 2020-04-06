@@ -1,5 +1,6 @@
 compile
 input.ml
+mini-ml/generated_files/*
 
 *.annot
 *.cmo

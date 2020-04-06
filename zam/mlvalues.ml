@@ -7,9 +7,11 @@ type t = int
 
 (* !!! la notation 0x... de mini-ml est erroné !!! *)
 
+(* transforme un entier en mlvalue *)
 let val_long (n : t) : t = n lor  0x8000 (* pack *)
+(* transforme un mlvalue en entier *)
 let long_val (n : t) : t = n land 0x7FFF;; (* unpack *)
-
+(*  *)
 let blk_pack (n : t) : t = n land 0x7FFF
 let blk_unpack (n : t) : t = n
 

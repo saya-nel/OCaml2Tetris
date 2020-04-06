@@ -1,27 +1,40 @@
 #!/bin/bash
 
-# clean des anciens résidus 
-rm -Rf mini-ml/generated_files
-rm zam/input.ml
+if [ $# -eq 0 ]
+  then # Si il n'y a pas d'arg, on lance la vm
+    # lancement compilation vers mini-ml
+    cd mini-ml
+    mkdir generated_files
+    ./compile stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml ../zam/mlvalues.ml ../zam/prims.ml ../zam/input.ml ../zam/interp.ml
+    cd .. 
 
-# lancement make mini-ml
+    # ouverture de la VM nand2tetris
+    nand2tetris/tools/VMEmulator.sh
+  else
+    # clean des anciens résidus 
+    rm -Rf mini-ml/generated_files
+    rm zam/input.ml
 
-make -C mini-ml
+    # lancement make mini-ml
 
-# lancement obytelibParser
-dune build bytecode/obytelibParser.exe
-cd samples
-ocamlc *.ml
-rm a.out
-rm *.cmi
-cd ..
-./_build/default/bytecode/obytelibParser.exe $@
+    make -C mini-ml
 
-# lancement compilation vers mini-ml
-cd mini-ml
-mkdir generated_files
-./compile stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml ../zam/mlvalues.ml ../zam/prims.ml ../zam/input.ml ../zam/interp.ml
-cd .. 
+    # lancement obytelibParser
+    dune build bytecode/obytelibParser.exe
+    cd samples
+    ocamlc *.ml
+    rm a.out
+    rm *.cmi
+    cd ..
+    ./_build/default/bytecode/obytelibParser.exe $@
 
-# ouverture de la VM nand2tetris
-nand2tetris/tools/VMEmulator.sh
+    # lancement compilation vers mini-ml
+    cd mini-ml
+    mkdir generated_files
+    ./compile stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml ../zam/mlvalues.ml ../zam/prims.ml ../zam/input.ml ../zam/interp.ml
+    cd .. 
+
+    # ouverture de la VM nand2tetris
+    nand2tetris/tools/VMEmulator.sh
+fi
+
