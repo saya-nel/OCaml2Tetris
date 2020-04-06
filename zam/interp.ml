@@ -29,6 +29,18 @@ let debug_print_state () =
   print_int (!sp);
   print_newline ()
 
+let debug_print_stack () =
+  print_string "stack :";
+  print_newline ();
+  let i = ref 0 in
+  while (!i)  < (!sp) do
+    print_int (Mlvalues.long_val stack.(!i));
+    incr i;
+    print_string " | "
+  done;
+  print_newline ()
+
+
 let interp () =
   let extra_args = ref 0 in
   let trap_sp = ref 0 in
@@ -51,24 +63,24 @@ let interp () =
     | 7 (* ACC7 *) -> acc := stack.((!sp)-8)
     | 8 (* ACC *) -> let n = take_argument () in
                      if n >= Array.length stack || n < 0 then failwith "stack pleine"
-                     else acc := stack.(n)
+                     else acc := stack.((!sp)-1-n)
     | 9 (* PUSH *) -> push_stack (!acc)
-    | 10 (* PUSHACC0 (~ PUSH) *) -> push_stack (!acc)
-    | 11 (* PUSHACC1 *) -> push_stack (!acc); acc := stack.(1)
-    | 12 (* PUSHACC2 *) -> push_stack (!acc); acc := stack.(2)
-    | 13 (* PUSHACC3 *) -> push_stack (!acc); acc := stack.(3)
-    | 14 (* PUSHACC4 *) -> push_stack (!acc); acc := stack.(4)
-    | 15 (* PUSHACC5 *) -> push_stack (!acc); acc := stack.(5)
-    | 16 (* PUSHACC6 *) -> push_stack (!acc); acc := stack.(6)
-    | 17 (* PUSHACC7 *) -> push_stack (!acc); acc := stack.(7)
+    | 10 (* PUSHACC0 *) -> push_stack (!acc)
+    | 11 (* PUSHACC1 *) -> push_stack (!acc); acc := stack.((!sp)-2)
+    | 12 (* PUSHACC2 *) -> push_stack (!acc); acc := stack.((!sp)-3)
+    | 13 (* PUSHACC3 *) -> push_stack (!acc); acc := stack.((!sp)-4)
+    | 14 (* PUSHACC4 *) -> push_stack (!acc); acc := stack.((!sp)-5)
+    | 15 (* PUSHACC5 *) -> push_stack (!acc); acc := stack.((!sp)-6)
+    | 16 (* PUSHACC6 *) -> push_stack (!acc); acc := stack.((!sp)-7)
+    | 17 (* PUSHACC7 *) -> push_stack (!acc); acc := stack.((!sp)-8)
     | 18 (* PUSHACC *) -> let n = take_argument () in
-                          push_stack (!acc); acc := stack.(n)
+                          push_stack (!acc); acc := stack.((!sp)-1-n)
     | 19 (* POP *) -> let n = take_argument () in 
                       if n >= Array.length stack || n < 0 then failwith "Stack pleine "
                       else sp := !sp - n
     | 20 (* ASSIGN *) -> let n = take_argument () in 
                          if n >= Array.length stack || n < 0 then failwith "stack pleine"
-                         else (stack.(n) <- !acc; acc := 0)
+                         else (stack.((!sp)-1-n) <- !acc; acc := 0)
     | 21 (* ENVACC1 *) -> acc := Mlvalues.get_field (!env) 1
     | 22 (* ENVACC2 *) -> acc := Mlvalues.get_field (!env) 2
     | 23 (* ENVACC3 *) -> acc := Mlvalues.get_field (!env) 3
@@ -201,7 +213,8 @@ let interp () =
     | 143 (* STOP *) -> pc := Array.length Input.code
   done;
   print_string "fin programme :";
-  debug_print_state ()
+  debug_print_state ();
+  debug_print_stack
 
 let () =
   interp ()

@@ -1950,7 +1950,7 @@ let
                                                        ( let n = int_of_string lxm in 
 	                            if abs n > 0xFFFF 
 	                            then failwith "Integer literal exceeds the range of representable integers" 
-	                            else INT(if n < 0x8000 then n else - n + 1) )
+	                            else INT(if n < 0x8000 then n else - 0x8000 + n) )
 # 1955 "lexer.ml"
 
   | 1 ->
