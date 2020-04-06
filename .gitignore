@@ -1,3 +1,6 @@
+compile
+input.ml
+
 *.annot
 *.cmo
 *.cma
