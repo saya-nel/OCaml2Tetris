@@ -7,7 +7,7 @@
 
 /* (* reserved words *) */
 %token LET WHERE IN IF THEN ELSE ASSERT WHILE FOR TO DO DONE MATCH WITH PIPE BEGIN END EXTERNAL AND_KW CONS
-%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT FUN
+%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT FUN TVAR
 
 %token <string> IDENT IDENT_CAPITALIZE VM_IDENT
 %token <string> STRING
@@ -19,7 +19,7 @@
 %token REC
 /* (* control characters *) */
 %token EOF TERMINAISON DOT COLON LPAREN RPAREN LBRACKET RBRACKET SEMICOL BEGIN END COMMA OF
-%token ARRAY_OPEN ARRAY_CLOSE ARRAY_ACCESS_OPEN LEFT_ARROW RIGHT_ARROW ASSIGN ACCESS REF WILDCARD
+%token ARRAY_OPEN ARRAY_CLOSE ARRAY_ACCESS_OPEN LEFT_ARROW RIGHT_ARROW ASSIGN ACCESS WILDCARD
 
 
 %nonassoc LET 
@@ -128,6 +128,12 @@ expr_ty:
  	                               | "char" -> Tchar
  	                               | "string" -> Tstring
  	                               | s -> Tident(s) }
+ | TVAR IDENT                    { let v = Tvar (V.create ()) in  
+ 								   match $2 with 
+                                   | "array" -> Tarray v 
+                                   | "ref" -> Tref v
+                                   | "tlist" -> Tlist v
+                                   | s -> Tconstr(s,[v])  }
  | ident_in_mod                  { Tident($1) }
  | expr_ty TIMES expr_ty         { Tproduct($1,$3) }
  | expr_ty RIGHT_ARROW expr_ty   { Tarrow($1,$3) }
@@ -223,7 +229,6 @@ app:
  | exp                                   { $1 }
  | exp exprs                             { App($1,$2) }
  | exp ATAT app                          { App($1,[$3]) }
- | REF exp                               { Ref ($2)} 
  | ASSERT exp                            { Assert ($2) }
  ;
 

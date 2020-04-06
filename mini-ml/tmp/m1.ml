@@ -21,9 +21,20 @@ let g = (fun x -> (x * 6))
 let compose f1 f2 x = f1 (f2 x)
 
 let _ = print_int (compose f g 17) *)
-
+(*
 let f x = 
 	let g = (fun x -> print_int x) in
 	g x
 
-let _ = f 17
+let _ = f 17*)
+
+(*
+let _ = 
+	let a = [|1;2;3;4;5|] in
+	let a2 = Array.map (fun x -> x + 10) a in
+	Array.iter (fun x -> print_int x) a2*)
+
+let f = (fun x -> fun y -> x + y)
+
+let g = f 42
+let _ = print_int (g 3)

@@ -1,5 +1,3 @@
-let l = 1 :: 2 :: 3 :: []
-
 let stack_size = 1024
 
 let pc = ref 0

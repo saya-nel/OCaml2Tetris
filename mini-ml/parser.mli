@@ -26,6 +26,7 @@ type token =
   | ARRAY_TY
   | ATAT
   | FUN
+  | TVAR
   | IDENT of (string)
   | IDENT_CAPITALIZE of (string)
   | VM_IDENT of (string)
@@ -70,7 +71,6 @@ type token =
   | RIGHT_ARROW
   | ASSIGN
   | ACCESS
-  | REF
   | WILDCARD
 
 val tmodule :

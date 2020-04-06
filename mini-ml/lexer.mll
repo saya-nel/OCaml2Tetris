@@ -57,9 +57,9 @@ rule token = parse
 | "->"               { RIGHT_ARROW }
 | ":="               { ASSIGN }
 | "!"                { ACCESS }
-| "ref"              { REF }
 | (['"'](([^'"'])* as s)['"']) { STRING(s) }
 | (['''](['a'-'z''A'-'Z''0'-'9'' ''-''_''!'','';''.''''] as c)[''']) { CHAR(c) }
+| ([''']['a'])       { TVAR }
 | "not"              { NOT }
 | "+"                { PLUS }
 | "-"                { MINUS }
@@ -75,7 +75,7 @@ rule token = parse
 | "<"                { LT }
 | ">="               { GE }
 | "<="               { LE }
-| "@@"               { ATAT }
+| "@@"               { ATAT }            
 | ident_capitalize as lxm { IDENT_CAPITALIZE(lxm) }
 | ident as lxm       { IDENT(lxm) }
 | vm_ident as lxm    { VM_IDENT(lxm) }

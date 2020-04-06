@@ -19,12 +19,13 @@ let link_test_file dir =
   close_out oc
 
 let link_runtime dir = 
-  mv "stdlib/ML_internal.vm" (Filename.concat dir "ML_internal.vm");
-  mv "stdlib/ML_array.vm" (Filename.concat dir "ML_array.vm");
+  mv "stdlib/ML_Internal.vm" (Filename.concat dir "ML_Internal.vm");
+  mv "stdlib/Main.vm" (Filename.concat dir "Main.vm")
+  (* mv "stdlib/ML_array.vm" (Filename.concat dir "ML_array.vm");
   mv "stdlib/ML_pervasives.vm" (Filename.concat dir "ML_pervasives.vm");
   mv "stdlib/ML_string.vm" (Filename.concat dir "ML_string.vm");
   mv "stdlib/ML_obj.vm" (Filename.concat dir "ML_obj.vm")
- 
+ *)
   let init dir = 
     link_test_file dir;
     link_runtime dir
@@ -53,6 +54,8 @@ let link_runtime dir =
    let a,b = v (), v() in 
    Tarrow(Tproduct(a,b),b)
 
+
+
   let ty_exit = 
     Tarrow(Tint,v())
 
@@ -77,11 +80,15 @@ let link_runtime dir =
   let ty_decr = 
     Tarrow(Tref (v ()),Tunit)
 
+
   let ty_fst = 
-    ty_internal_fst
+    let a,b = v (),v () in 
+    Tarrow(Tproduct(a,b),a)
 
   let ty_snd = 
-    ty_internal_snd
+   let a,b = v (), v() in 
+   Tarrow(Tproduct(a,b),b)
+
 
   let ty_hd = 
     let a = v () in 
@@ -114,12 +121,12 @@ let link_runtime dir =
     let a = v () in
     Tarrow(Tarray a,Tarrow(Tint,a))
 
+  let ty_array_create_uninitialized =
+    Tarrow(Tint,Tarray (v ()))
+
   let ty_array_make =
     let a = v () in
     Tarrow(Tint,Tarrow(a,Tarray a))
-
-  let ty_array_create_uninitialized =
-    Tarrow(Tint,Tarray (v ()))
 
   let ty_string_length =
     Tarrow(Tstring,Tint)
@@ -137,37 +144,37 @@ end
 let primitives =
   let open PrimTypes in
   let ml_internal = 
-  [("__internal.pair", "ML_internal.make_pair",          ty_internal_pair);
-   ("__internal.cons", "ML_internal.make_pair",          ty_internal_cons);
-   ("__internal.fst",  "ML_internal.fst",                ty_internal_fst);
-   ("__internal.snd",  "ML_internalasives.snd",          ty_internal_snd) ] in
+  [("Internal.exit",             "Internal.exit",               ty_exit);
+   ("Internal.array_length",     "Internal.array_length",       ty_array_length);
+   ("Internal.array_get",        "Internal.array_get",          ty_array_get);
+   ("Internal.array_set",        "Internal.array_set",          ty_array_get);
+   ("Internal.array_make",       "Internal.array_make",         ty_array_make);
+   ("Internal.array_create_uninitialized", "Internal.array_create_uninitialized", ty_array_create_uninitialized);
+   ("Internal.print_char",       "Internal.print_char",         ty_print_char);
+   ("Internal.print_char_array", "Internal.print_char_array",   ty_print_string); 
+   ("Internal.print_int",        "Internal.print_int",          ty_print_int);
+   ("Internal.print_newline",    "Internal.print_newline",      ty_print_newline);
+   ("Internal.make_pair",        "Internal.make_pair",          ty_internal_pair);
+   ("Internal.cons",             "Internal.make_pair",          ty_internal_cons);
+   ("Internal.fst",              "Internal.left",               ty_fst);
+   ("Internal.snd",              "Internal.right",              ty_snd);
+   ("Internal.hd",               "Internal.left",               ty_hd);
+   ("Internal.tl",               "Internal.right",              ty_tl);
+   ("Internal.obj_magic",        "Internal.obj_magic",          ty_obj_magic)] in
   let openned_ml_pervasives =
-  [("exit",             "ML_pervasives.exit",             ty_exit);
-   ("failwith",         "ML_pervasives.failwith",         ty_failwith);
-   ("ref",              "ML_pervasives.ref",              ty_ref);
-   ("ref_contents",     "ML_pervasives.ref_contents",     ty_ref_contents);
-   ("ref_set_contents", "ML_pervasives.ref_set_contents", ty_ref_set_contents);
-   ("incr",             "ML_pervasives.incr",             ty_incr);
-   ("decr",             "ML_pervasives.decr",             ty_decr);
-   ("fst",              "ML_pervasives.fst",              ty_fst);
-   ("snd",              "ML_pervasives.snd",              ty_snd);
-   ("hd",               "ML_pervasives.hd",               ty_hd);
-   ("tl",               "ML_pervasives.tl",               ty_tl);
-   ("print_char",       "ML_pervasives.print_char",       ty_print_char);
-   ("print_string",     "ML_pervasives.print_string",     ty_print_string); 
-   ("print_int",        "ML_pervasives.print_int",        ty_print_int);
-   ("print_newline",    "ML_pervasives.print_newline",    ty_print_newline) ] in
-  let ml_pervasives = List.map (fun (f,c,ty) -> ("Pervasives." ^ f,c,ty)) openned_ml_pervasives in
-  let ml_array =
-   [("Array.length",    "ML_array.length",                 ty_array_length);
-    ("Array.set",       "ML_array.set",                    ty_array_set);
-    ("Array.get",       "ML_array.get",                    ty_array_get); 
-    ("Array.make",      "ML_array.make",                   ty_array_make);
-    ("Array.create_uninitialized","ML_array.create_uninitialized", ty_array_create_uninitialized); ] in
-  let ml_string = 
-    [("String.length",  "ML_string.length",                ty_string_length);
-     ("String.get",     "ML_string.get",                   ty_string_get);
-     ("String.make",    "ML_string.make",                  ty_string_set)] in
-  let ml_obj = 
-    [ ("Obj.magic",     "ML_obj.magic",                    ty_obj_magic) ] in
-  ml_internal @ openned_ml_pervasives @ ml_pervasives @ ml_array @ ml_string @ ml_obj
+  [("exit",             "Pervasives.exit",             ty_exit);
+   ("failwith",         "Pervasives.failwith",         ty_failwith);
+   ("ref",              "Pervasives.ref",              ty_ref);
+   ("ref_contents",     "Pervasives.ref_contents",     ty_ref_contents);
+   ("ref_set_contents", "Pervasives.ref_set_contents", ty_ref_set_contents);
+   ("incr",             "Pervasives.incr",             ty_incr);
+   ("decr",             "Pervasives.decr",             ty_decr);
+   ("fst",              "Pervasives.fst",              ty_fst);
+   ("snd",              "Pervasives.snd",              ty_snd);
+   ("hd",               "Pervasives.hd",               ty_hd);
+   ("tl",               "Pervasives.tl",               ty_tl);
+   ("print_char",       "Pervasives.print_char",       ty_print_char);
+   ("print_string",     "Pervasives.print_string",     ty_print_string); 
+   ("print_int",        "Pervasives.print_int",        ty_print_int);
+   ("print_newline",    "Pervasives.print_newline",    ty_print_newline) ] in
+   openned_ml_pervasives @ ml_internal

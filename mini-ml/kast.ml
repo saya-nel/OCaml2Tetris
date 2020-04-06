@@ -33,6 +33,7 @@ and constant =
   | Int of int 
   | Array_empty
   | List_empty
+  | FunValue of int
 and var = 
   | Global of string
   | Argument of int 

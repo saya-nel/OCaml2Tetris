@@ -83,6 +83,7 @@ and rewrite_decls mod_name genv ds =
            (genv,kds @ acc)) (genv,[]) ds in
   (genv,List.rev kds)
 and rewrite_decl mod_name genv = function
+| Ast.Type (name,ty) -> (genv,[]) (* TODO *)
   (*| Ast.Type (name,ty) -> (match ty with 
                            | Ast.Sum(names) -> 
                              let genv' = env_extends_constructors genv names in (genv',[])
@@ -164,6 +165,16 @@ and rewrite_exp lenv genv = function
                 arguments=[(name,0)];
                 locals=[]} in
     let ke = rewrite_exp lenv' genv @@ e in
+    (* let vars = Bindings.collect ke in
+    let len = List.length vars in
+    let kmake = rewrite_exp lenv genv Ast.(Ident("Array.create_uninitialized")) in
+    let kset = rewrite_exp lenv genv Ast.(Ident("Array.set")) in
+    let i,lenv' = lenv_extend name lenv in 
+    Kast.Let(i,Kast.App(kmake,[Kast.Constant(Kast.Int len)]), 
+      let j,e = List.fold_left (fun (j,acc) x ->
+        (j+1, 
+         Kast.Seq(Kast.App(kset,[Kast.Variable(Kast.Local i);Kast.Constant(Kast.Int j);Kast.Variable(x)]),acc)))
+    (0,Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments)) vars in e) *)
     Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments)
   | Ast.App(e,args) -> 
      Kast.App(rewrite_exp lenv genv e, List.map (rewrite_exp lenv genv) args)
@@ -194,10 +205,10 @@ and rewrite_exp lenv genv = function
        Ast.App(Ast.(Ident("Array.create_uninitialized"),[e])) 
   | Ast.Pair(e1,e2) ->
      rewrite_exp lenv genv @@
-       Ast.App(Ast.(Ident("__internal.pair"),[e1;e2])) 
+       Ast.App(Ast.(Ident("Internal.pair"),[e1;e2])) 
   | Ast.Cons(e1,e2) ->
      rewrite_exp lenv genv @@
-       Ast.App(Ast.(Ident("__internal.cons"),[e1;e2])) 
+       Ast.App(Ast.(Ident("Internal.cons"),[e1;e2])) 
   | Ast.Array_create(xs) ->
      rewrite_exp lenv genv @@
        let n = List.length xs in

@@ -101,8 +101,13 @@ and bytecode_of_exp lvl = function
          and lbl_end = gensym "WhileEnd" in
          [Label lbl_begin] @ bc_e1 @ [Op Not; IfGoto lbl_end] @
            bc_e2 @ [Goto lbl_begin; Label lbl_end])
-  | Kast.Fun(e,ka,kl) -> bytecode_of_constant (Kast.Int (next_lambda (bytecode_of_exp lvl e)))
-
+  | Kast.Fun(e,ka,kl) -> 
+      let n = next_lambda (bytecode_of_exp lvl e) in
+      (match ka,kl with 
+      | 0,0 -> [Push (Constant n)]
+      | _ -> failwith "fonction close uniquement")
+  (* une valeur fonctionnelle (close) est l'entier
+     associé au code de la fonction dans Apply.apply *)
   | Kast.Let(n,e1,e2) ->
      comment "<let>" lvl (
          let bc_e1 = bytecode_of_exp (lvl+1) e1
@@ -158,7 +163,8 @@ and bytecode_of_variable = function
      [ Push(Argument n) ]
   | Kast.Local (n) ->
      [ Push(Local n) ]
-
+  | Kast.Free (n) ->
+     [ Push(Local n) ]
 and bytecode_of_binop = function
   | Ast.Add -> [Op Add]
   | Ast.Minus -> [Op Sub]

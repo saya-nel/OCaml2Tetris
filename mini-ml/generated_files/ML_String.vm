@@ -1,0 +1,20 @@
+///////////////////////////////////////////////////////////////
+function ML_String.make 0
+    push argument 0
+    push argument 1
+    call ML_Internal.array_make 2
+    call ML_Internal.obj_magic 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_String.get 0
+    push argument 0
+    call ML_Internal.obj_magic 1
+    push argument 1
+    call ML_Internal.array_get 2
+    return
+///////////////////////////////////////////////////////////////
+function ML_String.length 0
+    push argument 0
+    call ML_Internal.obj_magic 1
+    call ML_Internal.array_length 1
+    return

@@ -70,7 +70,7 @@ let () =
   (* let (genv,bc_mdls) = compile_all mdls in
   let bc = List.map (function Bytecode.{bc_decls} -> bc_decls) bc_mdls in *)
   List.iter (fun (name,bc) ->
-    let oc = open_out (Filename.concat dir (name ^ ".vm")) in
+    let oc = open_out (Filename.concat dir (Bytecode2string.prefix ^ name ^ ".vm")) in
     Printf.fprintf oc "%s\n" (Bytecode2string.string_of_instrs bc);
     close_out oc) (compile_all mdls);
  

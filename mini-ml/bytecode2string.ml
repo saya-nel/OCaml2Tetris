@@ -2,6 +2,8 @@ open Bytecode
 
 let sptf = Printf.sprintf
 
+let prefix = "ML_"
+
 let indent = "    "
 
 let rec string_of_instrs b =
@@ -23,8 +25,8 @@ and string_of_instr = function
      indent ^ "return"
   | Function (f,n) ->
      sptf "///////////////////////////////////////////////////////////////\n\
-           function %s %d" f n
-  | Call (f,n) -> indent ^ sptf "call %s %d" f n
+           function %s %d" (prefix ^ f) n
+  | Call (f,n) -> indent ^ sptf "call %s %d" (prefix ^ f) n
   | Op s -> string_of_op s
 and string_of_segment = function
   | Anywhere ->
