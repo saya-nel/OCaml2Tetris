@@ -8,7 +8,7 @@ Pour lancer le projet, il faut posseder opam et dune, sur Ubuntu on peut les ins
 
 `opam install dune`
 
-On peut ensuite lancer le projet, depuis la racine de celui ci, en passant un ou plusieurs fichier .ml se trouvant dans /samples en paramètre :
+On peut ensuite lancer le projet, depuis la racine de celui ci, en passant un ou plusieurs fichier .ml, avec l'extension .cmo se trouvant dans /samples en paramètre (si le .cmo n'existe pas il sera généré) :
 
-`./run.sh test1.ml`
-`./run.sh amodule.ml bmodule.ml`
+`./run.sh test1.cmo`
+`./run.sh amodule.cmo bmodule.cmo`
