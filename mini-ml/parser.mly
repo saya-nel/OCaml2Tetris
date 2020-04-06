@@ -80,15 +80,16 @@ decl :
 		                                       | Some x,tyopt -> DefVar((x,tyopt),$4) }
  | LET defuns                                 { DefFun($2) }
  | LET REC defuns                             { DefFunRec($3) }
- | TYPE IDENT EQ ty                           { Type($2,$4) }
+ | TYPE IDENT EQ expr_ty                      { Type($2,$4) }
  | LET error { error_exit (pos()) "déclaration `let` malformée. J'attend {let <ident> [...] = <expr> in <expr>}" }
  | error { error_exit (pos()) "déclaration malformée (`let` ou `type` attendu)" }
  ;
 
 defun:
-| IDENT args EQ seq { ($1,$2,$4) }
-| IDENT args COLON expr_ty EQ seq { ($1,$2,$6) }
+| IDENT argus EQ seq { ($1,$2,None,$4) }
+| IDENT argus COLON expr_ty EQ seq { ($1,$2,Some $4,$6) }
 ;
+
 defuns:
 | defun                {[$1]}
 | defun AND_KW defuns  {$1::$3}
@@ -201,6 +202,22 @@ argu_strict:
 | IDENT COLON expr_ty                           { ($1,Some $3) }
 ;
 
+argu_p:
+| IDENT                                { ($1,None) }
+| LPAREN IDENT COLON expr_ty RPAREN    { ($2,Some $4) } 
+| WILDCARD                             { ("_",None) } 
+| LPAREN RPAREN                        { ("_",Some Tunit) } 
+| LPAREN LPAREN RPAREN COLON expr_ty RPAREN  { if $5 <> Tunit
+                                               then error_exit (pos()) "le motif () doit avoir le type unit." 
+                                               else ("_",Some Tunit) } 
+| LPAREN argu_p RPAREN          { $2 } 
+;
+
+argus : 
+| argu_p             { [$1] }
+| argu_p argus       { $1::$2 }
+| error { error_exit (pos()) "liste d'arguments malformée." }
+;
 
 expr: 
  | app                                   { $1 } 

@@ -7,6 +7,10 @@ let get_tyopt = function
 | None -> Tvar (V.create ()) 
 | Some ty -> ty
 
+let unify_opt t = function
+| None -> ()
+| Some ty -> unify t ty
+
 let initial_env primitives =
   List.fold_right (fun (x,c,ty) env -> add true x ty env) primitives empty_env;;
 
@@ -23,40 +27,45 @@ and w_dec env = function
   ([("_",t)])
 | DefVar ((x,tyopt),e) -> 
   let t = w_exp env e in
-  (match tyopt with None -> () | Some ty -> unify t ty);
+  unify_opt t tyopt;
   ([(x,t)])
 | DefFun funs -> 
   let funtys = List.map (w_defun env) funs in
-  (List.map2 (fun (f,_,_) tf -> (f,tf)) funs funtys)
+  (List.map2 (fun (f,_,_,_) tf -> (f,tf)) funs funtys)
 | DefFunRec funs -> 
-  let env' = List.fold_left (fun env ((x,args,e) as f) -> 
-                               let t = w_defunrec env f in 
+  let funcs = List.map (fun (x,_,_,_) -> x) funs in
+  let env = List.fold_left (fun env f ->
+                               let v0 = Tvar (V.create ()) in 
+                               add true f v0 env) env funcs in
+  let env' = List.fold_left (fun env ((x,args,tyopt,e) as f) -> 
+                               let t = w_defunrec env f funcs in 
                                add true x t env) env funs in
-  List.map (fun (x,_,_) -> (x,find x env')) funs
-| Type _ -> ([]) (* failwith "todo" *)
-and w_defun env (f,args,e) = 
+  List.map (fun (x,_,_,_) -> (x,find x env')) funs
+| Type (alias,ty) -> ([]) (* failwith "todo" *)
+and w_defun env (f,args,tyropt,e) = 
   let env' = List.fold_left 
-               (fun env xi -> 
-                  let v = Tvar (V.create ()) in
-                  add false xi v env) env args in
+               (fun env (xi,tyopt) -> 
+                  let ty = get_tyopt tyopt in
+                  add false xi ty env) env args in
   let tret = w_exp env' e in
-  let t = List.fold_right (fun xi t -> let ti = find xi env' in Tarrow(ti,t)) args tret in
+  unify_opt tret tyropt;
+  let t = List.fold_right (fun (xi,_) t -> let ti = find xi env' in Tarrow(ti,t)) args tret in
   t
 
-and w_defunrec env (f,args,e) =  (* un peu trop bricoller, ne marche pas *)
-  let v0 = Tvar (V.create ()) in
+and w_defunrec env (f,args,tyropt,e) funcs =
   let env' = List.fold_left 
-               (fun env xi -> 
-                  let v = Tvar (V.create ()) in
-                  add false xi v env) (add true f v0 env) args in
+               (fun env (xi,tyopt) -> 
+                  let ty = get_tyopt tyopt in
+                  add false xi ty env) env args in
   let tret = w_exp env' e in
-  let tf = List.fold_right (fun xi t -> let ti = find xi env' in Tarrow(ti,t)) args tret in
-  let env2 = List.fold_left 
+  unify_opt tret tyropt;
+  let tf = List.fold_right (fun (xi,_) t -> let ti = find xi env' in Tarrow(ti,t)) args tret in
+  (*let env2 = List.fold_left 
                (fun env xi -> 
                   let ti = find xi env' in 
                   add false xi ti env) (add true f tf env) args in
   let tret = w_exp env2 e in
-  let tf = List.fold_right (fun xi t -> let ti = find xi env' in Tarrow(ti,t)) args tret in
+  let tf = List.fold_right (fun xi t -> let ti = find xi env' in Tarrow(ti,t)) args tret in*)
   tf
 
 and w_exp env = function

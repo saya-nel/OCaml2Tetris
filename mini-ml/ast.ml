@@ -8,8 +8,8 @@ and var = (name * Types.typ option)
 and decl = 
   | Exp of (exp)
   | DefVar of (var * exp)
-  | DefFun of    ((name * name list * exp) list)
-  | DefFunRec of ((name * name list * exp) list)
+  | DefFun of    ((name * var list * Types.typ option * exp) list)
+  | DefFunRec of ((name * var list * Types.typ option * exp) list)
   | Type of (name * Types.typ)
 and exp = 
   | Annotation of (exp * Types.typ)

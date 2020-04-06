@@ -97,19 +97,19 @@ and rewrite_decl mod_name genv = function
      let i,genv' = genv_extend genv name in
      let genv0 = {genv' with init = (mod_name ^ "." ^ name_init) :: genv'.init} in
      let genv1,d1 = rewrite_decl mod_name genv0 @@
-                      Ast.DefFun ([name_init,[],Ast.SetGlobal(e,i)]) in
+                      Ast.DefFun ([name_init,[],None,Ast.SetGlobal(e,i)]) in
      let genv2,d2 = rewrite_decl mod_name genv1 @@
-                      Ast.DefFun ([name,[],Ast.ReadGlobal(i)]) in
+                      Ast.DefFun ([name,[],None,Ast.ReadGlobal(i)]) in
      (genv2,(d1 @ d2))
   | Ast.DefFun l -> rewrite_defun mod_name genv l
   | Ast.DefFunRec l -> rewrite_defun mod_name genv ~recflag:true l
 and rewrite_defun mod_name genv ?(recflag=false) dfs =
-  let gnames = List.map (fun (name,args,e) -> mod_name ^ "." ^ name)  dfs in
+  let gnames = List.map (fun (name,args,_,e) -> mod_name ^ "." ^ name)  dfs in
   let genv' = {genv with global_funs = gnames @ genv.global_funs} in
   let by = List.concat
              (List.map
-                (fun (name,args,e) ->
-                  let lenv = frame args in
+                (fun (name,args,_,e) ->
+                  let lenv = frame (List.map fst args) in
                   let ke = rewrite_exp lenv
                              (if recflag
                               then genv'
@@ -151,20 +151,27 @@ and rewrite_exp lenv genv = function
                               in
                               Kast.GFun(f))
               | Some i -> Kast.Variable(Kast.Global (genv.mod_name ^ "." ^ name))) (* Kast.App (Kast.GFun(genv.mod_name ^ "." ^ name),[])) *)
-             | Some i -> Kast.Variable(Kast.Free (i)))
+            | Some i -> Kast.Variable(Kast.Free (i)))
           | Some i -> Kast.Variable(Kast.Argument (i)))
       | Some i -> Kast.Variable(Kast.Local i))
   | Ast.Let((name,_),e1,e2) ->
      let i,lenv' = lenv_extend name lenv in 
      Kast.Let(i,rewrite_exp lenv' genv e1, rewrite_exp lenv' genv e2)
   | Ast.Fun((name,_),e) ->
-    let lenv' = {lenv with 
+    (*let ww = List.map fst lenv.locals @ List.map fst lenv.arguments in
+    let free_vars = Bindings.collect ww [name] e in
+    let ke = rewrite_exp lenv genv @@ e in
+    Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments)*)
+
+     let lenv' = {lenv with 
                  free=lenv.locals @ 
-                      (let n = List.length lenv.locals in 
-                       List.map (fun (c,i) -> (c,i+n)) lenv.arguments); 
-                arguments=[(name,0)];
-                locals=[]} in
+                  (let n = List.length lenv.locals in 
+                   List.map (fun (c,i) -> (c,i+n)) lenv.arguments); 
+            arguments=[(name,0)];
+            locals=[]} in
     let ke = rewrite_exp lenv' genv @@ e in
+    Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments) 
+    
     (* let vars = Bindings.collect ke in
     let len = List.length vars in
     let kmake = rewrite_exp lenv genv Ast.(Ident("Array.create_uninitialized")) in
@@ -175,7 +182,6 @@ and rewrite_exp lenv genv = function
         (j+1, 
          Kast.Seq(Kast.App(kset,[Kast.Variable(Kast.Local i);Kast.Constant(Kast.Int j);Kast.Variable(x)]),acc)))
     (0,Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments)) vars in e) *)
-    Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments)
   | Ast.App(e,args) -> 
      Kast.App(rewrite_exp lenv genv e, List.map (rewrite_exp lenv genv) args)
   | Ast.If(e1,e2,e3) ->

@@ -44,8 +44,11 @@ and sprint_fun ?(recflag=false) lvl l =
   (indent_string lvl) ^
     (if recflag then "let rec" else "let") ^
       String.concat ("\n" ^ indent_string lvl ^ "and") @@
-        List.map (fun (name,args,e) ->
-            let s = sptf " %s %s = " name (String.concat " " args) in
+        List.map (fun (name,args,tyopt,e) ->
+            let s = sptf " %s %s %s= " name (mapcat " " (sprint_var lvl) args) 
+            (match tyopt with 
+              | None -> ""
+              | Some ty -> sptf ": %s " (sprint_ty lvl ty)) in
             s ^ "\n" ^ (indent_string (next lvl)) ^ (sprint_exp (next lvl) e)) l
 and sprint_exp lvl = function
   | Ast.Annotation (e,ty) ->
