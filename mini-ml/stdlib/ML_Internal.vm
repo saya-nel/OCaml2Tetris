@@ -82,7 +82,7 @@ function ML_Internal.print_char 0
 // val print_newline : unit -> unit
 function ML_Internal.print_newline 0
 	call Output.println 0
-	push argument 0
+	push constant 0
  	return
 // val print_char_array : string -> unit
 function ML_Internal.print_char_array 2

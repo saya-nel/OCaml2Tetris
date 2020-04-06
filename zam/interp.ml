@@ -168,7 +168,8 @@ let interp () =
     | 86 (* BRANCHIFNOT *) -> let n = take_argument () in 
                               if n >= Array.length Input.code then failwith "Instr array out of bounds"
                               else pc := if Mlvalues.long_val (!acc) = 0 then (!pc) + n else !pc + 1
-    
+    (* 87 SWITCH *)
+    | 88 (* BOOLNOT *) -> acc := Prims.bnot (!acc)
     (* | 92 à 98 -> interop avec C *)
     | 99  (* CONST0 *) -> acc := Mlvalues.val_long 0
     | 100 (* CONST1 *) -> acc := Mlvalues.val_long 1

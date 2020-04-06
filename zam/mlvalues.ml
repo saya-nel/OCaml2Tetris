@@ -17,7 +17,24 @@ let ptr_val (n : t) : t = n
 
 let blk_size (b : t) = Array.length b - 2
 
-let is_imm (n : t) : bool = (n land 0x8000) = 0x8000
+let is_imm (n : t) : bool =
+print_newline (); 
+	print_string "n = ";
+	print_int n;
+	print_newline ();
+	print_string "0x8000 =";
+	print_int 0x8000;
+	print_newline ();
+	print_string "(n land 0x8000) =";
+	print_int (n land 0x8000);
+	print_newline ();
+	print_string "(0x8000 = 0x8000) =";
+	print_string (if 0x8000 = 0x8000 then "true" else "false");
+	print_newline ();
+	print_string "(is_imm n) =";
+	print_int ((n land 0x8000) = 0x8000);
+	(n land 0x8000) = 0x8000;
+	print_newline ()
 
 let size b = Array.length b - 2 
 

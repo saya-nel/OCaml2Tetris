@@ -21,6 +21,8 @@ let gtint v1 v2 = Mlvalues.val_long (Mlvalues.long_val v1 > Mlvalues.long_val v2
 let geint v1 v2 = Mlvalues.val_long (Mlvalues.long_val v1 >= Mlvalues.long_val v2)
 let isint v = Mlvalues.val_long (if Mlvalues.is_imm v then 1 else 0) 
 
+let bnot v = Mlvalues.val_long (if Mlvalues.long_val v = 0 then 1 else 0)
+
 let compare_imm v1 v2 = 
 	let n1 = Mlvalues.long_val v1 in
 	let n2 = Mlvalues.long_val v2 in
