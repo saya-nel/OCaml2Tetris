@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# clean des anciens résidus 
+rm -Rf mini-ml/generated_files
+rm zam/input.ml
+
 # lancement make mini-ml
 
 make -C mini-ml

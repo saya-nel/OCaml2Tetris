@@ -257,7 +257,7 @@ let replace_labels_indexes (instrs : string list) : string list =
   in aux instrs
 
 (* écrit le tableau d'instructions dans un nouveau fichier src/zam/interp.ml *)
-let write_instr_array ?(dst="../zam/input.ml") (instr_array : string) : unit =
+let write_instr_array ?(dst="./zam/input.ml") (instr_array : string) : unit =
   let oc = open_out dst in
     fprintf oc "(* etat de la vm *)\nlet code = %s\n" instr_array;
     close_out oc
@@ -292,7 +292,7 @@ let () =
   let serial = string_list_to_string to_send in
 
    (* on écrit dans le fichier ../zam/input.ml le tableau d'instructions *)
-  write_instr_array ~dst:"../zam/input.ml" serial
+  write_instr_array ~dst:"./zam/input.ml" serial
 
   (* pour afficher le bytecode :  *)
   (* Code.print data symb prim stdout code ; *)
