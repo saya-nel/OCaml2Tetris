@@ -20,11 +20,26 @@ let take_argument () =
   incr pc;
   Input.code.(!pc)
 
+let debug_print_block block =
+  print_string "block : ";
+  print_string "size : ";
+  print_int (Mlvalues.size block);
+  print_string ", content : ";
+  let i = ref 0 in
+  while (!i) < (Mlvalues.size block) do
+    print_int (Mlvalues.get_field block (!i));
+    print_string " | "
+  done;
+  print_newline ()
+
 let debug_print_state () = 
   print_string " pc: "; 
   print_int (!pc);
   print_string " acc: "; 
-  print_int (Mlvalues.long_val (!acc));
+  if (Mlvalues.is_imm (!acc)) then 
+    print_int (Mlvalues.long_val (!acc))
+  else 
+    debug_print_block (!acc);
   print_string " sp: "; 
   print_int (!sp);
   print_newline ()
@@ -150,7 +165,7 @@ let interp () =
     | 85 (* BRANCHIF *) -> let n = take_argument () in 
                            if n >= Array.length Input.code then failwith "Instr array out of bounds"
                            else pc := if Mlvalues.long_val (!acc) = 1 then (!pc) + n else !pc + 1
-    | 85 (* BRANCHIFNOT *) -> let n = take_argument () in 
+    | 86 (* BRANCHIFNOT *) -> let n = take_argument () in 
                               if n >= Array.length Input.code then failwith "Instr array out of bounds"
                               else pc := if Mlvalues.long_val (!acc) = 0 then (!pc) + n else !pc + 1
     
