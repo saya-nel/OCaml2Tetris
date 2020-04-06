@@ -12,3 +12,6 @@ On peut ensuite lancer le projet, depuis la racine de celui ci, en passant un ou
 
 `./run.sh test1.cmo`
 `./run.sh amodule.cmo bmodule.cmo`
+
+un fichier "Main.tst" sera généré dans _mini-ml/generated_files_, ce fichier devra être interprété par la VM nand2tetris qui s'est lancée à la fin du script.
+On ouvrira Main.tst avec **file -> load script**, on poura enlever les animations pour rendre la vm plus rapide : **animate -> no animation**, puis on cliquera sur run (bouton double flèche bleu).

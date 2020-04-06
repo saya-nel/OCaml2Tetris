@@ -17,4 +17,7 @@ cd ..
 cd mini-ml
 mkdir generated_files
 ./compile ../zam/mlvalues.ml ../zam/prims.ml ../zam/input.ml ../zam/interp.ml
-cd ..
+cd .. 
+
+# ouverture de la VM nand2tetris
+nand2tetris/tools/VMEmulator.sh
