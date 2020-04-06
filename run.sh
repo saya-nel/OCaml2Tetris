@@ -10,8 +10,8 @@ cd samples
 ocamlc *.ml
 rm a.out
 rm *.cmi
-../_build/default/bytecode/obytelibParser.exe $@
-cd .. 
+cd ..
+./_build/default/bytecode/obytelibParser.exe $@
 
 # lancement compilation vers mini-ml
 cd mini-ml

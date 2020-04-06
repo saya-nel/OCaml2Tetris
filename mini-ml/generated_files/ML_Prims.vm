@@ -1,0 +1,376 @@
+///////////////////////////////////////////////////////////////
+function ML_Prims.negint 0
+    push argument 0
+    call ML_Mlvalues.long_val 1
+    pop temp 0
+    push constant 0
+    push temp 0
+    sub
+    call ML_Mlvalues.val_long 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.addint 0
+    push argument 0
+    call ML_Mlvalues.long_val 1
+    push argument 1
+    call ML_Mlvalues.long_val 1
+    add
+    call ML_Mlvalues.val_long 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.subint 0
+    push argument 0
+    call ML_Mlvalues.long_val 1
+    push argument 1
+    call ML_Mlvalues.long_val 1
+    sub
+    call ML_Mlvalues.val_long 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.mulint 0
+    push argument 0
+    call ML_Mlvalues.long_val 1
+    push argument 1
+    call ML_Mlvalues.long_val 1
+    call ML_Math.multiply 2
+    call ML_Mlvalues.val_long 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.divint 0
+    push argument 0
+    call ML_Mlvalues.long_val 1
+    push argument 1
+    call ML_Mlvalues.long_val 1
+    call ML_Math.divide 2
+    call ML_Mlvalues.val_long 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.modint 1
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 0
+    push local 0
+    push constant 0
+    push constant 116
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 1
+    push constant 111
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 2
+    push constant 100
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 3
+    push constant 111
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    call ML_Pervasives.failwith 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.andint 0
+    push argument 0
+    call ML_Mlvalues.long_val 1
+    push argument 1
+    call ML_Mlvalues.long_val 1
+    and
+    call ML_Mlvalues.val_long 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.orint 0
+    push argument 0
+    call ML_Mlvalues.long_val 1
+    push argument 1
+    call ML_Mlvalues.long_val 1
+    or
+    call ML_Mlvalues.val_long 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.xorint 1
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 0
+    push local 0
+    push constant 0
+    push constant 116
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 1
+    push constant 111
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 2
+    push constant 100
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 3
+    push constant 111
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    call ML_Pervasives.failwith 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.lslint 1
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 0
+    push local 0
+    push constant 0
+    push constant 116
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 1
+    push constant 111
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 2
+    push constant 100
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 3
+    push constant 111
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    call ML_Pervasives.failwith 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.lsrint 1
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 0
+    push local 0
+    push constant 0
+    push constant 116
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 1
+    push constant 111
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 2
+    push constant 100
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 3
+    push constant 111
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    call ML_Pervasives.failwith 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.asrint 1
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 0
+    push local 0
+    push constant 0
+    push constant 116
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 1
+    push constant 111
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 2
+    push constant 100
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 3
+    push constant 111
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    call ML_Pervasives.failwith 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.eq 0
+    push argument 0
+    call ML_Mlvalues.long_val 1
+    push argument 1
+    call ML_Mlvalues.long_val 1
+    eq
+    not
+    if-goto IfFalse7
+    push constant 0
+    goto IfEnd8
+label IfFalse7
+    push constant 1
+label IfEnd8
+    call ML_Mlvalues.val_long 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.neq 0
+    push argument 0
+    call ML_Mlvalues.long_val 1
+    push argument 1
+    call ML_Mlvalues.long_val 1
+    eq
+    not
+    not
+    if-goto IfFalse9
+    push constant 0
+    goto IfEnd10
+label IfFalse9
+    push constant 1
+label IfEnd10
+    call ML_Mlvalues.val_long 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.ltint 0
+    push argument 0
+    call ML_Mlvalues.long_val 1
+    push argument 1
+    call ML_Mlvalues.long_val 1
+    lt
+    call ML_Mlvalues.val_long 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.leint 0
+    push argument 0
+    call ML_Mlvalues.long_val 1
+    push argument 1
+    call ML_Mlvalues.long_val 1
+    gt
+    not
+    call ML_Mlvalues.val_long 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.gtint 0
+    push argument 0
+    call ML_Mlvalues.long_val 1
+    push argument 1
+    call ML_Mlvalues.long_val 1
+    gt
+    call ML_Mlvalues.val_long 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.geint 0
+    push argument 0
+    call ML_Mlvalues.long_val 1
+    push argument 1
+    call ML_Mlvalues.long_val 1
+    lt
+    not
+    call ML_Mlvalues.val_long 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.isint 0
+    push argument 0
+    call ML_Mlvalues.is_imm 1
+    not
+    if-goto IfFalse11
+    push constant 1
+    goto IfEnd12
+label IfFalse11
+    push constant 0
+label IfEnd12
+    call ML_Mlvalues.val_long 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.compare_imm 2
+    push argument 0
+    call ML_Mlvalues.long_val 1
+    pop local 0
+    push argument 1
+    call ML_Mlvalues.long_val 1
+    pop local 1
+    push local 0
+    push local 1
+    lt
+    not
+    if-goto IfFalse15
+    push constant 1
+    pop temp 0
+    push constant 0
+    push temp 0
+    sub
+    goto IfEnd16
+label IfFalse15
+    push local 0
+    push local 1
+    gt
+    not
+    if-goto IfFalse13
+    push constant 1
+    goto IfEnd14
+label IfFalse13
+    push constant 0
+label IfEnd14
+label IfEnd16
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.ultint 1
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 0
+    push local 0
+    push constant 0
+    push constant 116
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 1
+    push constant 111
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 2
+    push constant 100
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 3
+    push constant 111
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    call ML_Pervasives.failwith 1
+    return
+///////////////////////////////////////////////////////////////
+function ML_Prims.ugeint 1
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 0
+    push local 0
+    push constant 0
+    push constant 116
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 1
+    push constant 111
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 2
+    push constant 100
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 3
+    push constant 111
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    call ML_Pervasives.failwith 1
+    return
