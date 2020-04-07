@@ -48,8 +48,9 @@ let parse_modules fs =
 let compile genv mdl = 
   try 
     let genv = if not !type_check then genv 
-    else let env = Typing.type_check mdl Ast2kast.(genv.typed_decls) in
+      else let env = Typing.type_check mdl Ast2kast.(genv.typed_decls) in    
          Ast2kast.{genv with typed_decls = env} in
+    let mdl = Lifting.visit_tmodule mdl in
     let genv0 = Ast2kast.{genv with mod_name=Ast.(mdl.mod_name); init=[]} in
     let genv',kast = Ast2kast.rewrite_tmodule genv0 mdl in
     let bc_mdl = Kast2bytecode.bytecode_of_tmodule genv' kast in
@@ -68,7 +69,6 @@ let () =
   let dir = !destination_dir in
   let files = List.map (Filename.concat !source_dir) !inputs in
   let mdls = parse_modules files in
-  let mdls = List.map Lifting.visit_tmodule mdls in
   (* let (genv,bc_mdls) = compile_all mdls in
   let bc = List.map (function Bytecode.{bc_decls} -> bc_decls) bc_mdls in *)
   List.iter (fun (name,bc) ->

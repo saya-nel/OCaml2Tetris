@@ -143,9 +143,9 @@ and w_exp env = function
      Tref t1
    | Ref_access(e1) ->
      let t1 = w_exp env e1 in
-     let v = Tvar (V.create ()) in 
-     unify (Tref t1) v;
-     v
+     let t = Tvar (V.create ()) in 
+     unify t1 (Tref t);
+     t
    | Ref_assign(e1,e2) ->
      let t1 = w_exp env e1 in
      let t2 = w_exp env e2 in

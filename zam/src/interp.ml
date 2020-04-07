@@ -23,11 +23,12 @@ let take_argument code =
 let debug_print_block block =
   print_string "block : ";
   print_string "size : ";
-  print_int (Mlvalues.size block);
+  print_int (Mlvalues.size (Mlvalues.ptr_val block));
   print_string ", content : ";
-  let i = ref 0 in
-  while (!i) < (Mlvalues.size block) do
-    print_int (Mlvalues.ptr_val (Mlvalues.get_field block (!i)));
+  for i = 0 to Mlvalues.size (Mlvalues.ptr_val block) - 1 do
+    print_string "<";
+    print_int (Mlvalues.get_field block i);
+    print_string ">";
     print_string " | "
   done;
   print_newline ()
@@ -36,10 +37,10 @@ let debug_print_state () =
   print_string " pc: "; 
   print_int (!pc);
   print_string " acc: "; 
-  if not (Mlvalues.is_ptr (!acc)) then 
-    print_int (Mlvalues.long_val (!acc))
+  if Mlvalues.is_ptr (!acc) then 
+    debug_print_block (!acc)
   else 
-    debug_print_block (!acc);
+    print_int (Mlvalues.long_val (!acc));
   print_string " sp: "; 
   print_int (!sp);
   print_newline ()
@@ -47,10 +48,8 @@ let debug_print_state () =
 let debug_print_stack () =
   print_string "stack :";
   print_newline ();
-  let i = ref 0 in
-  while (!i)  < (!sp) do
-    print_int (Mlvalues.long_val stack.(!i));
-    incr i;
+  for i = 0 to !sp - 1 do  
+    print_int (Mlvalues.long_val stack.(i));
     print_string " | "
   done;
   print_newline ()

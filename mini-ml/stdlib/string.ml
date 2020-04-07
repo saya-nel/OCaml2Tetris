@@ -3,12 +3,11 @@
 (*                                       *)
 (* Loïc Sylvestre                        *)
 
-let make n c = 
-	( (Internal.obj_magic
-	   (Internal.array_make n (c : char))) : string )
+let make (n : int) (c : char) : string = 
+  Internal.obj_magic (Internal.array_make n (Internal.obj_magic c))
 
-let get s i = 
-	( (Internal.array_get (Internal.obj_magic (s : string)) i) : char)
+let get (s : string) (i : int) : char = 
+	Internal.array_get (Internal.obj_magic s) i
 
-let length s = 
-	(Internal.array_length (Internal.obj_magic (s : string)))
+let length (s : string) : int = 
+	Internal.array_length (Internal.obj_magic s)
