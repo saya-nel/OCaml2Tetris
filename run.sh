@@ -5,7 +5,7 @@ if [ $# -eq 0 ]
     # lancement compilation vers mini-ml
     cd mini-ml
     mkdir generated_files
-    ./compile stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml ../zam/mlvalues.ml ../zam/prims.ml ../zam/input.ml ../zam/interp.ml
+    ./compile stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml ../zam/mlvalues.ml ../zam/prims.ml ../zam/check.ml ../zam/input.ml ../zam/interp.ml
     cd .. 
 
     # ouverture de la VM nand2tetris
@@ -31,7 +31,7 @@ if [ $# -eq 0 ]
     # lancement compilation vers mini-ml
     cd mini-ml
     mkdir generated_files
-    ./compile stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml ../zam/mlvalues.ml ../zam/prims.ml ../zam/input.ml ../zam/interp.ml
+    ./compile stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml ../zam/mlvalues.ml ../zam/prims.ml ../zam/check.ml ../zam/input.ml ../zam/interp.ml
     cd .. 
 
     # ouverture de la VM nand2tetris

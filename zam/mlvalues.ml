@@ -55,4 +55,5 @@ let _ =
   assert (long_val (val_long 42) = 42);
   assert (ptr_val (val_ptr 42) = 42);
   assert (not (is_ptr (val_long 42)));
-  assert (is_ptr (val_ptr 42))
+  assert (is_ptr (val_ptr 42));
+  assert (not (is_ptr (val_long 0)))
