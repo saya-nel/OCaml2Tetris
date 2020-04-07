@@ -8,22 +8,25 @@ type t = int
 (* !!! la notation 0x... de mini-ml est erroné !!! *)
 
 (* transforme un entier en mlvalue *)
-let val_long (n : t) : t = n lor 0x4000  (* pack *)
+let val_long (n : t) : t = n
+    
 (* transforme un mlvalue en entier *)
-let long_val (n : t) : t = n land 0xCFFF (* 0x7FFF *) (* unpack *)
-(*  *)
-let val_ptr (n : t) : t = n  (* land 32767*) (* 0x7FFF *)
-let ptr_val (n : t) : t = n
+let long_val (n : t) : t = n
 
-let blk_size (b : t) = Array.length b - 2
+(* transforme un pointeur en mlvalue *)
+let val_ptr (n : t) : t =
+  assert (n >= 0);
+  (- n)
+
+(* transforme un mlvalue en pointeur *)
+let ptr_val (n : t) : t =
+  assert (n <= 0);
+  (- n)
 
 let is_imm (n : t) : bool = 
-  print_string "foo ";
-  print_int n;
-  print_string " ";
-    print_int (n land 0x4000);
-      print_string " ";
-  not ((n land 0x4000) = 0)
+  n >= 0
+
+let blk_size (b : t) = Array.length b - 2
 
 let size b = Array.length b - 2 
 
@@ -46,7 +49,9 @@ let env_closure c = get_field c 2
 
 let _ = 
   assert (long_val (val_long 42) = 42);
-  assert (is_imm (val_long 42))
+  assert (ptr_val (val_ptr 42) = 42);
+  assert (is_imm (val_long 42));
+  assert (not is_imm (val_ptr 42))
 
 (*
 let f n = 
