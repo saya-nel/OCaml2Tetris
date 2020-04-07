@@ -121,12 +121,7 @@ and rewrite_defun mod_name genv ?(recflag=false) dfs =
 and rewrite_exp lenv genv = function
   | Ast.Annotation (e,_) ->
      rewrite_exp lenv genv e
-  | Ast.Constant(Ast.String(s)) ->
-     let rev_xs = ref [] in
-     String.iter (fun c -> rev_xs := (c :: !rev_xs)) s;
-     rewrite_exp lenv genv @@
-       Ast.Array_create(List.rev_map (fun c -> Ast.Constant(Ast.Char(c))) !rev_xs)
-  | Ast.Constant c -> Kast.Constant(rewrite_constant lenv genv c)
+  | Ast.Constant c -> rewrite_constant lenv genv c
   | Ast.Ident (name) ->
      (match List.assoc_opt name lenv.locals with
       | None ->
@@ -295,7 +290,13 @@ and rewrite_exp lenv genv = function
      Kast.SetGlobal (rewrite_exp lenv genv e,i)
   | Ast.ReadGlobal(i) ->
      Kast.ReadGlobal(i)
-and rewrite_constant lenv genv = function
+and rewrite_constant lenv genv c = match c with 
+| Ast.String(s) ->
+     let rev_xs = ref [] in
+     String.iter (fun c -> rev_xs := (c :: !rev_xs)) s;
+     rewrite_exp lenv genv @@
+       Ast.Array_create(List.rev_map (fun c -> Ast.Constant(Ast.Char(c))) !rev_xs) 
+| _ -> Kast.Constant(match c with 
   | Ast.Unit ->
      Kast.Unit
   | Ast.Int n ->
@@ -313,4 +314,4 @@ and rewrite_constant lenv genv = function
   | Ast.List_empty ->
      Kast.List_empty
   | Ast.String _ ->
-     assert false (* déjà traité *)
+     assert false) (* déjà traité *)

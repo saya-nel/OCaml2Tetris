@@ -27,7 +27,7 @@ let debug_print_block block =
   print_string ", content : ";
   let i = ref 0 in
   while (!i) < (Mlvalues.size block) do
-    print_int (Mlvalues.get_field block (!i));
+    print_int (Mlvalues.ptr_val (Mlvalues.get_field block (!i)));
     print_string " | "
   done;
   print_newline ()
@@ -76,8 +76,8 @@ let interp code =
     | 6 (* ACC6 *) -> acc := stack.((!sp)-7)
     | 7 (* ACC7 *) -> acc := stack.((!sp)-8)
     | 8 (* ACC *) -> let n = take_argument code in
-                     if n >= Array.length stack || n < 0 then failwith "stack pleine"
-                     else acc := stack.((!sp)-1-n)
+                     assert (n < Array.length stack && n >= 0);
+                     acc := stack.((!sp)-1-n)
     | 9 (* PUSH *) -> push_stack (!acc)
     | 10 (* PUSHACC0 *) -> push_stack (!acc)
     | 11 (* PUSHACC1 *) -> push_stack (!acc); acc := stack.((!sp)-2)
@@ -88,13 +88,14 @@ let interp code =
     | 16 (* PUSHACC6 *) -> push_stack (!acc); acc := stack.((!sp)-7)
     | 17 (* PUSHACC7 *) -> push_stack (!acc); acc := stack.((!sp)-8)
     | 18 (* PUSHACC *) -> let n = take_argument code in
-                          push_stack (!acc); acc := stack.((!sp)-1-n)
+                          push_stack (!acc); 
+                          acc := stack.((!sp)-1-n)
     | 19 (* POP *) -> let n = take_argument code in 
-                      if n >= Array.length stack || n < 0 then failwith "Stack pleine "
-                      else sp := !sp - n
+                      assert (n < Array.length stack && n >= 0);
+                      sp := !sp - n
     | 20 (* ASSIGN *) -> let n = take_argument code in 
-                         if n >= Array.length stack || n < 0 then failwith "stack pleine"
-                         else (stack.((!sp)-1-n) <- !acc; acc := 0)
+                         assert (n < Array.length stack && n >= 0);
+                         (stack.((!sp)-1-n) <- !acc; acc := 0)
     | 21 (* ENVACC1 *) -> acc := Mlvalues.get_field (!env) 1
     | 22 (* ENVACC2 *) -> acc := Mlvalues.get_field (!env) 2
     | 23 (* ENVACC3 *) -> acc := Mlvalues.get_field (!env) 3

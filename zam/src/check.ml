@@ -97,4 +97,9 @@ let _ =
 
 	(* 62 MAKEBLOCK *)
 	(* Resultat attendu : acc =  *)
-	code.(62) <- [|103;43;9;103;42;62;2;1|]
+(*	code.(62) <- [|103;43;9;103;42;62;2;1|] *)
+
+
+	(* 62 MAKEBLOCK *)
+	(* Resultat attendu : acc =  *)
+	code.(62) <- [|103;42;62;0;0|]

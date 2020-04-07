@@ -42,7 +42,8 @@ let parse filename =
   (close_in ic; Parseutils.error_exit pos s) ;;
   
 
-let parse_modules fs = List.map parse fs
+let parse_modules fs = 
+  List.map parse fs
 
 let compile genv mdl = 
   try 
@@ -66,7 +67,8 @@ let compile_all mdls =
 let () = 
   let dir = !destination_dir in
   let files = List.map (Filename.concat !source_dir) !inputs in
-  let mdls = parse_modules files in 
+  let mdls = parse_modules files in
+  let mdls = List.map Lifting.visit_tmodule mdls in
   (* let (genv,bc_mdls) = compile_all mdls in
   let bc = List.map (function Bytecode.{bc_decls} -> bc_decls) bc_mdls in *)
   List.iter (fun (name,bc) ->

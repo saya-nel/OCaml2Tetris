@@ -30,16 +30,15 @@ let ptr_val (n : t) : t =
 let is_ptr (n : t) : bool = 
   n < 0
 
-let blk_size (b : t) = Array.length b - 2
-
 let size b = Array.length b - 2 
 
 let unit = 0
 
-let new_block tag sz = (* (tag : t) (sz : t) : t = *)
-  let a = Array.make ((long_val sz) + 2) 0 in
-  a.(0) <- long_val tag;
-  (* a.(1) <- tag color; *)
+let new_block (tag : int) (sz : int) = (* (tag : t) (sz : t) : t = *)
+  assert (tag >= 0 && sz >= 0);
+  let a = Array.make (sz + 2) 0 in
+  a.(0) <- tag;
+  a.(1) <- 0; (* color *)
   val_ptr a
 
 let get_field b i = (* (b : t) (i : int) (x : t) : unit = *)

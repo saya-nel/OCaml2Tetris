@@ -7,6 +7,7 @@ all:
 	ocamlyacc parser.mly     # generates parser.ml and parser.mli
 	$(CC) -c types.ml
 	$(CC) -c ast.ml
+	$(CC) -c lifting.ml
 	$(CC) -c print_ast.ml
 	$(CC) -c kast.ml
 	$(CC) -c bindings.ml
@@ -20,7 +21,7 @@ all:
 	$(CC) -c lexer.ml
 	$(CC) -c parser.ml
 	$(CC) -c main.ml
-	$(CC) -o $(EXE) parseutils.cmo lexer.cmo types.cmo ast.cmo print_ast.cmo typing.cmo runtime.cmo bindings.cmo kast.cmo ast2kast.cmo bytecode.cmo kast2bytecode.cmo bytecode2string.cmo parser.cmo main.cmo
+	$(CC) -o $(EXE) parseutils.cmo lexer.cmo types.cmo ast.cmo lifting.cmo print_ast.cmo typing.cmo runtime.cmo bindings.cmo kast.cmo ast2kast.cmo bytecode.cmo kast2bytecode.cmo bytecode2string.cmo parser.cmo main.cmo
 
 clean:
 	rm -f $(EXE) *.cmo *.cmi compile *.vm *.tst *.out 
