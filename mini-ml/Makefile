@@ -23,4 +23,4 @@ all:
 	$(CC) -o $(EXE) parseutils.cmo lexer.cmo types.cmo ast.cmo print_ast.cmo typing.cmo runtime.cmo bindings.cmo kast.cmo ast2kast.cmo bytecode.cmo kast2bytecode.cmo bytecode2string.cmo parser.cmo main.cmo
 
 clean:
-	rm $(EXE) *.cmo *.cmi compile *.vm *.tst *.out 
+	rm -f $(EXE) *.cmo *.cmi compile *.vm *.tst *.out 

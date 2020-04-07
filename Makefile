@@ -4,11 +4,18 @@
 # make INPUT=samples/test.cmo        # prépare le cmo, compile la zam et lance le simulateur
 # make short INPUT=samples/test.cmo  # prépare le cmo et compile la zam 
 
+INPUT=
+
+ZAM_BIN=zam/bin
 
 MINIML=mini-ml/
+
+# chemins relatifs depuis mini-ml
+ROOT=../
 STDLIB=stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml
-INPUT=
-ZAM_SRC=zam/mlvalues.ml zam/prims.ml zam/check.ml zam/input.ml zam/interp.ml zam/main.ml
+ZAM_INPUT=../zam/input.ml
+ZAM_SRC=../zam/src/mlvalues.ml ../zam/src/prims.ml ../zam/src/check.ml ../zam/src/interp.ml ../zam/src/main.ml
+
 
 all: simul
 
@@ -21,7 +28,7 @@ miniML:
 	make -C $(MINIML)
 
 zam:	miniML
-	cd $(MINIML); ./compile $(STDLIB) $(foreach FILE,$(ZAM_SRC),../$(FILE)); cd ..
+	cd $(MINIML); ./compile -dst=$(ROOT)$(ZAM_BIN) $(STDLIB) $(ZAM_INPUT) $(ZAM_SRC); cd $(ROOT)
 
 bytecode: obytelibParser cmo
 	./_build/default/bytecode/obytelibParser.exe $(INPUT)
@@ -31,6 +38,8 @@ obytelibParser:
 
 cmo:
 	ocamlc $(INPUT)
-
+	rm a.out
 clean:
+	rm -f $(ZAM_BIN)/*
 	make clean -C $(MINIML)
+
