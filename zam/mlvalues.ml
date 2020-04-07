@@ -8,10 +8,14 @@ type t = int
 (* !!! la notation 0x... de mini-ml est erroné !!! *)
 
 (* transforme un entier en mlvalue *)
-let val_long (n : t) : t = n
+let val_long (n : t) : t = 
+  assert (n >= 0);
+  n
     
 (* transforme un mlvalue en entier *)
-let long_val (n : t) : t = n
+let long_val (n : t) : t = 
+  assert (n >= 0);
+  n
 
 (* transforme un pointeur en mlvalue *)
 let val_ptr (n : t) : t =
