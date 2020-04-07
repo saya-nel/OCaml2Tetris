@@ -1,19 +1,19 @@
 # variante run.sh
 
 # usage :
-# make INPUT=samples/test.cmo        # prépare le cmo, compile la zam et lance le simulateur
-# make short INPUT=samples/test.cmo  # prépare le cmo et compile la zam 
+# make I=samples/test.cmo        # prépare le cmo, compile la zam et lance le simulateur
+# make short I=samples/test.cmo  # prépare le cmo et compile la zam 
 
-INPUT=
+I=
 
 ZAM_BIN=zam/bin
 
 MINIML=mini-ml/
+ZAM_INPUT=zam/input.ml
 
 # chemins relatifs depuis mini-ml
 ROOT=../
 STDLIB=stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml
-ZAM_INPUT=../zam/input.ml
 ZAM_SRC=../zam/src/mlvalues.ml ../zam/src/prims.ml ../zam/src/check.ml ../zam/src/interp.ml ../zam/src/main.ml
 
 
@@ -28,18 +28,21 @@ miniML:
 	make -C $(MINIML)
 
 zam:	miniML
-	cd $(MINIML); ./compile -dst=$(ROOT)$(ZAM_BIN) $(STDLIB) $(ZAM_INPUT) $(ZAM_SRC); cd $(ROOT)
+	mkdir -p $(ZAM_BIN)
+	cd $(MINIML); ./compile -dst=$(ROOT)$(ZAM_BIN) $(STDLIB) $(ROOT)$(ZAM_INPUT) $(ZAM_SRC); cd $(ROOT)
 
 bytecode: obytelibParser cmo
-	./_build/default/bytecode/obytelibParser.exe $(INPUT)
+	./_build/default/bytecode/obytelibParser.exe $(I)
 
 obytelibParser:
 	dune build bytecode/obytelibParser.exe
 
 cmo:
-	ocamlc $(INPUT)
-	rm a.out
+	ocamlc $(I)
+	rm -f a.out
 clean:
-	rm -f $(ZAM_BIN)/*
+	rm -Rf $(ZAM_BIN)
+	rm -rf $(ZAM_INPUT)
 	make clean -C $(MINIML)
+
 

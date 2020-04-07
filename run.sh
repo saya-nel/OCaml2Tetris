@@ -11,11 +11,12 @@ ROOT="../"
 STDLIB="stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml"
 ZAM_INPUT="../zam/input.ml"
 ZAM_SRC="../zam/src/mlvalues.ml ../zam/src/prims.ml ../zam/src/check.ml \
-         ../zam/src/input.ml ../zam/src/interp.ml ../zam/src/main.ml"
+         ../zam/src/interp.ml ../zam/src/main.ml"
 
 if [ $# -eq 0 ]
   then # Si il n'y a pas d'arg, on lance la vm
     # lancement compilation vers mini-ml
+    mkdir -p $ZAM_BIN
     cd $MINI_ML
     make
     ./compile -dst=$ROOT$ZAM_BIN $STDLIB $ZAM_INPUT $ZAM_SRC
@@ -44,6 +45,7 @@ if [ $# -eq 0 ]
     ./_build/default/bytecode/obytelibParser.exe $@
 
     # lancement compilation vers mini-ml
+    mkdir -p $ZAM_BIN
     cd $MINI_ML
     ./compile -dst=../$ZAM_BIN $STDLIB $ZAM_INPUT $ZAM_SRC
     cd $ROOT
