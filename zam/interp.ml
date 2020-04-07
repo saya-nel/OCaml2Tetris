@@ -37,7 +37,7 @@ let debug_print_state () =
   print_int (!pc);
   print_string " acc: "; 
   print_int (!acc);
-  if (Mlvalues.is_imm (!acc)) then 
+  if not (Mlvalues.is_ptr (!acc)) then 
     print_int (Mlvalues.long_val (!acc))
   else 
     debug_print_block (!acc);

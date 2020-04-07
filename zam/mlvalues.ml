@@ -19,16 +19,16 @@ let long_val (n : t) : t =
 
 (* transforme un pointeur en mlvalue *)
 let val_ptr (n : t) : t =
-  assert (n >= 0);
+  assert (n > 0); (* addresse 0 réservée *)
   (- n)
 
 (* transforme un mlvalue en pointeur *)
 let ptr_val (n : t) : t =
-  assert (n <= 0);
+  assert (n < 0);
   (- n)
 
-let is_imm (n : t) : bool = 
-  n >= 0
+let is_ptr (n : t) : bool = 
+  n < 0
 
 let blk_size (b : t) = Array.length b - 2
 
@@ -54,10 +54,5 @@ let env_closure c = get_field c 2
 let _ = 
   assert (long_val (val_long 42) = 42);
   assert (ptr_val (val_ptr 42) = 42);
-  assert (is_imm (val_long 42));
-  assert (not is_imm (val_ptr 42))
-
-(*
-let f n = 
-	assert ((long_val (val_long n)) = n)
-let _ = f 42; f (- 42)*)
+  assert (not (is_ptr (val_long 42)));
+  assert (is_ptr (val_ptr 42))

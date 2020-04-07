@@ -19,7 +19,7 @@ let ltint v1 v2 = Mlvalues.val_long (Mlvalues.long_val v1 < Mlvalues.long_val v2
 let leint v1 v2 = Mlvalues.val_long (Mlvalues.long_val v1 <= Mlvalues.long_val v2)
 let gtint v1 v2 = Mlvalues.val_long (Mlvalues.long_val v1 > Mlvalues.long_val v2)
 let geint v1 v2 = Mlvalues.val_long (Mlvalues.long_val v1 >= Mlvalues.long_val v2)
-let isint v = Mlvalues.val_long (if Mlvalues.is_imm v then 1 else 0) 
+let isint v = Mlvalues.val_long (if Mlvalues.is_ptr v then 0 else 1) 
 
 let bnot v = Mlvalues.val_long (if Mlvalues.long_val v = 0 then 1 else 0)
 
