@@ -1772,7 +1772,7 @@ let yyact = [|
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'exp) in
     Obj.repr(
 # 249 "parser.mly"
-                                         ( Assert (_2) )
+                                         ( Assert (_2,pos()) )
 # 1777 "parser.ml"
                : 'app))
 ; (fun __caml_parser_env ->

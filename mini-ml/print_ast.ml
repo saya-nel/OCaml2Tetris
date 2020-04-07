@@ -129,7 +129,7 @@ and sprint_exp lvl = function
        (sprint_exp lvl e2)
        (sprint_exp (next lvl) e3) 
        (indent_string lvl)
-  | Assert(e) ->
+  | Assert(e,_) ->
      let s = sptf "(assert " in
      let lvl' = get_indent_level s lvl in 
      s ^ (sprint_exp lvl' e) ^ ")"

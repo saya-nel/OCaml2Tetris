@@ -1,7 +1,8 @@
 // val exit : int -> 'a
 function ML_Internal.exit 0
-	push argument 0
-	call Sys.error 1 
+	//push argument 0
+	//call Sys.halt 1 
+	call Sys.halt 0
 	return
 // array ------------------------------
 // val array_length : 'a array -> int

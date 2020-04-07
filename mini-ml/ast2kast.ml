@@ -275,12 +275,22 @@ and rewrite_exp lenv genv = function
                                                         Ast.Ident(var),
                                                         Ast.Constant(md)),e',aux l2)) in
                aux smst) 
-  | Ast.Assert(e) ->
+  | Ast.Assert(e,pos) ->
      rewrite_exp lenv genv @@ 
        Ast.If(e,
               Ast.Constant(Ast.Unit),
-              Ast.App(Ast.Ident("Pervasives.exit"),
-                      [Ast.Constant (Ast.Int(1))]))
+              Ast.Seq(
+                Ast.App(Ast.Ident("Pervasives.print_string"),
+                  [Ast.Constant
+                    (Ast.String 
+                      (Printf.sprintf "assertion fail [%s]" (Print_ast.sprint_exp 0 e)))]),
+                Ast.Seq(Ast.App(Ast.Ident("Pervasives.print_newline"),[ Ast.Constant(Ast.Unit)]),
+                Ast.Seq(Ast.App(Ast.Ident("Pervasives.print_string"),
+                  [Ast.Constant
+                    (Ast.String 
+                      (Printf.sprintf "at %s : %s. exit." (genv.mod_name) (Parseutils.string_of_position pos)))]),
+                Ast.App(Ast.Ident("Pervasives.exit"),
+                       [Ast.Constant (Ast.Int(0))])))))
   | Ast.SetGlobal(e,i) ->
      Kast.SetGlobal (rewrite_exp lenv genv e,i)
   | Ast.ReadGlobal(i) ->

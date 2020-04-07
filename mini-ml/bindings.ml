@@ -66,7 +66,7 @@ and collect_exp lenv cenv = function
     collect_exp lenv cenv' e1;
     collect_exp lenv cenv' e2;
     collect_exp lenv cenv' e3  
-  | Assert(e) ->
+  | Assert(e,_) ->
      collect_exp lenv cenv e
   | Match(e,cases) ->
     collect_exp lenv cenv e;

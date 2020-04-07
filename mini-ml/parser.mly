@@ -246,7 +246,7 @@ app:
  | exp                                   { $1 }
  | exp exprs                             { App($1,$2) }
  | exp ATAT app                          { App($1,[$3]) }
- | ASSERT exp                            { Assert ($2) }
+ | ASSERT exp                            { Assert ($2,pos()) }
  ;
 
 exprs :

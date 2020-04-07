@@ -36,6 +36,7 @@ let debug_print_state () =
   print_string " pc: "; 
   print_int (!pc);
   print_string " acc: "; 
+  print_int (!acc);
   if (Mlvalues.is_imm (!acc)) then 
     print_int (Mlvalues.long_val (!acc))
   else 
@@ -60,7 +61,6 @@ let interp () =
   let extra_args = ref 0 in
   let trap_sp = ref 0 in
 
-  acc := 0;
   (* env := make_empty_env (); *)
   sp := 0;
   print_int (!acc);
