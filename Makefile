@@ -8,7 +8,7 @@
 MINIML=mini-ml/
 STDLIB=stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml
 INPUT=
-ZAM_SRC=zam/mlvalues.ml zam/prims.ml zam/check.ml zam/input.ml zam/interp.ml
+ZAM_SRC=zam/mlvalues.ml zam/prims.ml zam/check.ml zam/input.ml zam/interp.ml zam/main.ml
 
 all: simul
 

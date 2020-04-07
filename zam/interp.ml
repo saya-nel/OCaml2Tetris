@@ -233,18 +233,4 @@ let interp code =
   debug_print_stack ();
   print_newline ()
 
-(* interpreter le programme d'entrée *)
-
-let _ = interp Input.code
-
-
-(* interpreter le programme de test numéro i *)
-let test i =
-  print_string "test "; 
-  print_int i; 
-  print_newline ();
-  interp Check.code.(i) ;;
-
-(* let _ = test 62 *)
-
 

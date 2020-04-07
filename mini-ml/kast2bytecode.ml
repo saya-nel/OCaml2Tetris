@@ -62,7 +62,7 @@ let rec bytecode_of_prog bc_mdls =
                 accgb := init @ !accgb; 
                 (mod_name,bc_decls)) bc_mdls in
   let init_globals = List.rev (mapcat (fun g -> [Call (g,0)]) !accgb) in
-  let main = ("Main",([Function ("Main.main",0)] @ init_globals @ 
+  let main = ("Start",([Function ("Start.main",0)] @ init_globals @ 
                         [Push(Constant(0));Return])) in
   let apply_file = ("Apply",(Function ("Apply.apply",0) :: !apply_code) @ !lambda_code) in
   (* let lambda_lifting_file = ("Lambda",*)
