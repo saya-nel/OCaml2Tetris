@@ -8,11 +8,11 @@ type t = int
 (* !!! la notation 0x... de mini-ml est erroné !!! *)
 
 (* transforme un entier en mlvalue *)
-let val_long (n : t) : t = n lor 0x8000 (* pack *)
+let val_long (n : t) : t = n lor (- 32767) (* 0x8000 *) (* pack *)
 (* transforme un mlvalue en entier *)
-let long_val (n : t) : t = n land 0x7FFF (* unpack *)
+let long_val (n : t) : t = n land 32767 (* 0x7FFF *) (* unpack *)
 (*  *)
-let val_ptr (n : t) : t = n land 0x7FFF
+let val_ptr (n : t) : t = n (* land 32767*) (* 0x7FFF *)
 let ptr_val (n : t) : t = n
 
 let blk_size (b : t) = Array.length b - 2
@@ -41,7 +41,4 @@ let env_closure c = get_field c 2
 (*
 let f n = 
 	assert ((long_val (val_long n)) = n)
-let _ = f 42; f (- 42)
-
-~~~~> erreur
-*)
+let _ = f 42; f (- 42)*)

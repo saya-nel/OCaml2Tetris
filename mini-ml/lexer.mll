@@ -13,7 +13,7 @@ rule token = parse
 | (("0x"['0'-'9''a'-'f''A'-'F']+)| ['0'-'9']+) as lxm  { let n = int_of_string lxm in 
 	                            if abs n > 0xFFFF 
 	                            then failwith "Integer literal exceeds the range of representable integers" 
-	                            else INT(if n < 0x8000 then n else (- 0x8000 + (n mod 0x8000)) + 1) }
+	                            else INT(if abs n < 0x8000 then n else (- 0x8000 + (n mod 0x8000)) + 1) }
 | "type"             { TYPE }
 | "external"         { EXTERNAL } (* external int_of_string : string -> int = f *)
 | "true"             { BOOL(true) }
