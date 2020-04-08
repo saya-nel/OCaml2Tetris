@@ -23,7 +23,9 @@ let () =
     ("-dst", Arg.Set_string destination_dir, 
       " : spécifie le dossier où seront placés les fichiers compilés");
     ("-stdlib",Arg.Set_string stdlib, 
-      "chemin vers la bibliothèque d'execution de mini-ml")
+      "chemin vers la bibliothèque d'execution de mini-ml");
+    ("-assert", Arg.Set Ast2kast.compile_assertions,
+       " : empbarque les assert dans le code.")
     ] add_file "Usage:\n  ./compile [options] <filenames ..>"	
 
 let parse filename = 

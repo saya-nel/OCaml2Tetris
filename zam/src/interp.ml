@@ -197,7 +197,7 @@ let interp code =
                            let tag = take_argument code in
                            acc := Mlvalues.new_block tag 0
     | 62 (* MAKEBLOCK *) -> let tag = take_argument code in
-                            let sz = take_argument code in     (* attention à l'ordre des arguments (tag et pc) dans la pile *)
+                            let sz = take_argument code in (* attention à l'ordre des arguments (tag et pc) dans le code *)
                             let blk = Mlvalues.new_block tag sz in
                             Mlvalues.set_field blk 0 (!acc);
                             for i = 1 to sz - 1 do 
