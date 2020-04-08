@@ -163,10 +163,10 @@ let interp code =
                          pc := (!pc) + n
     | 85 (* BRANCHIF *) -> let n = take_argument code in 
                            assert (n < Array.length code);
-                           pc := if Mlvalues.long_val (!acc) = 1 then (!pc) + n else !pc + 1
+                           pc := if Mlvalues.long_val (!acc) = 1 then (!pc) + n else (!pc) + 1
     | 86 (* BRANCHIFNOT *) -> let n = take_argument code in 
                               assert (n < Array.length code);
-                              pc := if Mlvalues.long_val (!acc) = 0 then (!pc) + n else !pc + 1
+                              pc := if Mlvalues.long_val (!acc) = 0 then (!pc) + n else (!pc) + 1
     (* 87 SWITCH *)
     | 88 (* BOOLNOT *) -> acc := Prims.bnot (!acc)
     (* | 92 à 98 -> interop avec C *)

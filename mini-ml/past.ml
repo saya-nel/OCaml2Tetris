@@ -1,3 +1,4 @@
+type loc = Parseutils.pos
 
 type prog = tmodule list
 and tmodule = { mod_name : name ;
@@ -5,13 +6,18 @@ and tmodule = { mod_name : name ;
 and name = string
 and var = (name * Types.typ option)
 
-and decl = 
+and decl = { decl_desc: declaration_desc; 
+             decl_loc : loc
+             }
+and declaration_desc =
   | Exp of (exp)
   | DefVar of (var * exp)
   | DefFun of    ((name * var list * Types.typ option * exp) list)
   | DefFunRec of ((name * var list * Types.typ option * exp) list)
   | Type of (name * Types.typ)
-and exp = 
+and exp = { exp_desc: expression_desc; 
+            exp_loc : loc }
+and expression_desc =
   | Annotation of (exp * Types.typ)
   | Constant of (constant)
   | Ident of (name)

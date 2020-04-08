@@ -1,15 +1,16 @@
 (* repris et étendu de https://www.lri.fr/~filliatr/ens/compil/td/7/corrige/corrige.ml.html *)
 
 open Types
-open Ast
+open Past
 
 let get_tyopt = function
 | None -> Tvar (V.create ()) 
 | Some ty -> ty
 
-let unify_opt t = function
+let unify_opt t tyopt loc = 
+match tyopt with
 | None -> ()
-| Some ty -> unify t ty
+| Some ty -> unify t ty loc
 
 let initial_env primitives =
   List.fold_right (fun (x,c,ty) env -> add true x ty env) primitives empty_env;;
@@ -21,16 +22,17 @@ let rec w env decs = function
      List.iter (fun (x,t) -> Printf.printf "%s : %s\n" x (Print_ast.sprint_ty 0 t)) xts; 
      let env' = List.fold_left (fun env (x,t) -> add true x (canon t) env) env xts in
      w env' (decs @ xts) ds 
-and w_dec env = function
+and w_dec env {decl_desc;decl_loc} = 
+match decl_desc with
 | Exp (e) -> 
   let t = w_exp env e in 
   ([("_",t)])
 | DefVar ((x,tyopt),e) -> 
   let t = w_exp env e in
-  unify_opt t tyopt;
+  unify_opt t tyopt decl_loc;
   ([(x,t)])
 | DefFun funs -> 
-  let funtys = List.map (w_defun env) funs in
+  let funtys = List.map (fun f -> w_defun env f decl_loc) funs in
   (List.map2 (fun (f,_,_,_) tf -> (f,tf)) funs funtys)
 | DefFunRec funs -> 
   let funcs = List.map (fun (x,_,_,_) -> x) funs in
@@ -38,24 +40,26 @@ and w_dec env = function
                                let v0 = Tvar (V.create ()) in 
                                add true f v0 env) env funcs in
   let env' = List.fold_left (fun env ((x,args,tyopt,e) as f) -> 
-                               let t = w_defun env f in 
+                               let t = w_defun env f decl_loc in 
                                add true x t env) env funs in
   List.map (fun (x,_,_,_) -> (x,find x env')) funs
 | Type (name,ty) -> 
   (Types.alias := (name,ty) :: !Types.alias);
   [] (* failwith "todo" *)
-and w_defun env (f,args,tyropt,e) = 
+and w_defun env (f,args,tyropt,e) decl_loc = 
   let env' = List.fold_left 
                (fun env (xi,tyopt) -> 
                   let ty = get_tyopt tyopt in
                   add false xi ty env) env args in
   let tret = w_exp env' e in
-  unify_opt tret tyropt;
+  unify_opt tret tyropt decl_loc;
   let t = List.fold_right (fun (xi,_) t -> let ti = find xi env' in Tarrow(ti,t)) args tret in
   t
 
 
-and w_exp env = function
+and w_exp env {exp_desc;exp_loc} = 
+let unify t1 t2 = unify t1 t2 exp_loc in
+match exp_desc with
   | Annotation (e,ty) -> 
     let t1 = w_exp env e in
     unify ty t1;
@@ -214,14 +218,14 @@ and w_unop = function
 
 (* initial_env prims *) 
 
-let type_check Ast.{decls;mod_name} env = 
+let type_check {decls;mod_name} env = 
   try let decs = w env [] decls in 
       let env = List.fold_left (fun env (x,t) -> 
         add true (mod_name ^ "." ^ x) (canon t) env) env decs
       in env
   with 
-  | UnificationFailure (t1,t2) -> 
-      Printf.printf "Error: This expression has type %s but an expression was expected of type
-         %s\n" (Print_ast.sprint_ty 0 t1) (Print_ast.sprint_ty 0 t2); exit 0
+  | UnificationFailure (t1,t2,loc) -> 
+      Printf.printf "\nError: %s\n This expression has type %s but an expression was expected of type
+         %s\n" (Parseutils.string_of_position loc) (Print_ast.sprint_ty 0 t1) (Print_ast.sprint_ty 0 t2); exit 0
   | Unbound_value x -> Printf.printf "Error: Unbound value %s\n" x; exit 0
 

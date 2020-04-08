@@ -1,7 +1,11 @@
 %{
   open Parseutils
-  open Ast
+  open Past
   open Types
+
+let decl_create d = Past.{decl_desc = d; decl_loc = pos()}
+let exp_create e = Past.{exp_desc = e; exp_loc = pos()}
+
 %}
 
 
@@ -49,10 +53,10 @@
 
 %start tmodule         /* the entry point */
 
-%type <Ast.decl list>  tmodule
-%type <Ast.exp>        expr
+%type <Past.decl list>  tmodule
+%type <Past.exp>        expr
 %type <Types.typ>         ty
-%type <Ast.match_case> match_case
+%type <Past.match_case> match_case
 
 %%
 
@@ -74,13 +78,14 @@ decls :
  ;
 
 decl : 
- | LET argu EQ seq                            { match $2 with 
+ | LET argu EQ seq                            { decl_create @@
+ 	                                           match $2 with 
 		                                       | None,None -> Exp($4)
-		                                       | None,Some t -> Exp(Annotation($4,t))
+		                                       | None,Some t -> Exp(exp_create @@ Annotation($4,t))
 		                                       | Some x,tyopt -> DefVar((x,tyopt),$4) }
- | LET defuns                                 { DefFun($2) }
- | LET REC defuns                             { DefFunRec($3) }
- | TYPE IDENT EQ expr_ty                      { Type($2,$4) }
+ | LET defuns                                 { decl_create @@ DefFun($2) }
+ | LET REC defuns                             { decl_create @@ DefFunRec($3) }
+ | TYPE IDENT EQ expr_ty                      { decl_create @@ Type($2,$4) }
  | LET error { error_exit (pos()) "déclaration `let` malformée. J'attend {let <ident> [...] = <expr> in <expr>}" }
  | error { error_exit (pos()) "déclaration malformée (`let` ou `type` attendu)" }
  ;
@@ -160,27 +165,29 @@ ident_in_mod:
 
 seq :
 | expression                 { $1 }
-| expression SEMICOL seq     { Seq($1,$3) }
+| expression SEMICOL seq     { exp_create @@ Seq($1,$3) }
 ;
 
 expression : 
-| ACCESS expr                            { Ref_access($2) } 
-| NOT expr                               { UnOp(Not,$2) }
+| ACCESS expr                            { exp_create @@ Ref_access($2) } 
+| NOT expr                               { exp_create @@ UnOp(Not,$2) }
 | expr                                   { $1 }
-| FUN argu_strict RIGHT_ARROW seq        { Fun($2,$4) }
-| LET argu EQ seq IN seq                 { match $2 with 
+| FUN argu_strict RIGHT_ARROW seq        { exp_create @@ Fun($2,$4) }
+| LET argu EQ seq IN seq                 { exp_create @@ 
+	                                       match $2 with 
 	                                       | None,None -> Seq($4,$6)
-	                                       | None,Some t -> Seq(Annotation($4,t),$6)
+	                                       | None,Some t -> Seq(exp_create @@ Annotation($4,t),$6)
 	                                       | Some x,tyopt -> Let((x,tyopt),$4,$6) }
-| expression WHERE argu EQ seq           { match $3 with 
+| expression WHERE argu EQ seq           { exp_create @@ 
+	                                       match $3 with 
 	                                       | None,None -> Seq($5,$1)
-	                                       | None,Some t -> Seq(Annotation($5,t),$1)
+	                                       | None,Some t -> Seq(exp_create @@ Annotation($5,t),$1)
 	                                       | Some x,tyopt -> Let((x,tyopt),$5,$1) }
-| IF seq THEN expression ELSE expression { If($2,$4,$6)}
-| IF seq THEN expression                 { If($2,$4,Constant(Unit))}
-| MATCH seq WITH match_body              { Match($2,$4)}
-| WHILE seq DO seq DONE                  { While($2,$4) }
-| FOR IDENT EQ seq TO seq DO seq DONE    { For($2,$4,$6,$8) }
+| IF seq THEN expression ELSE expression { exp_create @@ If($2,$4,$6) }
+| IF seq THEN expression                 { exp_create @@ If($2,$4,exp_create @@ Constant(Unit))}
+| MATCH seq WITH match_body              { exp_create @@ Match($2,$4)}
+| WHILE seq DO seq DONE                  { exp_create @@ While($2,$4) }
+| FOR IDENT EQ seq TO seq DO seq DONE    { exp_create @@ For($2,$4,$6,$8) }
 ;
 
 
@@ -221,33 +228,33 @@ argus :
 
 expr: 
  | app                                   { $1 } 
- | expression PLUS expression            { BinOp(Add,$1,$3) }
- | expression MINUS expression           { BinOp(Minus,$1,$3) }
- | expression TIMES expression           { BinOp(Mult,$1,$3) }
- | expression DIV expression             { BinOp(Div,$1,$3) }
- | expression EQ expression              { BinOp(Eq,$1,$3) }
- | expression NEQ expression             { BinOp(Neq,$1,$3) }
- | expression GT expression              { BinOp(Gt,$1,$3) }
- | expression LT expression              { BinOp(Lt,$1,$3) }
- | expression GE expression              { BinOp(Ge,$1,$3) }
- | expression LE expression              { BinOp(Le,$1,$3) }
- | expression OR expression              { BinOp(Or,$1,$3) }
- | expression AND expression             { BinOp(And,$1,$3) }
- | expression LOR expression             { BinOp(Lor,$1,$3) }
- | expression LAND expression            { BinOp(Land,$1,$3) }
- | expr ASSIGN expression                { Ref_assign($1,$3) } 
- | MINUS expr                            { UnOp(UMinus,$2) }
- | expression COMMA expression 		     { Pair($1,$3) }
- | expression CONS expression 		     { Cons($1,$3) }
+ | expression PLUS expression            { exp_create @@ BinOp(Add,$1,$3) }
+ | expression MINUS expression           { exp_create @@ BinOp(Minus,$1,$3) }
+ | expression TIMES expression           { exp_create @@ BinOp(Mult,$1,$3) }
+ | expression DIV expression             { exp_create @@ BinOp(Div,$1,$3) }
+ | expression EQ expression              { exp_create @@ BinOp(Eq,$1,$3) }
+ | expression NEQ expression             { exp_create @@ BinOp(Neq,$1,$3) }
+ | expression GT expression              { exp_create @@ BinOp(Gt,$1,$3) }
+ | expression LT expression              { exp_create @@ BinOp(Lt,$1,$3) }
+ | expression GE expression              { exp_create @@ BinOp(Ge,$1,$3) }
+ | expression LE expression              { exp_create @@ BinOp(Le,$1,$3) }
+ | expression OR expression              { exp_create @@ BinOp(Or,$1,$3) }
+ | expression AND expression             { exp_create @@ BinOp(And,$1,$3) }
+ | expression LOR expression             { exp_create @@ BinOp(Lor,$1,$3) }
+ | expression LAND expression            { exp_create @@ BinOp(Land,$1,$3) }
+ | expr ASSIGN expression                { exp_create @@ Ref_assign($1,$3) } 
+ | MINUS expr                            { exp_create @@ UnOp(UMinus,$2) }
+ | expression COMMA expression 		     { exp_create @@ Pair($1,$3) }
+ | expression CONS expression 		     { exp_create @@ Cons($1,$3) }
 /* | error                                 { raise (Parse_Exception ("malformed expression ")) }*/
 ;
 
 app:
  | exp                                   { $1 }
- | exp exprs                             { App($1,$2) }
- | exp ATAT app                          { App($1,[$3]) }
- | SHARP exp                             { Magic($2) }
- | ASSERT exp                            { Assert ($2,pos()) }
+ | exp exprs                             { exp_create @@ App($1,$2) }
+ | exp ATAT app                          { exp_create @@ App($1,[$3]) }
+ | SHARP exp                             { exp_create @@ Magic($2) }
+ | ASSERT exp                            { exp_create @@ Assert ($2,pos()) }
  ;
 
 exprs :
@@ -256,15 +263,15 @@ exprs :
  ;
 
 exp:
-| LPAREN expression COLON expr_ty RPAREN { Annotation($2,$4) }
+| LPAREN expression COLON expr_ty RPAREN { exp_create @@ Annotation($2,$4) }
 | LPAREN seq RPAREN                     { $2 }
 | BEGIN seq END                         { $2 }
-| constant                              { Constant($1) }
-| IDENT                                 { Ident($1) }
-| ident_in_mod                          { Ident($1) }
-| ARRAY_OPEN array_content ARRAY_CLOSE  { Array_create($2) }
-| exp ARRAY_ACCESS_OPEN seq RPAREN     { Array_access($1,$3) }
-| exp ARRAY_ACCESS_OPEN seq RPAREN LEFT_ARROW expression { Array_assign($1,$3,$6) }
+| constant                              { exp_create @@ Constant($1) }
+| IDENT                                 { exp_create @@ Ident($1) }
+| ident_in_mod                          { exp_create @@ Ident($1) }
+| ARRAY_OPEN array_content ARRAY_CLOSE  { exp_create @@ Array_create($2) }
+| exp ARRAY_ACCESS_OPEN seq RPAREN     { exp_create @@ Array_access($1,$3) }
+| exp ARRAY_ACCESS_OPEN seq RPAREN LEFT_ARROW expression { exp_create @@ Array_assign($1,$3,$6) }
 | error { error_exit (pos()) "expression malformée." }
 ;
 

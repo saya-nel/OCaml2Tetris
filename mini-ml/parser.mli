@@ -75,4 +75,4 @@ type token =
   | WILDCARD
 
 val tmodule :
-  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Ast.decl list
+  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Past.decl list

@@ -34,8 +34,8 @@ let parse filename =
   try 
     let lexbuf = Lexing.from_channel ic in
     let decls = Parser.tmodule Lexer.token lexbuf in 
-    let mdl = Ast.{mod_name;decls} in
-    Print_ast.sprint_module 0 mdl |> Printf.printf "%s";
+    let mdl = Past.{mod_name;decls} in
+    (* Print_ast.sprint_module 0 mdl |> Printf.printf "%s"; *)
     close_in ic;
     mdl
   with Parseutils.Parse_Exception(s,pos) -> 
@@ -45,11 +45,12 @@ let parse filename =
 let parse_modules fs = 
   List.map parse fs
 
-let compile genv mdl = 
+let compile genv (mdl : Past.tmodule) = 
   try 
     let genv = if not !type_check then genv 
       else let env = Typing.type_check mdl Ast2kast.(genv.typed_decls) in    
          Ast2kast.{genv with typed_decls = env} in
+    let mdl = Past2ast.visit_tmodule mdl in
     let mdl = Lifting.visit_tmodule mdl in
     let genv0 = Ast2kast.{genv with mod_name=Ast.(mdl.mod_name); init=[]} in
     let genv',kast = Ast2kast.rewrite_tmodule genv0 mdl in

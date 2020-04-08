@@ -50,9 +50,9 @@ let rec canon t = match head t with
 
 (* unification *)
 
-exception UnificationFailure of typ * typ
+exception UnificationFailure of typ * typ * Parseutils.pos
 
-let unification_error t1 t2 = raise (UnificationFailure (canon t1, canon t2))
+let unification_error t1 t2 loc = raise (UnificationFailure (canon t1, canon t2, loc))
 
 let rec occur v t = match head t with
   | Tvar w -> V.equal v w
@@ -61,7 +61,7 @@ let rec occur v t = match head t with
   | Tconstr (_,ts) -> List.for_all (occur v) ts
   | Tident _ | Tunit | Tint | Tbool | Tchar | Tstring -> false
 
-let rec unify t1 t2 = match head t1, head t2 with
+let rec unify t1 t2 loc = match head t1, head t2 with
   | Tunit, Tunit -> ()
   | Tint, Tint -> ()
   | Tbool, Tbool -> ()
@@ -70,33 +70,26 @@ let rec unify t1 t2 = match head t1, head t2 with
   (* | Tident s, Tident s' -> if s <> s' then unification_error t1 t2 *)                      
   | Tvar v1, Tvar v2 when V.equal v1 v2 -> ()
   | Tvar v1 as t1, t2 ->
-      if occur v1 t2 then unification_error t1 t2;
+      if occur v1 t2 then unification_error t1 t2 loc;
       assert (v1.def = None);
       v1.def <- Some t2
   | t1, Tvar v2 ->
-      unify t2 t1
+      unify t2 t1 loc
   | Tarrow (t11, t12), Tarrow (t21, t22)
   | Tproduct (t11, t12), Tproduct (t21, t22) ->
-      unify t11 t21; unify t12 t22
+      unify t11 t21 loc; unify t12 t22 loc
   | Tlist t, Tlist (t') | Tarray t, Tarray (t') | Tref t, Tref (t')  -> 
-      unify t t'
-  | Tconstr (c,ts), Tconstr (c',ts') -> if c <> c' then unification_error t1 t2 else
-                                      List.iter2 unify ts ts'
-  | Tident s, ty -> unify (List.assoc s !alias) ty
-  | ty, Tident s -> unify (List.assoc s !alias) ty
+      unify t t' loc
+  | Tconstr (c,ts), Tconstr (c',ts') -> if c <> c' then unification_error t1 t2 loc else
+                                      List.iter2 (fun t1 t2 -> unify t1 t2 loc) ts ts' 
+  | Tident s, ty -> unify (List.assoc s !alias) ty loc
+  | ty, Tident s -> unify (List.assoc s !alias) ty loc
   | t1, t2 -> 
-      unification_error t1 t2
+      unification_error t1 t2 loc
 
 let cant_unify ty1 ty2 =
   try let _ = unify ty1 ty2 in false with UnificationFailure _ -> true
 
-let () =
-  assert (cant_unify Tint (Tarrow (Tint, Tint)));
-  assert (cant_unify Tint (Tproduct (Tint, Tint)));
-  let a = V.create () in
-  let ta = Tvar a in
-  unify ta (Tarrow (Tint, Tint));
-  assert (cant_unify ta Tint)
 
 (* schéma de type *)
 

@@ -2,6 +2,8 @@
   open Parseutils
   open Parser        (* The type token is defined in parser.mli *)
   exception Eof
+
+
 }
 
 let vm_ident = ['a'-'z''A'-'Z''0'-'9''_']+
@@ -83,7 +85,7 @@ rule token = parse
 | ['\n' ]            { (Lexing.new_line lexbuf) ; (token lexbuf) }
 | [' ' '\t']         { token lexbuf }    (* skip blanks *)
 | "(*"               { comment lexbuf }  (* Comment until closing *)
-| eof | "eof"              { EOF }
+| eof | "eof"        { EOF }
 | _  as lxm          { raise (Parse_Exception (Printf.sprintf "Unexpected character: %c"  lxm,  Parseutils.pos())) }
 
 
