@@ -171,6 +171,36 @@ let interp code =
                            sp := (!sp) - (s - 1);          
                            pc := Mlvalues.addr_closure (!acc) - 1;  (* -1 ?? *)
                            extra_args := (!extra_args) + 2
+    | 40 (* RETURN *) -> let n = take_argument code in
+                         sp := (!sp) - n; 
+                         if !extra_args = 0 
+                         then (pc := Mlvalues.long_val (pop_stack ());
+                               env := pop_stack ();
+                               extra_args := Mlvalues.long_val (pop_stack ()))
+                         else (decr extra_args;
+                              pc := Mlvalues.addr_closure (!acc) - 1;  (* -1 ?? *)
+                              env := Mlvalues.env_closure (!acc))
+    | 41 (* RESTART *) ->
+          let n = Mlvalues.size (!env) in
+          for i = 1 to n - 1 do
+            push_stack (Mlvalues.get_field (!env) (n-i))
+          done;
+          env := Mlvalues.get_field (!env) 0;
+          extra_args := !extra_args + n - 1
+    | 42 (* GRAB *) -> let n = take_argument code in
+                       if !extra_args >= n 
+                       then extra_args := !extra_args - n
+                       else (let closure_env = Mlvalues.new_block (!extra_args + 1) (* +2 ? *)
+                                                               (Mlvalues.env_closure (!acc)) in
+                          for i = 1 to !extra_args + 1 do 
+                            Mlvalues.set_field closure_env i (pop_stack ())
+                          done;
+                         acc := Mlvalues.make_closure (!pc-3) closure_env;   (* -3 ? *)
+                         pc := pop_stack ();
+                         env := pop_stack ();
+                         extra_args := pop_stack () )
+                       
+
     | 53 (* GETGLOBAL *) -> let n = take_argument code in
                             acc := (Mlvalues.get_field (!global) n)
     | 54 (* PUSHGETGLOBAL *) -> push_stack (!acc);

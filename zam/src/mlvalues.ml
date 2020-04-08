@@ -53,8 +53,10 @@ let get_bytes (v : value) (i : int) =
 let set_bytes (v : value) (i : int) (x : value) =  (* à revoir. cf get_bytes. *)
   (#(ptr_val v)).(i+2) <- x
 
+let closure_tag = 6 (* ??? *)
 
-
+let make_closure pc env = 
+  val_ptr (# [|val_long closure_tag;val_long pc;env|])   (* ? *)
 
 let addr_closure (c : value) = long_val (get_field c 1)
 let env_closure (c : value) = get_field c 2
