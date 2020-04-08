@@ -11,6 +11,7 @@ all:
 	$(CC) -c print_ast.ml
 	$(CC) -c typing.ml
 	$(CC) -c past2ast.ml
+	$(CC) -c folding.ml
 	$(CC) -c lifting.ml
 	$(CC) -c kast.ml
 	$(CC) -c bindings.ml
@@ -23,7 +24,7 @@ all:
 	$(CC) -c lexer.ml
 	$(CC) -c parser.ml
 	$(CC) -c main.ml
-	$(CC) -o $(EXE) parseutils.cmo lexer.cmo types.cmo past.cmo  print_ast.cmo ast.cmo past2ast.cmo lifting.cmo typing.cmo runtime.cmo bindings.cmo kast.cmo ast2kast.cmo bytecode.cmo kast2bytecode.cmo bytecode2string.cmo parser.cmo main.cmo
+	$(CC) -o $(EXE) parseutils.cmo lexer.cmo types.cmo past.cmo  print_ast.cmo ast.cmo past2ast.cmo folding.cmo lifting.cmo typing.cmo runtime.cmo bindings.cmo kast.cmo ast2kast.cmo bytecode.cmo kast2bytecode.cmo bytecode2string.cmo parser.cmo main.cmo
 
 clean:
 	rm -f $(EXE) *.cmo *.cmi compile *.vm *.tst *.out 

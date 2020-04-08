@@ -24,8 +24,8 @@ let () =
       " : spécifie le dossier où seront placés les fichiers compilés");
     ("-stdlib",Arg.Set_string stdlib, 
       "chemin vers la bibliothèque d'execution de mini-ml");
-    ("-assert", Arg.Set Lifting.compile_assertions,
-       " : empbarque les assert dans le code.")
+    ("-assert", Arg.Set Folding.compile_assertions,
+       " : embarque les assertions dans le code.")
     ] add_file "Usage:\n  ./compile [options] <filenames ..>"	
 
 let parse filename = 
@@ -53,6 +53,7 @@ let compile genv (mdl : Past.tmodule) =
       else let env = Typing.type_check mdl Ast2kast.(genv.typed_decls) in    
          Ast2kast.{genv with typed_decls = env} in
     let mdl = Past2ast.visit_tmodule mdl in
+    let mdl = Folding.visit_tmodule mdl in
     let mdl = Lifting.visit_tmodule mdl in
     let genv0 = Ast2kast.{genv with mod_name=Ast.(mdl.mod_name); init=[]} in
     let genv',kast = Ast2kast.rewrite_tmodule genv0 mdl in

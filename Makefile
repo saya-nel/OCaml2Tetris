@@ -6,7 +6,7 @@
 
 I=
 ASSERT=-assert
-
+TYPECHECK=-typecheck
 ZAM_BIN=zam/bin
 
 MINIML=mini-ml/
@@ -30,7 +30,7 @@ miniML:
 
 zam:	miniML
 	mkdir -p $(ZAM_BIN)
-	cd $(MINIML); ./compile $(ASSERT) -typecheck -dst=$(ROOT)$(ZAM_BIN) $(STDLIB) $(ROOT)$(ZAM_INPUT) $(ZAM_SRC); cd $(ROOT)
+	cd $(MINIML); ./compile $(ASSERT) $(TYPECHECK) -dst=$(ROOT)$(ZAM_BIN) $(STDLIB) $(ROOT)$(ZAM_INPUT) $(ZAM_SRC); cd $(ROOT)
 
 bytecode: obytelibParser cmo
 	./_build/default/bytecode/obytelibParser.exe $(I)
