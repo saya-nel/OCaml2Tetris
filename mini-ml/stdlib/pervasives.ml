@@ -42,3 +42,6 @@ let failwith (msg : string) : unit =
 	print_string msg; 
     print_newline (); 
     exit 1
+
+let abs (n : int) : int = if n >= 0 then n else - n
+ 

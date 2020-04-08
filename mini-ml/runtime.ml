@@ -155,6 +155,8 @@ let link_runtime dir =
   let ty_obj_magic =
     Tarrow (v (), v ())
 
+  let ty_abs = Tarrow (Tint, Tint)
+
 end
 
 let primitives =
@@ -192,5 +194,6 @@ let primitives =
    ("print_char",       "Pervasives.print_char",       ty_print_char);
    ("print_string",     "Pervasives.print_string",     ty_print_string); 
    ("print_int",        "Pervasives.print_int",        ty_print_int);
-   ("print_newline",    "Pervasives.print_newline",    ty_print_newline) ] in
+   ("print_newline",    "Pervasives.print_newline",    ty_print_newline);
+   ("abs",              "Pervasives.abs",              ty_abs) ] in
    openned_ml_pervasives @ ml_internal

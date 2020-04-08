@@ -8,6 +8,7 @@ let stack = Array.make stack_size (Mlvalues.val_long 0)
 let acc = ref (Mlvalues.val_long 0)
 let env = ref (Mlvalues.val_long 0)
 
+let global = ref (Mlvalues.new_block 0 20)
 (* *********************************** *)
 
 let pop_stack () =
@@ -114,6 +115,24 @@ let interp code =
                         pc := Mlvalues.addr_closure (!acc); (* todo ? *)
                         env := Mlvalues.env_closure (!acc);
                         failwith "todo"
+    | 53 (* GETGLOBAL *) -> let n = take_argument code in
+                            acc := (Mlvalues.get_field (!global) n)
+    | 54 (* PUSHGETGLOBAL *) -> let n = take_argument code in
+                                    push_stack (!acc);
+                                    acc := (Mlvalues.get_field (!global) n)
+    | 55 (* GETGLOBALFIELD *) -> let n = take_argument code in
+                                 let p = take_argument code in
+                                 let g = Mlvalues.get_field (!global) n in
+                                 acc := Mlvalues.get_field g p
+    | 56 (* PUSHGETGLOBALFIELD *) -> push_stack (!acc);
+                                     let n = take_argument code in
+                                     let p = take_argument code in
+                                     let g = Mlvalues.get_field (!global) n in
+                                     acc := Mlvalues.get_field g p
+    | 57 (* SETGLOBAL *) -> let n = take_argument code in
+                            Mlvalues.set_field (!global) n (!acc);
+                            acc := Mlvalues.unit
+    
     | 62 (* MAKEBLOCK *) -> let tag = take_argument code in
                             let sz = take_argument code in     (* attention à l'ordre des arguments (tag et pc) dans la pile *)
                             let blk = Mlvalues.new_block tag sz in

@@ -3,28 +3,41 @@ let negint (v : value) : value =
   Mlvalues.val_long
   (- Mlvalues.long_val v)
 
+let sign_extension n =
+	if n > 0x3FFF (* ie. n entier 15 bits négatif *)
+	then - (n land 0x3FFF) 
+    else n
+
+let sign_contraction n = 
+	if n < 0 (* ie. n entier 16 bits négatif *)
+	then (- n) lor 0x4000 (* force à 1 le bit de signe de l'entier 15 bits *)
+    else n
+
 let addint (v1 : value) (v2 : value) : value = 
-	Mlvalues.val_long (Mlvalues.long_val v1 + Mlvalues.long_val v2)
+	Mlvalues.val_long @@ sign_contraction @@
+	(sign_extension (Mlvalues.long_val v1) + sign_extension (Mlvalues.long_val v2))
 
 let subint v1 v2 = 
-   Mlvalues.val_long (Mlvalues.long_val v1 - Mlvalues.long_val v2)
+	Mlvalues.val_long @@ sign_contraction @@
+	(sign_extension (Mlvalues.long_val v1) - sign_extension (Mlvalues.long_val v2))
 
 let mulint v1 v2 = 
-	Mlvalues.val_long @@ Mlvalues.long_val v1 * Mlvalues.long_val v2
+	Mlvalues.val_long @@ sign_contraction @@
+	(sign_extension (Mlvalues.long_val v1) * sign_extension (Mlvalues.long_val v2))
 
 let divint v1 v2 =  (* a revoir, marche uniquement avec des positfs, d'après la doc nand2tetris *)
-    Mlvalues.val_long @@ 
-    Mlvalues.long_val v1 * Mlvalues.long_val v2
+	Mlvalues.val_long @@ sign_contraction @@
+	(sign_extension (Mlvalues.long_val v1) / sign_extension (Mlvalues.long_val v2))
 
 let modint v1 v2 = 
 	failwith "todo"
 
 let andint v1 v2 = 
-	Mlvalues.val_long @@ 
+	Mlvalues.val_long 
 	(if Mlvalues.long_val v1 <> 0 && Mlvalues.long_val v2 <> 0 then 1 else 0)
 
 let orint v1 v2 = 
-  Mlvalues.val_long @@
+  Mlvalues.val_long
   (if Mlvalues.long_val v1 <> 0 then 1 else 
    if Mlvalues.long_val v2 <> 0 then 1 else 0)
 
@@ -64,3 +77,8 @@ let compare_imm v1 v2 =
 
 let ultint v1 v2 = failwith "todo"
 let ugeint v1 v2 = failwith "todo"
+
+
+
+let _ = assert (sign_contraction 42 = 42);
+        assert (sign_contraction (- 42) = 16426)
