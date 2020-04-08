@@ -19,7 +19,7 @@ if [ $# -eq 0 ]
     mkdir -p $ZAM_BIN
     cd $MINI_ML
     make
-    ./compile -dst=$ROOT$ZAM_BIN $STDLIB $ZAM_INPUT $ZAM_SRC
+    ./compile -typecheck -dst=$ROOT$ZAM_BIN $STDLIB $ZAM_INPUT $ZAM_SRC
     cd $ROOT 
 
     # ouverture de la VM nand2tetris
@@ -47,7 +47,7 @@ if [ $# -eq 0 ]
     # lancement compilation vers mini-ml
     mkdir -p $ZAM_BIN
     cd $MINI_ML
-    ./compile -dst=../$ZAM_BIN $STDLIB $ZAM_INPUT $ZAM_SRC
+    ./compile -typecheck -dst=../$ZAM_BIN $STDLIB $ZAM_INPUT $ZAM_SRC
     cd $ROOT
 
     # ouverture de la VM nand2tetris

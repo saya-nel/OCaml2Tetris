@@ -219,6 +219,7 @@ and w_unop = function
 (* initial_env prims *) 
 
 let type_check {decls;mod_name} env = 
+  Printf.printf "=== module %s ==================.\n" mod_name;
   try let decs = w env [] decls in 
       let env = List.fold_left (fun env (x,t) -> 
         add true (mod_name ^ "." ^ x) (canon t) env) env decs

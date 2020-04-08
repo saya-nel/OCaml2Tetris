@@ -129,13 +129,13 @@ let interp code =
     | 64 (* MAKEBLOCK2 *) -> let tag = take_argument code in
                              let blk = Mlvalues.new_block tag 2 in
                              Mlvalues.set_field blk 0 (!acc);
-                             Mlvalues.set_field blk 1 (pop_stack ())
+                             Mlvalues.set_field blk 1 (pop_stack ());
                              acc := blk
     | 65 (* MAKEBLOCK4 *) -> let tag = take_argument code in
                              let blk = Mlvalues.new_block tag 2 in
                              Mlvalues.set_field blk 0 (!acc);
-                             Mlvalues.set_field blk 1 (pop_stack ())
-                             Mlvalues.set_field blk 2 (pop_stack ())
+                             Mlvalues.set_field blk 1 (pop_stack ());
+                             Mlvalues.set_field blk 2 (pop_stack ());
                              acc := blk
 
     (* 66 MAKEFLOATBLOCK *)
@@ -157,7 +157,7 @@ let interp code =
                            Mlvalues.set_field (!acc) n (pop_stack ())
 
     (* 78 *)
-    | 79 (* VECTLENGTH *) -> acc := Mlvalues.val_long (Mlvalues.size acc)
+    | 79 (* VECTLENGTH *) -> acc := Mlvalues.val_long (Mlvalues.size (!acc))
     | 84 (* BRANCH *) -> let n = take_argument code in 
                          assert (n < Array.length code);
                          pc := (!pc) + n
@@ -176,7 +176,7 @@ let interp code =
     | 102 (* CONST3 *) -> acc := Mlvalues.val_long 3
     | 103 (* CONSTINT *) -> let n = take_argument code in 
                             acc := Mlvalues.val_long n
-    | 109 (* NEGINT *) -> acc := Prims.negint acc
+    | 109 (* NEGINT *) -> acc := Prims.negint (!acc)
     | 110 (* ADDINT *) -> acc := Prims.addint (pop_stack ()) (!acc)
     | 111 (* SUBINT *) -> acc := Prims.subint (pop_stack ()) (!acc)
     | 112 (* MULINT *) -> acc := Prims.mulint (pop_stack ()) (!acc)
