@@ -42,7 +42,7 @@ match decl_desc with
   let env' = List.fold_left (fun env ((x,args,tyopt,e) as f) -> 
                                let t = w_defun env f decl_loc in 
                                add true x t env) env funs in
-  List.map (fun (x,_,_,_) -> (x,find x env')) funs
+  List.map (fun (x,_,_,_) -> (x,find x decl_loc env')) funs
 | Type (name,ty) -> 
   (Types.alias := (name,ty) :: !Types.alias);
   [] (* failwith "todo" *)
@@ -53,7 +53,7 @@ and w_defun env (f,args,tyropt,e) decl_loc =
                   add false xi ty env) env args in
   let tret = w_exp env' e in
   unify_opt tret tyropt decl_loc;
-  let t = List.fold_right (fun (xi,_) t -> let ti = find xi env' in Tarrow(ti,t)) args tret in
+  let t = List.fold_right (fun (xi,_) t -> let ti = find xi decl_loc env' in Tarrow(ti,t)) args tret in
   t
 
 
@@ -66,7 +66,7 @@ match exp_desc with
     ty
   | Constant c -> (w_constant c)
   | Ident x -> 
-      find x env
+    find x exp_loc env
   | Let ((x,tyopt), e1, e2) ->
       let t1 = w_exp env e1 in
       let ty = get_tyopt tyopt in
@@ -183,7 +183,7 @@ match exp_desc with
      let ty = w_exp env e in 
      unify ty Tbool; 
      Tunit
-   | Magic _ -> Tvar (V.create ())
+   | Magic e -> let _ = w_exp env e in Tvar (V.create ())
    | _ -> failwith "private"
 
 and w_constant = function
@@ -226,7 +226,7 @@ let type_check {decls;mod_name} env =
       in env
   with 
   | UnificationFailure (t1,t2,loc) -> 
-      Printf.printf "\nError: %s\n This expression has type %s but an expression was expected of type
+      Printf.printf "\nError: %s\nThis expression has type %s but an expression was expected of type
          %s\n" (Parseutils.string_of_position loc) (Print_ast.sprint_ty 0 t1) (Print_ast.sprint_ty 0 t2); exit 0
-  | Unbound_value x -> Printf.printf "Error: Unbound value %s\n" x; exit 0
+  | Unbound_value (x,loc) -> Printf.printf "Error: %s\nUnbound value %s\n" (Parseutils.string_of_position loc)  x; exit 0
 

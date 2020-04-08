@@ -38,6 +38,22 @@ let link_runtime dir =
   let v () =
     Tvar (V.create ())
 
+  let ty_internal_exit = 
+    Tarrow(Tint,v())
+
+  let ty_internal_array_length = 
+    Tarrow(v(),Tint)
+
+  let ty_internal_array_get = 
+    Tarrow(v (),Tarrow (Tint,v ()))
+
+  let ty_internal_array_set = 
+    Tarrow(v (),Tarrow (Tint,Tarrow(v (),Tunit)))
+  let ty_internal_array_make = 
+    Tarrow(Tint,Tarrow(v(),v()))
+  let ty_internal_array_create_uninitialized =
+   Tarrow(Tint,v())
+
   let ty_internal_pair =
     let a,b = v (),v () in 
     Tarrow(a,Tarrow(b,Tproduct(a,b)))
@@ -55,9 +71,8 @@ let link_runtime dir =
    Tarrow(Tproduct(a,b),b)
 
 
-
   let ty_exit = 
-    Tarrow(Tint,v())
+    ty_internal_exit
 
   let ty_failwith =
    Tarrow(Tstring,v ())
@@ -139,17 +154,18 @@ let link_runtime dir =
 
   let ty_obj_magic =
     Tarrow (v (), v ())
+
 end
 
 let primitives =
   let open PrimTypes in
   let ml_internal = 
-  [("Internal.exit",             "Internal.exit",               ty_exit);
-   ("Internal.array_length",     "Internal.array_length",       ty_array_length);
-   ("Internal.array_get",        "Internal.array_get",          ty_array_get);
-   ("Internal.array_set",        "Internal.array_set",          ty_array_get);
-   ("Internal.array_make",       "Internal.array_make",         ty_array_make);
-   ("Internal.array_create_uninitialized", "Internal.array_create_uninitialized", ty_array_create_uninitialized);
+  [("Internal.exit",             "Internal.exit",               ty_internal_exit);
+   ("Internal.array_length",     "Internal.array_length",       ty_internal_array_length);
+   ("Internal.array_get",        "Internal.array_get",          ty_internal_array_get);
+   ("Internal.array_set",        "Internal.array_set",          ty_internal_array_set);
+   ("Internal.array_make",       "Internal.array_make",         ty_internal_array_make);
+   ("Internal.array_create_uninitialized", "Internal.array_create_uninitialized", ty_internal_array_create_uninitialized);
    ("Internal.print_char",       "Internal.print_char",         ty_print_char);
    ("Internal.print_char_array", "Internal.print_char_array",   ty_print_string); 
    ("Internal.print_int",        "Internal.print_int",          ty_print_int);

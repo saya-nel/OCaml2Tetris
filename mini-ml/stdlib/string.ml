@@ -1,5 +1,5 @@
-(* bibliotheque d'execution pour mini-ml *)
-(* module Array                          *)                  
+(* bibliotheque d'exécution pour mini-ml *)
+(* module String                         *)                  
 (*                                       *)
 (* Loïc Sylvestre                        *)
 

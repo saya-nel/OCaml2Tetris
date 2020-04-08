@@ -133,13 +133,13 @@ let add gen x t env =
 
 module Vmap = Map.Make(V)
 
-exception Unbound_value of string
+exception Unbound_value of string * Parseutils.pos
 
-(* find x env donne une instance fraîche de env(x) *)
-let find x env =
+(* find x loc env donne une instance fraîche de env(x) *)
+let find x loc env =
   let tx = 
     try Smap.find x env.bindings with 
-    | Not_found -> raise (Unbound_value x) in
+    | Not_found -> raise (Unbound_value (x,loc)) in
   let s =
     Vset.fold (fun v s -> Vmap.add v (Tvar (V.create ())) s)
       tx.vars Vmap.empty

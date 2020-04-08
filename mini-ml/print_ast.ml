@@ -212,6 +212,7 @@ and sprint_ty lvl ty =
      (match v.def with 
       | None -> Printf.sprintf "'a%d" v.id
       | Some ty -> sprint_ty lvl ty)
+  | Tconstr (name,args) -> failwith "print_ast : todo"
 and sprint_var lvl (p,opt) = 
   match opt with 
   | None -> p

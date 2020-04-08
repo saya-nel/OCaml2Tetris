@@ -26,7 +26,6 @@ type token =
   | ARRAY_TY
   | ATAT
   | FUN
-  | TVAR
   | SHARP
   | IDENT of (string)
   | IDENT_CAPITALIZE of (string)
@@ -35,6 +34,7 @@ type token =
   | CHAR of (char)
   | INT of (int)
   | BOOL of (bool)
+  | TVAR of (char)
   | PLUS
   | MINUS
   | TIMES

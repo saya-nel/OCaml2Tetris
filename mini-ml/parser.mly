@@ -6,18 +6,21 @@
 let decl_create d = Past.{decl_desc = d; decl_loc = pos()}
 let exp_create e = Past.{exp_desc = e; exp_loc = pos()}
 
+
 %}
 
 
 /* (* reserved words *) */
 %token LET WHERE IN IF THEN ELSE ASSERT WHILE FOR TO DO DONE MATCH WITH PIPE BEGIN END EXTERNAL AND_KW CONS
-%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT FUN TVAR SHARP
+%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT FUN SHARP
 
 %token <string> IDENT IDENT_CAPITALIZE VM_IDENT
 %token <string> STRING
 %token <char> CHAR
 %token <int> INT
 %token <bool> BOOL
+
+%token <char> TVAR
 
 %token PLUS MINUS TIMES DIV AND OR LAND LOR EQ NEQ GT LT GE LE NOT TRUE FALSE TYPE
 %token REC
@@ -66,8 +69,8 @@ decls {$1}
 
 decls :
  | EOF                      { [] }
- | decl decls               { $1::$2 }
- | decl terminaison decls   { $1::$3 }
+ | decl decls               { (decl_create $1)::$2 }
+ | decl terminaison decls   { (decl_create $1)::$3 }
  | { error_exit (pos()) "programme malformé" }
  ;
 
@@ -78,14 +81,13 @@ decls :
  ;
 
 decl : 
- | LET argu EQ seq                            { decl_create @@
- 	                                           match $2 with 
+ | LET argu EQ seq                            { match $2 with 
 		                                       | None,None -> Exp($4)
 		                                       | None,Some t -> Exp(exp_create @@ Annotation($4,t))
 		                                       | Some x,tyopt -> DefVar((x,tyopt),$4) }
- | LET defuns                                 { decl_create @@ DefFun($2) }
- | LET REC defuns                             { decl_create @@ DefFunRec($3) }
- | TYPE IDENT EQ expr_ty                      { decl_create @@ Type($2,$4) }
+ | LET defuns                                 { DefFun($2) }
+ | LET REC defuns                             { DefFunRec($3) }
+ | TYPE IDENT EQ expr_ty                      { Type($2,$4) }
  | LET error { error_exit (pos()) "déclaration `let` malformée. J'attend {let <ident> [...] = <expr> in <expr>}" }
  | error { error_exit (pos()) "déclaration malformée (`let` ou `type` attendu)" }
  ;
@@ -134,29 +136,18 @@ expr_ty:
  	                               | "char" -> Tchar
  	                               | "string" -> Tstring
  	                               | s -> Tident(s) }
- | TVAR IDENT                    { let v = Tvar (V.create ()) in  
- 								   match $2 with 
-                                   | "array" -> Tarray v 
-                                   | "ref" -> Tref v
-                                   | "tlist" -> Tlist v
-                                   | s -> Tconstr(s,[v])  }
+ | TVAR                          { Tvar (V.create ()) }
+ | expr_ty IDENT                 { match $2 with 
+                                   | "array" -> Tarray $1 
+                                   | "ref" -> Tref $1
+                                   | "list" -> Tlist $1
+                                   | s -> Tconstr(s,[$1])  }
  | ident_in_mod                  { Tident($1) }
  | expr_ty TIMES expr_ty         { Tproduct($1,$3) }
  | expr_ty RIGHT_ARROW expr_ty   { Tarrow($1,$3) }
  | error { error_exit (pos()) "expression de type malformée." }
 ;
 
-args : 
-| arg                             { [$1] }
-| LPAREN arg COLON expr_ty RPAREN { [$2] }
-| arg args  { $1::$2 }
-| error { error_exit (pos()) "liste d'arguments malformée." }
-;
-arg : 
-| IDENT          { $1 }
-| LPAREN RPAREN  { "_" }
-| error { error_exit (pos()) "argument malformé." }
-;
 
 ident_in_mod:
 | IDENT                  { $1 }
@@ -173,11 +164,7 @@ expression :
 | NOT expr                               { exp_create @@ UnOp(Not,$2) }
 | expr                                   { $1 }
 | FUN argu_strict RIGHT_ARROW seq        { exp_create @@ Fun($2,$4) }
-| LET argu EQ seq IN seq                 { exp_create @@ 
-	                                       match $2 with 
-	                                       | None,None -> Seq($4,$6)
-	                                       | None,Some t -> Seq(exp_create @@ Annotation($4,t),$6)
-	                                       | Some x,tyopt -> Let((x,tyopt),$4,$6) }
+| LET argu_strict EQ seq IN seq          { exp_create @@ Let($2,$4,$6) }
 | expression WHERE argu EQ seq           { exp_create @@ 
 	                                       match $3 with 
 	                                       | None,None -> Seq($5,$1)
@@ -194,30 +181,37 @@ expression :
 argu:
 | argu_aux                               { $1 }
 | argu_aux COLON expr_ty                 { let (c,_) = $1 in (c,Some $3) }
+| error { error_exit (pos()) "argument malformé." }
 ;
 argu_aux:
 | IDENT                                  { (Some $1,None) }
 | WILDCARD                               { (None,None) }
 | LPAREN RPAREN                          { (None,Some Tunit)}
 | LPAREN argu RPAREN                     { $2 }
+| error { error_exit (pos()) "argument malformé." }
 ;
 
 
 argu_strict:
 | LPAREN argu_strict RPAREN                     { $2 }
-| IDENT                                         { ($1,None) }
-| IDENT COLON expr_ty                           { ($1,Some $3) }
+| LPAREN RPAREN                                 { ("_",Some Tunit) } 
+| argu_strict_aux                               { ($1,None)}
+| argu_strict_aux COLON expr_ty                 { ($1,Some $3) }
+| error { error_exit (pos()) "argument malformé." }
 ;
+argu_strict_aux:
+| IDENT                                         { $1 }
+| WILDCARD                                      { "_" } 
+;
+
 
 argu_p:
 | IDENT                                { ($1,None) }
 | LPAREN IDENT COLON expr_ty RPAREN    { ($2,Some $4) } 
 | WILDCARD                             { ("_",None) } 
 | LPAREN RPAREN                        { ("_",Some Tunit) } 
-| LPAREN LPAREN RPAREN COLON expr_ty RPAREN  { if $5 <> Tunit
-                                               then error_exit (pos()) "le motif () doit avoir le type unit." 
-                                               else ("_",Some Tunit) } 
 | LPAREN argu_p RPAREN          { $2 } 
+| error { error_exit (pos()) "argument malformé." }
 ;
 
 argus : 
