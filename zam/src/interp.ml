@@ -145,6 +145,32 @@ let interp code =
                          pc := Mlvalues.addr_closure (!acc) - 1;  (* -1 ?? *)
                          env := Mlvalues.env_closure (!acc);
                          extra_args := 2
+    | 36 (* APPTERM *) -> let n = take_argument code in
+                          let s = take_argument code in
+                          for i = 0 to n - 1 do
+                            stack.((!sp) - s + i) <- stack.(!(sp) - n + i)
+                          done;
+                          sp := (!sp) - (s - n);             
+                          pc := Mlvalues.addr_closure (!acc) - 1;  (* -1 ?? *)
+                          env := Mlvalues.env_closure (!acc);
+                          extra_args := (!extra_args) + n - 1
+    | 37 (* APPTERM1 *) -> let s = take_argument code in 
+                           stack.((!sp) - s + 0) <- stack.(!(sp) - 1 + 0);
+                           sp := (!sp) - (s - 1);             
+                           pc := Mlvalues.addr_closure (!acc) - 1  (* -1 ?? *)
+    | 38 (* APPTERM2 *) -> let s = take_argument code in 
+                           stack.((!sp) - s + 0) <- stack.(!(sp) - 2 + 0);
+                           stack.((!sp) - s + 1) <- stack.(!(sp) - 2 + 1);
+                           sp := (!sp) - (s - 1);             
+                           pc := Mlvalues.addr_closure (!acc) - 1;  (* -1 ?? *)
+                           incr extra_args
+    | 39 (* APPTERM3 *) -> let s = take_argument code in 
+                           stack.((!sp) - s + 0) <- stack.(!(sp) - 3 + 0);
+                           stack.((!sp) - s + 1) <- stack.(!(sp) - 3 + 1);
+                           stack.((!sp) - s + 1) <- stack.(!(sp) - 3 + 2);
+                           sp := (!sp) - (s - 1);          
+                           pc := Mlvalues.addr_closure (!acc) - 1;  (* -1 ?? *)
+                           extra_args := (!extra_args) + 2
     | 53 (* GETGLOBAL *) -> let n = take_argument code in
                             acc := (Mlvalues.get_field (!global) n)
     | 54 (* PUSHGETGLOBAL *) -> push_stack (!acc);
