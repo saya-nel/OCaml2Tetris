@@ -46,6 +46,16 @@ let get_field (v : value) (i : int) =
 let set_field (v : value) (i : int) (x : value) = 
   (#(ptr_val v)).(i+2) <- x
 
+let get_bytes (v : value) (i : int) = 
+  (* à revoir : caser 2 chars par mlvalues (2 * 1 octet) ? *)
+  (#(ptr_val v)).(i+2)
+
+let set_bytes (v : value) (i : int) (x : value) =  (* à revoir. cf get_bytes. *)
+  (#(ptr_val v)).(i+2) <- x
+
+
+
+
 let addr_closure (c : value) = long_val (get_field c 1)
 let env_closure (c : value) = get_field c 2
 

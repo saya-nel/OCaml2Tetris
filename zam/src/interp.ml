@@ -182,8 +182,26 @@ let interp code =
     | 77 (* SETFIELD *) -> let n = take_argument code in 
                            Mlvalues.set_field (!acc) n (pop_stack ())
 
-    (* 78 *)
+    (* 78 SETFLOATFIELD *)
     | 79 (* VECTLENGTH *) -> acc := Mlvalues.val_long (Mlvalues.size (!acc))
+
+    | 80 (* GETVECTITEM *) -> assert (!sp > 0);
+                              let n = Mlvalues.long_val (pop_stack ()) in
+                              acc := Mlvalues.get_field (!acc) n
+    | 81 (* SETVECTITEM *) -> assert (!sp > 1);
+                              let n = pop_stack () in
+                              let v = pop_stack () in
+                              Mlvalues.set_field (!acc) n v;
+                              acc := Mlvalues.unit
+    | 82 (* GETSTRINGCHAR *) -> (* parfois appele GETBYTESCHAR *)
+                                assert (!sp > 0);
+                                let n = pop_stack () in
+                                Mlvalues.get_bytes (!acc) n
+    | 83 (* SETBYTESCHAR *) -> assert (!sp > 1);
+                               let n = pop_stack () in
+                               let v = pop_stack () in
+                               Mlvalues.set_bytes (!acc) n v;
+                               acc := Mlvalues.unit
     | 84 (* BRANCH *) -> let n = take_argument code in 
                          assert (n < Array.length code);
                          pc := (!pc) + n
