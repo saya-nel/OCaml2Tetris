@@ -5,6 +5,7 @@
 # make short I=samples/test.cmo  # prépare le cmo et compile la zam 
 
 I=
+ASSERT=-assert
 
 ZAM_BIN=zam/bin
 
@@ -29,7 +30,7 @@ miniML:
 
 zam:	miniML
 	mkdir -p $(ZAM_BIN)
-	cd $(MINIML); ./compile -assert -typecheck -dst=$(ROOT)$(ZAM_BIN) $(STDLIB) $(ROOT)$(ZAM_INPUT) $(ZAM_SRC); cd $(ROOT)
+	cd $(MINIML); ./compile $(ASSERT) -typecheck -dst=$(ROOT)$(ZAM_BIN) $(STDLIB) $(ROOT)$(ZAM_INPUT) $(ZAM_SRC); cd $(ROOT)
 
 bytecode: obytelibParser cmo
 	./_build/default/bytecode/obytelibParser.exe $(I)

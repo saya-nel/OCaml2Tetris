@@ -1,3 +1,4 @@
+let compile_assertions = ref false
 
 let gensym = 
   let c = ref 0 in 
@@ -41,8 +42,11 @@ and visit_exp = function
 | Ast.Seq(e1,e2) -> Ast.Seq(visit_exp e1,visit_exp e2)
 | Ast.While(e1,e2) -> Ast.While(visit_exp e1,visit_exp e2)
 | Ast.For(name,e0,e1,e2) -> Ast.For(name,visit_exp e0,visit_exp e1,visit_exp e2)
-| Ast.Match (e,ms) -> Ast.Match (visit_exp e,List.map (function Ast.Case(c,e) -> Ast.Case(c,visit_exp e) | Ast.Otherwise e -> Ast.Otherwise(visit_exp e)) ms) 
-| Ast.Assert(e,pos) -> Ast.Assert(visit_exp e,pos) 
+| Ast.Match(e,ms) -> Ast.Match (visit_exp e,List.map (function Ast.Case(c,e) -> Ast.Case(c,visit_exp e) | Ast.Otherwise e -> Ast.Otherwise(visit_exp e)) ms) 
+| Ast.Assert(e,pos) -> 
+     if !compile_assertions 
+     then Ast.Assert(visit_exp e,pos) 
+     else Ast.Constant(Ast.Unit)
 | Ast.Magic(e) -> Ast.Magic(visit_exp e) 
 | Ast.SetGlobal(e,i) -> Ast.SetGlobal(visit_exp e,i)
 | Ast.ReadGlobal(i) -> Ast.ReadGlobal(i) 

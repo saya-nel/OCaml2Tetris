@@ -1,4 +1,3 @@
-let compile_assertions = ref false
 
 let gensym = 
   let c = ref 0 in 
@@ -272,8 +271,6 @@ and rewrite_exp lenv genv = function
                                                         Ast.Constant(md)),e',aux l2)) in
                aux smst) 
   | Ast.Assert(e,pos) ->
-     if !compile_assertions 
-     then
      rewrite_exp lenv genv @@ 
        Ast.If(e,
               Ast.Constant(Ast.Unit),
@@ -289,7 +286,6 @@ and rewrite_exp lenv genv = function
                       (Printf.sprintf "at %s : %s. exit." (genv.mod_name) (Parseutils.string_of_position pos)))]),
                 Ast.App(Ast.Ident("Pervasives.exit"),
                        [Ast.Constant (Ast.Int(0))])))))
-      else Kast.Constant(Kast.Unit)
   | Ast.Magic (e) -> rewrite_exp lenv genv e
   | Ast.SetGlobal(e,i) ->
      Kast.SetGlobal (rewrite_exp lenv genv e,i)

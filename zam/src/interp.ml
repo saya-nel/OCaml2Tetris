@@ -8,7 +8,7 @@ let stack = Array.make stack_size (Mlvalues.val_long 0)
 let acc = ref (Mlvalues.val_long 0)
 let env = ref (Mlvalues.val_long 0)
 
-let global = ref (Mlvalues.new_block 0 20)
+let global = ref (Mlvalues.make_block 0 20)
 
 let pop_stack () =
   let v = stack.(!sp) in decr sp; v
@@ -190,7 +190,7 @@ let interp code =
     | 42 (* GRAB *) -> let n = take_argument code in
                        if !extra_args >= n 
                        then extra_args := !extra_args - n
-                       else (let closure_env = Mlvalues.new_block (!extra_args + 1) (* +2 ? *)
+                       else (let closure_env = Mlvalues.make_block (!extra_args + 1) (* +2 ? *)
                                                                (Mlvalues.env_closure (!acc)) in
                           for i = 1 to !extra_args + 1 do 
                             Mlvalues.set_field closure_env i (pop_stack ())
@@ -199,7 +199,14 @@ let interp code =
                          pc := pop_stack ();
                          env := pop_stack ();
                          extra_args := pop_stack () )
-                       
+     | 43 (* CLOSURE *) -> let n = take_argument code in
+                           let addr = take_argument code in
+                           if n > 0 then push_stack (!acc);
+                           let closure_env = Mlvalues.make_env (n+1) in
+                           Mlvalues.set_field closure_env 0 (Mlvalues.val_long addr);
+                          for i = 1 to n - 1 do Mlvalues.set_field closure_env i (pop_stack ()) done;
+                          acc := Mlvalues.make_closure addr closure_env
+
 
     | 53 (* GETGLOBAL *) -> let n = take_argument code in
                             acc := (Mlvalues.get_field (!global) n)
@@ -218,33 +225,33 @@ let interp code =
     | 57 (* SETGLOBAL *) -> let n = take_argument code in
                             Mlvalues.set_field (!global) n (!acc);
                             acc := Mlvalues.unit
-    | 58 (* ATOM0 *) -> acc := Mlvalues.new_block 0 0
+    | 58 (* ATOM0 *) -> acc := Mlvalues.make_block 0 0
     | 59 (* ATOM *) -> let tag = take_argument code in
-                       acc := Mlvalues.new_block tag 0
+                       acc := Mlvalues.make_block tag 0
     | 60 (* PUSHATOM0 *) -> push_stack (!acc);
-                            acc := Mlvalues.new_block 0 0
+                            acc := Mlvalues.make_block 0 0
     | 61 (* PUSHATOM *) -> push_stack (!acc);
                            let tag = take_argument code in
-                           acc := Mlvalues.new_block tag 0
+                           acc := Mlvalues.make_block tag 0
     | 62 (* MAKEBLOCK *) -> let tag = take_argument code in
                             let sz = take_argument code in (* attention à l'ordre des arguments (tag et pc) dans le code *)
-                            let blk = Mlvalues.new_block tag sz in
+                            let blk = Mlvalues.make_block tag sz in
                             Mlvalues.set_field blk 0 (!acc);
                             for i = 1 to sz - 1 do 
                               Mlvalues.set_field blk i (pop_stack ())
                             done;
                             acc := blk
     | 63 (* MAKEBLOCK1 *) -> let tag = take_argument code in
-                             let blk = Mlvalues.new_block tag 1 in
+                             let blk = Mlvalues.make_block tag 1 in
                              Mlvalues.set_field blk 0 (!acc);
                              acc := blk
     | 64 (* MAKEBLOCK2 *) -> let tag = take_argument code in
-                             let blk = Mlvalues.new_block tag 2 in
+                             let blk = Mlvalues.make_block tag 2 in
                              Mlvalues.set_field blk 0 (!acc);
                              Mlvalues.set_field blk 1 (pop_stack ());
                              acc := blk
     | 65 (* MAKEBLOCK4 *) -> let tag = take_argument code in
-                             let blk = Mlvalues.new_block tag 2 in
+                             let blk = Mlvalues.make_block tag 2 in
                              Mlvalues.set_field blk 0 (!acc);
                              Mlvalues.set_field blk 1 (pop_stack ());
                              Mlvalues.set_field blk 2 (pop_stack ());

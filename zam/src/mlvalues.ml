@@ -33,7 +33,7 @@ let size (b : ptr) = Array.length (# b) - 2
 
 let unit = 0
 
-let new_block (tag : long) (sz : long) =
+let make_block (tag : long) (sz : long) =
   assert (tag >= 0 && sz >= 0);
   let a = Array.make (sz + 2) 0 in
   a.(0) <- val_long tag;
@@ -53,10 +53,14 @@ let get_bytes (v : value) (i : int) =
 let set_bytes (v : value) (i : int) (x : value) =  (* à revoir. cf get_bytes. *)
   (#(ptr_val v)).(i+2) <- x
 
-let closure_tag = 6 (* ??? *)
 
+let closure_tag = 1 (* ??? *)
+let env_tag = 2
 let make_closure pc env = 
   val_ptr (# [|val_long closure_tag;val_long pc;env|])   (* ? *)
+
+let make_env sz =
+  make_block env_tag sz
 
 let addr_closure (c : value) = long_val (get_field c 1)
 let env_closure (c : value) = get_field c 2
