@@ -117,9 +117,9 @@ let interp code =
                         failwith "todo"
     | 53 (* GETGLOBAL *) -> let n = take_argument code in
                             acc := (Mlvalues.get_field (!global) n)
-    | 54 (* PUSHGETGLOBAL *) -> let n = take_argument code in
-                                    push_stack (!acc);
-                                    acc := (Mlvalues.get_field (!global) n)
+    | 54 (* PUSHGETGLOBAL *) -> push_stack (!acc);
+                                let n = take_argument code in
+                                acc := (Mlvalues.get_field (!global) n)
     | 55 (* GETGLOBALFIELD *) -> let n = take_argument code in
                                  let p = take_argument code in
                                  let g = Mlvalues.get_field (!global) n in
@@ -132,7 +132,14 @@ let interp code =
     | 57 (* SETGLOBAL *) -> let n = take_argument code in
                             Mlvalues.set_field (!global) n (!acc);
                             acc := Mlvalues.unit
-    
+    | 58 (* ATOM0 *) -> acc := Mlvalues.new_block 0 0
+    | 59 (* ATOM *) -> let tag = take_argument code in
+                       acc := Mlvalues.new_block tag 0
+    | 60 (* PUSHATOM0 *) -> push_stack (!acc);
+                            acc := Mlvalues.new_block 0 0
+    | 61 (* PUSHATOM *) -> push_stack (!acc);
+                           let tag = take_argument code in
+                           acc := Mlvalues.new_block tag 0
     | 62 (* MAKEBLOCK *) -> let tag = take_argument code in
                             let sz = take_argument code in     (* attention à l'ordre des arguments (tag et pc) dans la pile *)
                             let blk = Mlvalues.new_block tag sz in
