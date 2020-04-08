@@ -151,6 +151,7 @@ and sprint_exp lvl = function
                  let lvl' = get_indent_level s lvl in
                  s ^ (sprint_exp lvl' e))
              cases)) ^ ")"
+  | Magic(e) -> sptf "(Obj.magic %s)" (sprint_exp 0 e)
   | Array_alloc _ | SetGlobal _ | ReadGlobal _ -> 
      failwith "bug : AST interne (noeud temporaire pour la réécriture en Kast), ne devrait pas pouvoir être construit par le parseur, ni affiché ..."
 and sprint_constant lvl = function

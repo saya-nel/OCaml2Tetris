@@ -29,7 +29,14 @@ let _ =
     let x = "hello! " in print_int i; incr i
   done
 *)
+
+(*
 let sz = 3
 let a = Array.make (sz + 2) 0
 
-let _ = print_int (Array.length a)
+let _ = print_int (Array.length a) *)
+
+type t = int
+
+let f (x : t) = (x : int)
+

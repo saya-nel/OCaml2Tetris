@@ -15,11 +15,14 @@ type typ =
   | Tarray of typ
   | Tref of typ
   | Tconstr of (typid * typ list)
-  | Tident of string
+  | Tident of typid
 
 and tvar =
   { id : int;
     mutable def : typ option }
+
+let alias = ref []
+
 
 (* module V pour les variables de type *)
 
@@ -64,7 +67,7 @@ let rec unify t1 t2 = match head t1, head t2 with
   | Tbool, Tbool -> ()
   | Tchar, Tchar -> ()
   | Tstring, Tstring -> ()
-  | Tident s, Tident s' -> if s <> s' then unification_error t1 t2                          
+  (* | Tident s, Tident s' -> if s <> s' then unification_error t1 t2 *)                      
   | Tvar v1, Tvar v2 when V.equal v1 v2 -> ()
   | Tvar v1 as t1, t2 ->
       if occur v1 t2 then unification_error t1 t2;
@@ -79,7 +82,9 @@ let rec unify t1 t2 = match head t1, head t2 with
       unify t t'
   | Tconstr (c,ts), Tconstr (c',ts') -> if c <> c' then unification_error t1 t2 else
                                       List.iter2 unify ts ts'
-  | t1, t2 ->
+  | Tident s, ty -> unify (List.assoc s !alias) ty
+  | ty, Tident s -> unify (List.assoc s !alias) ty
+  | t1, t2 -> 
       unification_error t1 t2
 
 let cant_unify ty1 ty2 =

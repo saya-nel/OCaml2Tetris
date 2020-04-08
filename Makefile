@@ -31,6 +31,11 @@ zam:	miniML
 	mkdir -p $(ZAM_BIN)
 	cd $(MINIML); ./compile -dst=$(ROOT)$(ZAM_BIN) $(STDLIB) $(ROOT)$(ZAM_INPUT) $(ZAM_SRC); cd $(ROOT)
 
+typed_zam:	miniML
+	mkdir -p $(ZAM_BIN)
+	cd $(MINIML); ./compile -typecheck -dst=$(ROOT)$(ZAM_BIN) $(STDLIB) $(ROOT)$(ZAM_INPUT) $(ZAM_SRC); cd $(ROOT)
+
+
 bytecode: obytelibParser cmo
 	./_build/default/bytecode/obytelibParser.exe $(I)
 

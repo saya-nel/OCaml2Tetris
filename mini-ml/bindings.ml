@@ -68,6 +68,8 @@ and collect_exp lenv cenv = function
     collect_exp lenv cenv' e3  
   | Assert(e,_) ->
      collect_exp lenv cenv e
+  | Magic(e) ->
+     collect_exp lenv cenv e
   | Match(e,cases) ->
     collect_exp lenv cenv e;
     (List.iter 

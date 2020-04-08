@@ -35,6 +35,7 @@ and exp =
   | Seq of (exp * exp)
   | While of (exp * exp)
   | For of (name * exp * exp * exp)
+  | Magic of (exp)
   | Assert of (exp * Parseutils.pos)
   | SetGlobal of (exp * int) (* privé *)
   | ReadGlobal of (int)  (* privé *)

@@ -41,7 +41,9 @@ and w_dec env = function
                                let t = w_defun env f in 
                                add true x t env) env funs in
   List.map (fun (x,_,_,_) -> (x,find x env')) funs
-| Type (alias,ty) -> ([]) (* failwith "todo" *)
+| Type (name,ty) -> 
+  (Types.alias := (name,ty) :: !Types.alias);
+  [] (* failwith "todo" *)
 and w_defun env (f,args,tyropt,e) = 
   let env' = List.fold_left 
                (fun env (xi,tyopt) -> 
@@ -56,8 +58,8 @@ and w_defun env (f,args,tyropt,e) =
 and w_exp env = function
   | Annotation (e,ty) -> 
     let t1 = w_exp env e in
-    unify t1 ty;
-    t1
+    unify ty t1;
+    ty
   | Constant c -> (w_constant c)
   | Ident x -> 
       find x env
@@ -173,7 +175,11 @@ and w_exp env = function
      let t3 = w_exp env' e3 in
      unify t3 Tunit;
      Tunit
-   | Assert _ -> Tarrow(Tbool,Tunit) 
+   | Assert (e,_) -> 
+     let ty = w_exp env e in 
+     unify ty Tbool; 
+     Tunit
+   | Magic _ -> Tvar (V.create ())
    | _ -> failwith "private"
 
 and w_constant = function

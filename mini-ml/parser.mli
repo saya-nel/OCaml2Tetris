@@ -27,6 +27,7 @@ type token =
   | ATAT
   | FUN
   | TVAR
+  | SHARP
   | IDENT of (string)
   | IDENT_CAPITALIZE of (string)
   | VM_IDENT of (string)

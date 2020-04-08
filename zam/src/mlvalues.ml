@@ -9,12 +9,12 @@ type ptr = int
 (* transforme un entier en mlvalue *)
 let val_long (n : long) : value = 
   assert (n >= 0);
-  n
+  #n
     
 (* transforme un mlvalue en entier *)
 let long_val (n : value) : long = 
   assert (n >= 0);
-  n
+  #n
 
 (* transforme un pointeur en mlvalue *)
 let val_ptr (n : ptr) : value =
@@ -29,7 +29,7 @@ let ptr_val (n : value) : ptr =
 let is_ptr (n : value) : bool = 
   n < 0
 
-let size (b : ptr) = Array.length b - 2 
+let size (b : ptr) = Array.length (# b) - 2 
 
 let unit = 0
 
@@ -38,13 +38,13 @@ let new_block (tag : long) (sz : long) =
   let a = Array.make (sz + 2) 0 in
   a.(0) <- val_long tag;
   a.(1) <- val_long 0; (* color *)
-  val_ptr a
+  val_ptr (# a)
 
 let get_field (v : value) (i : int) =
-  (ptr_val v).(i+2)
+  (#(ptr_val v)).(i+2)
 
 let set_field (v : value) (i : int) (x : value) = 
-  (ptr_val v).(i+2) <- x
+  (#(ptr_val v)).(i+2) <- x
 
 let addr_closure (c : value) = long_val (get_field c 1)
 let env_closure (c : value) = get_field c 2

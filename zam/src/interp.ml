@@ -107,12 +107,12 @@ let interp code =
     | 30 (* PUSHENVACC *) -> let n = take_argument code in(* Equivalent to PUSH then ENVACC *)
                              push_stack (!acc);
                              acc := Mlvalues.get_field (!env) n
-    | 31 (* PUSH-RETADDR *) -> let ofs = take_argument () in
+    | 31 (* PUSH-RETADDR *) -> let ofs = take_argument code in
                                failwith "todo"
     | 32 (* APPLY *) -> let args = take_argument code in
-                        extra_args := (!args) - 1;
-                        pc := Mlvalues.addr_closure (acc); (* todo ? *)
-                        env := Mlvalues.env_closure (acc)
+                        extra_args := (args) - 1;
+                        pc := Mlvalues.addr_closure (!acc); (* todo ? *)
+                        env := Mlvalues.env_closure (!acc);
                         failwith "todo"
     | 62 (* MAKEBLOCK *) -> let tag = take_argument code in
                             let sz = take_argument code in     (* attention à l'ordre des arguments (tag et pc) dans la pile *)
@@ -160,7 +160,7 @@ let interp code =
     | 79 (* VECTLENGTH *) -> acc := Mlvalues.val_long (Mlvalues.size acc)
     | 84 (* BRANCH *) -> let n = take_argument code in 
                          assert (n < Array.length code);
-                         pc := !pc + n
+                         pc := (!pc) + n
     | 85 (* BRANCHIF *) -> let n = take_argument code in 
                            assert (n < Array.length code);
                            pc := if Mlvalues.long_val (!acc) = 1 then (!pc) + n else !pc + 1

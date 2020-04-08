@@ -7,7 +7,7 @@
 
 /* (* reserved words *) */
 %token LET WHERE IN IF THEN ELSE ASSERT WHILE FOR TO DO DONE MATCH WITH PIPE BEGIN END EXTERNAL AND_KW CONS
-%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT FUN TVAR
+%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT FUN TVAR SHARP
 
 %token <string> IDENT IDENT_CAPITALIZE VM_IDENT
 %token <string> STRING
@@ -246,6 +246,7 @@ app:
  | exp                                   { $1 }
  | exp exprs                             { App($1,$2) }
  | exp ATAT app                          { App($1,[$3]) }
+ | SHARP exp                             { Magic($2) }
  | ASSERT exp                            { Assert ($2,pos()) }
  ;
 

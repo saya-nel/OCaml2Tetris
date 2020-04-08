@@ -286,6 +286,7 @@ and rewrite_exp lenv genv = function
                       (Printf.sprintf "at %s : %s. exit." (genv.mod_name) (Parseutils.string_of_position pos)))]),
                 Ast.App(Ast.Ident("Pervasives.exit"),
                        [Ast.Constant (Ast.Int(0))])))))
+  | Ast.Magic (e) -> rewrite_exp lenv genv e
   | Ast.SetGlobal(e,i) ->
      Kast.SetGlobal (rewrite_exp lenv genv e,i)
   | Ast.ReadGlobal(i) ->
