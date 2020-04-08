@@ -9,7 +9,6 @@ let acc = ref (Mlvalues.val_long 0)
 let env = ref (Mlvalues.val_long 0)
 
 let global = ref (Mlvalues.new_block 0 20)
-(* *********************************** *)
 
 let pop_stack () =
   let v = stack.(!sp) in decr sp; v
@@ -65,7 +64,7 @@ let interp code =
   print_int (!acc);
   while !pc < Array.length code do
     incr pc where () = 
-    debug_print_state ();
+      debug_print_state ();
     match code.(!pc) with
     | 0 (* ACC0 *) -> acc := stack.((!sp)-1)
     | 1 (* ACC1 *) -> acc := stack.((!sp)-2)
@@ -109,12 +108,43 @@ let interp code =
                              push_stack (!acc);
                              acc := Mlvalues.get_field (!env) n
     | 31 (* PUSH-RETADDR *) -> let ofs = take_argument code in
-                               failwith "todo"
-    | 32 (* APPLY *) -> let args = take_argument code in
-                        extra_args := (args) - 1;
-                        pc := Mlvalues.addr_closure (!acc); (* todo ? *)
-                        env := Mlvalues.env_closure (!acc);
-                        failwith "todo"
+                               push_stack (!extra_args);
+                               push_stack (!env);
+                               push_stack ofs
+    | 32 (* APPLY *) -> let args = take_argument code in (* correct ? *)
+                        extra_args := args - 1;
+                        pc := Mlvalues.addr_closure (!acc) - 1; 
+                        env := Mlvalues.env_closure (!acc)
+    | 33 (* APPLY1 *) -> let arg = pop_stack () in
+                         push_stack (!extra_args);
+                         push_stack (!env);
+                         push_stack (!pc + 1);   (* +1 ?? *)
+                         push_stack arg;
+                         pc := Mlvalues.addr_closure (!acc) - 1;  (* -1 ?? *)
+                         env := Mlvalues.env_closure (!acc);
+                         extra_args := 0
+    | 34 (* APPLY2 *) -> let arg1 = pop_stack () in
+                         let arg2 = pop_stack () in
+                         push_stack (!extra_args);
+                         push_stack (!env);
+                         push_stack (!pc + 1);   (* +1 ?? *)
+                         push_stack arg2;
+                         push_stack arg1;
+                         pc := Mlvalues.addr_closure (!acc) - 1;   (* -1 ?? *)
+                         env := Mlvalues.env_closure (!acc);
+                         extra_args := 1
+    | 35 (* APPLY3 *) -> let arg1 = pop_stack () in
+                         let arg2 = pop_stack () in
+                         let arg3 = pop_stack () in
+                         push_stack (!extra_args);
+                         push_stack (!env);
+                         push_stack (!pc + 1);   (* +1 ?? *)
+                         push_stack arg3;
+                         push_stack arg2;
+                         push_stack arg1;
+                         pc := Mlvalues.addr_closure (!acc) - 1;  (* -1 ?? *)
+                         env := Mlvalues.env_closure (!acc);
+                         extra_args := 2
     | 53 (* GETGLOBAL *) -> let n = take_argument code in
                             acc := (Mlvalues.get_field (!global) n)
     | 54 (* PUSHGETGLOBAL *) -> push_stack (!acc);
@@ -172,9 +202,9 @@ let interp code =
     | 70 (* GETFIELD3 *) -> acc := Mlvalues.get_field (!acc) 4
     | 71 (* GETFIELD *) -> let n = code.(!pc) in 
                            acc := Mlvalues.get_field (!acc) n
-    
+                           
     (* GETFLOATFIELD (opInput.code: 72) *)
-    
+                           
     | 73 (* SETFIELD0 *) -> Mlvalues.set_field (!acc) 0 (pop_stack ()) 
     | 74 (* SETFIELD1 *) -> Mlvalues.set_field (!acc) 1 (pop_stack ()) 
     | 75 (* SETFIELD2 *) -> Mlvalues.set_field (!acc) 2 (pop_stack ())    
@@ -194,9 +224,9 @@ let interp code =
                               Mlvalues.set_field (!acc) n v;
                               acc := Mlvalues.unit
     | 82 (* GETSTRINGCHAR *) -> (* parfois appele GETBYTESCHAR *)
-                                assert (!sp > 0);
-                                let n = pop_stack () in
-                                Mlvalues.get_bytes (!acc) n
+       assert (!sp > 0);
+       let n = pop_stack () in
+       Mlvalues.get_bytes (!acc) n
     | 83 (* SETBYTESCHAR *) -> assert (!sp > 1);
                                let n = pop_stack () in
                                let v = pop_stack () in
@@ -244,29 +274,29 @@ let interp code =
     | 129 (* ISINT *) -> acc := Prims.isint (!acc) 
     | 130 (* GETMETHOD *) -> failwith "todo"
     | 131 (* BEQ *) ->
-      let v = take_argument code in
-      let ofs = take_argument code in
-      if  Prims.compare_imm v (!acc) = 0 then pc := (!pc) + ofs - 1
+       let v = take_argument code in
+       let ofs = take_argument code in
+       if  Prims.compare_imm v (!acc) = 0 then pc := (!pc) + ofs - 1
     | 132 (* BNEQ *) -> 
-      let v = take_argument code in
-      let ofs = take_argument code in
-      if Prims.compare_imm v (!acc) <> 0 then pc := (!pc) + ofs - 1
+       let v = take_argument code in
+       let ofs = take_argument code in
+       if Prims.compare_imm v (!acc) <> 0 then pc := (!pc) + ofs - 1
     | 133 (* BLTINT *) ->
-      let v = take_argument code in
-      let ofs = take_argument code in
-      if Prims.compare_imm v (!acc) < 0 then pc := (!pc) + ofs - 1
+       let v = take_argument code in
+       let ofs = take_argument code in
+       if Prims.compare_imm v (!acc) < 0 then pc := (!pc) + ofs - 1
     | 134 (* BLEINT *) ->
-      let v = take_argument code in
-      let ofs = take_argument code in
-      if Prims.compare_imm v (!acc) <= 0 then pc := (!pc) + ofs - 1
+       let v = take_argument code in
+       let ofs = take_argument code in
+       if Prims.compare_imm v (!acc) <= 0 then pc := (!pc) + ofs - 1
     | 135 (* BGTINT *) ->
-      let v = take_argument code in
-      let ofs = take_argument code in
-      if Prims.compare_imm v (!acc) > 0 then pc := (!pc) + ofs - 1
+       let v = take_argument code in
+       let ofs = take_argument code in
+       if Prims.compare_imm v (!acc) > 0 then pc := (!pc) + ofs - 1
     | 136 (* BGEINT *) ->
-      let v = take_argument code in
-      let ofs = take_argument code in
-      if Prims.compare_imm v (!acc) >= 0 then pc := (!pc) + ofs - 1
+       let v = take_argument code in
+       let ofs = take_argument code in
+       if Prims.compare_imm v (!acc) >= 0 then pc := (!pc) + ofs - 1
     | 137 (* ULTINT *) -> acc := Prims.ultint (pop_stack ()) (!acc)
     | 138 (* UGEINT *) -> acc := Prims.ugeint (pop_stack ()) (!acc)
     | 143 (* STOP *) -> pc := Array.length code
