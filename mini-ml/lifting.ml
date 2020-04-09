@@ -25,7 +25,7 @@ and visit_fundecs l =
 and visit_exp = function
 | Ast.Annotation (e,ty) -> Ast.Annotation (visit_exp e,ty)
 | Ast.Constant c -> visit_constant c
-| Ast.Let(v,e1,e2) ->  Ast.Let(v,visit_exp e1,visit_exp e2)
+| Ast.Let(v,e1,e2) -> Ast.Let(v,visit_exp e1,visit_exp e2)
 | Ast.App(e,args) -> Ast.App(visit_exp e,List.map visit_exp args) 
 | Ast.If(e1,e2,e3) -> Ast.If(visit_exp e1,visit_exp e2,visit_exp e3)
 | Ast.BinOp(op,e1,e2) -> Ast.BinOp(op,visit_exp e1,visit_exp e2)

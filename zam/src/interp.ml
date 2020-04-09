@@ -363,6 +363,7 @@ let interp code =
     | 137 (* ULTINT *) -> acc := Prims.ultint (pop_stack ()) (!acc)
     | 138 (* UGEINT *) -> acc := Prims.ugeint (pop_stack ()) (!acc)
     | 143 (* STOP *) -> pc := Array.length code
+    | _ -> assert false
   done;
   print_string "fin programme :";
   print_newline ();
