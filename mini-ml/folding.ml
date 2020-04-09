@@ -7,7 +7,7 @@ let compile_assertions = ref false
 let rec occurences v = function
 | Ast.Annotation (e,_) -> occurences v e
 | Ast.Constant c -> 0
-| Ast.Let((v',_),e1,e2) -> if v = v' then 0 else occurences v e1 + occurences v e2
+| Ast.Let((v',_),e1,e2) -> if v = v' then occurences v e1 else occurences v e1 + occurences v e2
 | Ast.App(e,args) -> occurences v e + occurences_list v args
 | Ast.If(e1,e2,e3) -> occurences v e1 + occurences v e2 + occurences v e3
 | Ast.BinOp(op,e1,e2) -> occurences v e1 + occurences v e2
@@ -37,6 +37,38 @@ and occurences_list v l =
 
 
 
+let replace v x e = 
+  let rec replace = function
+| Ast.Ident name -> if v = name then x else Ast.Ident name
+| Ast.Annotation (e,ty) -> Ast.Annotation (replace e,ty)
+| Ast.Constant c -> Ast.Constant c
+| Ast.Let((v',ty),e1,e2) -> Ast.Let((v',ty),replace e1, if v = v' then e2 else replace e2)
+| Ast.App(e,args) -> Ast.App(replace e,List.map replace args) 
+| Ast.If(e1,e2,e3) -> Ast.If(replace e1,replace e2,replace e3)
+| Ast.BinOp(op,e1,e2) -> Ast.BinOp(op,replace e1,replace e2)
+| Ast.UnOp(op,e1) -> Ast.UnOp(op,replace e1)
+| Ast.Ref_access(e1) -> Ast.Ref_access(replace e1)
+| Ast.Ref_assign(e1,e2) -> Ast.Ref_assign(replace e1,replace e2)
+| Ast.Ref(e) -> Ast.Ref(replace e)
+| Ast.Array_access(e1,e2) -> Ast.Array_access(replace e1,replace e2) 
+| Ast.Array_assign(e1,e2,e3)  -> Ast.Array_assign(replace e1,replace e2,replace e3)
+| Ast.Array_alloc(e) -> Ast.Array_alloc(replace e)
+| Ast.Pair(e1,e2) -> Ast.Pair(replace e1,replace e2) 
+| Ast.Cons(e1,e2) -> Ast.Cons(replace e1,replace e2)
+| Ast.Array_create(xs) -> Ast.Array_create(List.map replace xs)
+| Ast.Seq(e1,e2) -> Ast.Seq(replace e1,replace e2)
+| Ast.While(e1,e2) -> Ast.While(replace e1,replace e2)
+| Ast.For(name,e0,e1,e2) -> Ast.For(name,replace e0,replace e1,replace e2)
+| Ast.Match(e,ms) -> Ast.Match (replace e,List.map (function Ast.Case(c,e) -> Ast.Case(c,replace e) | Ast.Otherwise e -> Ast.Otherwise(replace e)) ms) 
+| Ast.Assert(e,pos) -> Ast.Constant(Ast.Unit)
+| Ast.Magic(e) -> Ast.Magic(replace e) 
+| Ast.SetGlobal(e,i) -> Ast.SetGlobal(replace e,i)
+| Ast.ReadGlobal(i) -> Ast.ReadGlobal(i) 
+| e -> e in replace e
+
+
+
+
 let rec visit_tmodule Ast.{mod_name;decls} = 
   let decls = List.map visit_decl decls in
   Ast.{mod_name;decls}
@@ -49,15 +81,16 @@ and visit_decl = function
   | d -> d
 and visit_fundecs l = 
   List.map (fun (name,args,t,e) -> (name,args,t,visit_exp e)) l 
-and visit_exp ?replace = function
-| Ast.Ident name -> (match replace with None -> Ast.Ident name | Some (v,x) -> if v = name then x else Ast.Ident name)
+and visit_exp = function
+| Ast.Ident name -> Ast.Ident name
 | Ast.Annotation (e,ty) -> Ast.Annotation (visit_exp e,ty)
 | Ast.Constant c -> Ast.Constant c
-| Ast.Let((v,ty),e1,e2) -> let e1 = visit_exp e1 in
+| Ast.Let((v,ty),e1,e2) -> 
+                      let e1 = visit_exp e1 in
                       let e2 = visit_exp e2 in
                       (match e1,occurences v e2 with 
                       | Ast.Constant _,0 -> e2
-                      | Ast.Constant _,_ -> visit_exp ~replace:(v,e1) e2
+                      | Ast.Constant _,_ -> visit_exp (replace v e1 e2)
                       | _ -> Ast.Let((v,ty),e1,e2))
 | Ast.App(e,args) -> Ast.App(visit_exp e,List.map visit_exp args) 
 | Ast.If(e1,e2,e3) -> (match visit_exp e1 with 

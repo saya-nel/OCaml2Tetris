@@ -1,8 +1,9 @@
 let inputs = ref []
-let action = ref (`Compile : [ `Compile | `ParseOnly])
+let action = ref (`Compile : [ `Compile | `PrintAst])
 let stdlib = ref "stdlib"
 
 let type_check = ref false
+let print_ast = ref false
 
 let set_action a () = action := a
 
@@ -12,8 +13,8 @@ let destination_dir = ref "generated_files"
 
 let () =
   Arg.parse [
-    ("-ast", Arg.Unit (set_action `ParseOnly),
-       " : affiche l'AST en syntaxe Caml");
+    ("-printast", Arg.Set print_ast,
+       " : affiche l'AST en syntaxe Caml (après typage et optimisation)");
     ("-typecheck", Arg.Set type_check, 
       " : type le programme est abandonne si celui-ci est mal typé");
     ("-compile", Arg.Unit (set_action `Compile), 
@@ -55,6 +56,9 @@ let compile genv (mdl : Past.tmodule) =
     let mdl = Past2ast.visit_tmodule mdl in
     let mdl = Folding.visit_tmodule mdl in
     let mdl = Lifting.visit_tmodule mdl in
+    
+    if !print_ast then print_string @@ Print_ast.sprint_module 0 mdl;
+    
     let genv0 = Ast2kast.{genv with mod_name=Ast.(mdl.mod_name); init=[]} in
     let genv',kast = Ast2kast.rewrite_tmodule genv0 mdl in
     let bc_mdl = Kast2bytecode.bytecode_of_tmodule genv' kast in
@@ -73,8 +77,6 @@ let () =
   let dir = !destination_dir in
   let files = List.map (Filename.concat !source_dir) !inputs in
   let mdls = parse_modules files in
-  (* let (genv,bc_mdls) = compile_all mdls in
-  let bc = List.map (function Bytecode.{bc_decls} -> bc_decls) bc_mdls in *)
   List.iter (fun (name,bc) ->
     let oc = open_out (Filename.concat dir (Bytecode2string.prefix ^ name ^ ".vm")) in
     Printf.fprintf oc "%s\n" (Bytecode2string.string_of_instrs bc);
