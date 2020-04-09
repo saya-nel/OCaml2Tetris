@@ -4,7 +4,7 @@ let compile_assertions = ref false
 
 
 let rec visit_tmodule Ast.{mod_name;decls} = 
-  let decls = List.map visit_decl decls in
+  (* let decls = List.map visit_decl decls in *)
   Ast.{mod_name;decls}
 
 and visit_decl = function
@@ -20,11 +20,9 @@ and visit_exp = function
 | Ast.Constant c -> Ast.Constant c
 | Ast.Let(v,e1,e2) ->  Ast.Let(v,visit_exp e1,visit_exp e2)
 | Ast.App(e,args) -> Ast.App(visit_exp e,List.map visit_exp args) 
-| Ast.If(e1,e2,e3) -> let e = visit_exp e1 in
-                      (match e with 
-                      | Ast.Constant(Ast.Bool(true)) -> visit_exp e2
-                      | Ast.Constant(Ast.Bool(false)) -> visit_exp e3
-                      | _ -> Ast.If(e,visit_exp e2,visit_exp e3))
+| Ast.If(e1,e2,e3) -> (match visit_exp e1 with 
+                      | Ast.Constant(Ast.Bool(b)) -> visit_exp (if b then e2 else e3)
+                      | e -> Ast.If(e,visit_exp e2,visit_exp e3))
 | Ast.BinOp(op,e1,e2) -> eval_binop (op,visit_exp e1,visit_exp e2)
 | Ast.UnOp(op,e1) -> let x = visit_exp e1 in 
                      (match x with 
@@ -40,28 +38,26 @@ and visit_exp = function
 | Ast.Cons(e1,e2) -> Ast.Cons(visit_exp e1,visit_exp e2)
 | Ast.Array_create(xs) -> Ast.Array_create(List.map visit_exp xs)
 | Ast.Seq(e1,e2) -> Ast.Seq(visit_exp e1,visit_exp e2)
-| Ast.While(e1,e2) -> let e = visit_exp e1 in
-                      (match e with 
+| Ast.While(e1,e2) -> (match visit_exp e1 with 
                        | Ast.Constant(Ast.Bool(false)) -> Ast.Constant(Ast.Unit)
-                       | _ -> Ast.While(e,visit_exp e2))
+                       | e -> Ast.While(e,visit_exp e2))
 | Ast.For(name,e0,e1,e2) -> let e0' = visit_exp e0 in
                             let e1' = visit_exp e1 in
                             (match e0',e1' with 
                             | Ast.Constant(Ast.Int(n)),Ast.Constant(Ast.Int(m)) 
                                 when n = m -> Ast.Constant(Ast.Unit)
                             | _ -> Ast.For(name,e0',e1',visit_exp e2)) 
-| Ast.Match(e,ms) -> let e' = visit_exp e in
-                     let rec aux acc = function
+| Ast.Match(e,ms) -> let rec aux acc = function
                      | Ast.Case(c,e)::t -> aux (Ast.Case(c,visit_exp e)::acc) t
                      | Ast.Otherwise(e)::_ -> List.rev (Ast.Otherwise(visit_exp e)::acc)
                      | [] -> Printf.printf "Warning 8: this pattern-matching is not exhaustive.\n"; 
                              [Ast.Otherwise(Ast.App(Ast.Ident("Pervasives.failwith"),[Ast.Constant(Ast.String("Match_failure, exit."))]))] in
                      let ms' = aux [] ms in
-                     (match e' with 
+                     (match visit_exp e with 
                       | Ast.Constant c -> (match List.find (function Ast.Case(c',_) -> c' = c | Ast.Otherwise _ -> true) ms' with
                                            | Ast.Case(_,e) -> e
                                            | Ast.Otherwise e -> e)
-                      | e -> e)
+                      | e' -> Ast.Match(e',ms'))
 | Ast.Assert(e,pos) -> 
      if !compile_assertions 
      then Ast.Assert(visit_exp e,pos) 
