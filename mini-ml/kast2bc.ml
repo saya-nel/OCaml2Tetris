@@ -137,13 +137,23 @@ and bytecode_of_exp lvl = function
      comment "<unop>" lvl (
          let bc_e1 = bytecode_of_exp (lvl+1) e1  in
          bc_e1 @ bytecode_of_unop op)
-  | Kast.SetGlobal (e1,i) ->
-     let bc_e1 = bytecode_of_exp (lvl+1) e1 in
-     bc_e1 @ [Pop (Static(i))] @ [Push (Static(i));Pop (Temp(7))]
-  | Kast.ReadGlobal (i) -> 
-     [Push (Static(i))]
   | Kast.GFun (name) ->
      [Call (name,0)] (* !!!!! variables globales, bof *)
+  | Kast.Ext(ext) -> 
+    (match ext with 
+     | Kast.SetGlobal (e1,i) ->
+       let bc_e1 = bytecode_of_exp (lvl+1) e1 in
+        bc_e1 @ [Pop (Static(i))] @ [Push (Static(i));Pop (Temp(7))]
+     | Kast.ReadGlobal (i) -> 
+        [Push (Static(i))]
+     | Kast.SetLocal(n,e) -> 
+       (bytecode_of_exp (lvl+1) e) @ [Pop (Local n)]
+     | Kast.Label (s,e) -> 
+        [Label s] @ (bytecode_of_exp (lvl+1) e)
+     | Kast.Goto (s,args) -> 
+          let xs = mapcat (bytecode_of_exp (lvl+1)) (List.rev args) in
+          let m = List.mapi (fun i _ -> Pop(Argument(i))) args in
+          xs @ m @ [Goto s])
 and bytecode_of_constant = function
   | Kast.Unit ->
      [Push (Constant 0)]

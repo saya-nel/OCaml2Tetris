@@ -109,9 +109,9 @@ and rewrite_decl mod_name genv = function
      let i,genv' = genv_extend genv name in
      let genv0 = {genv' with init = (mod_name ^ "." ^ name_init) :: genv'.init} in
      let genv1,d1 = rewrite_decl mod_name genv0 @@
-                      Iast.DefFun ([name_init,[],Iast.SetGlobal(e,i)]) in
+                      Iast.DefFun ([name_init,[],Iast.Ext(Iast.SetGlobal(e,i))]) in
      let genv2,d2 = rewrite_decl mod_name genv1 @@
-                      Iast.DefFun ([name,[],Iast.ReadGlobal(i)]) in
+                      Iast.DefFun ([name,[],Iast.Ext(Iast.ReadGlobal(i))]) in
      (genv2,(d1 @ d2))
   | Iast.DefFun l -> rewrite_defun mod_name genv l
   | Iast.DefFunRec l -> rewrite_defun mod_name genv ~recflag:true l
@@ -212,9 +212,19 @@ and rewrite_exp lenv genv = function
   | Iast.Array_assign(e1,e2,e3) ->
      rewrite_exp lenv genv @@
        Iast.App(Iast.(Ident("Array.set"),[e1;e2;e3])) 
-  | Iast.Array_alloc(e) ->
-     rewrite_exp lenv genv @@
-       Iast.App(Iast.(Ident("Array.create_uninitialized"),[e])) 
+  | Iast.Ext(ext) ->
+    (match ext with 
+     | Iast.Array_alloc(e) ->
+        rewrite_exp lenv genv @@
+          Iast.App(Iast.(Ident("Array.create_uninitialized"),[e])) 
+     | Iast.SetGlobal(e,i) ->
+         Kast.Ext(Kast.SetGlobal (rewrite_exp lenv genv e,i))
+     | Iast.ReadGlobal(i) ->
+         Kast.Ext(Kast.ReadGlobal(i))
+     | Iast.Label(s,e) -> 
+         Kast.Ext(Kast.Label(s,rewrite_exp lenv genv e))
+     | Iast.Goto(s,xs) -> 
+         Kast.Ext(Kast.Goto(s,List.map (rewrite_exp lenv genv) xs)))
   | Iast.Pair(e1,e2) ->
      rewrite_exp lenv genv @@
        Iast.App(Iast.(Ident("Internal.pair"),[e1;e2])) 
@@ -225,7 +235,7 @@ and rewrite_exp lenv genv = function
      rewrite_exp lenv genv @@
        let n = List.length xs in
        let a = gensym ~prefix:"tmp" in
-       Iast.Let(a,Iast.Array_alloc(Iast.Constant(Iast.Int(n))),
+       Iast.Let(a,Iast.Ext(Iast.Array_alloc(Iast.Constant(Iast.Int(n)))),
                let rec aux i = function
                  | [] ->
                     Iast.Ident(a)
@@ -297,10 +307,6 @@ and rewrite_exp lenv genv = function
                       (Printf.sprintf "at %s : %s. exit." (genv.mod_name) (Parseutils.string_of_position pos)))]),
                 Iast.App(Iast.Ident("Pervasives.exit"),
                        [Iast.Constant (Iast.Int(0))])))))
-  | Iast.SetGlobal(e,i) ->
-     Kast.SetGlobal (rewrite_exp lenv genv e,i)
-  | Iast.ReadGlobal(i) ->
-     Kast.ReadGlobal(i)
 and rewrite_constant lenv genv c = match c with 
 | Iast.String(s) ->
      let rev_xs = ref [] in

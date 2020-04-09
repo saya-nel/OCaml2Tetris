@@ -17,6 +17,7 @@ all:
 	$(CC) -c ast_lift.ml
 	$(CC) -c iast.ml
 	$(CC) -c ast2iast.ml
+	$(CC) -c iast_tailrec.ml
 	$(CC) -c kast.ml
 	$(CC) -c runtime.ml
 	$(CC) -c bindings.ml
@@ -28,7 +29,7 @@ all:
 	$(CC) -c lexer.ml
 	$(CC) -c parser.ml
 	$(CC) -c main.ml
-	$(CC) -o $(EXE) parseutils.cmo lexer.cmo types.cmo past.cmo  past_print.cmo ast_print.cmo ast.cmo past2ast.cmo ast_inline.cmo ast_fold.cmo ast_lift.cmo  runtime.cmo  iast.cmo ast2iast.cmo typing.cmo bindings.cmo  kast.cmo iast2kast.cmo bc.cmo kast2bc.cmo bc_print.cmo parser.cmo main.cmo
+	$(CC) -o $(EXE) parseutils.cmo lexer.cmo types.cmo past.cmo  past_print.cmo ast_print.cmo ast.cmo past2ast.cmo ast_inline.cmo ast_fold.cmo ast_lift.cmo  runtime.cmo  iast.cmo ast2iast.cmo iast_tailrec.cmo typing.cmo bindings.cmo  kast.cmo iast2kast.cmo bc.cmo kast2bc.cmo bc_print.cmo parser.cmo main.cmo
 
 clean:
 	rm -f $(EXE) *.cmo *.cmi compile *.vm *.tst *.out 

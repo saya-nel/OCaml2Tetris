@@ -23,7 +23,6 @@ and exp =
   | Pair of (exp * exp)
   | Cons of (exp * exp)
   | Array_create of (exp list)
-  | Array_alloc of (exp)
   | Array_assign of (exp * exp * exp)
   | Array_access of (exp * exp)
   | Ref of (exp)
@@ -33,8 +32,7 @@ and exp =
   | While of (exp * exp)
   | For of (name * exp * exp * exp)
   | Assert of (exp * Parseutils.pos)
-  | SetGlobal of (exp * int) (* privé *)
-  | ReadGlobal of (int)  (* privé *)
+  | Ext of ext
 and constant = 
   | Unit
   | Bool of bool
@@ -47,3 +45,9 @@ and constant =
 and match_case =
   | Case of (constant * exp)
   | Otherwise of (exp)
+and ext = 
+  | Array_alloc of (exp) 
+  | SetGlobal of (exp * int)
+  | ReadGlobal of (int)
+  | Goto of (string * exp list)
+  | Label of (string * exp)

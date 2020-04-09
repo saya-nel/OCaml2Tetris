@@ -8,8 +8,6 @@ and tmodule = {
     init : Ast.name list
   }
 
-
-
 and decl = 
   | DefFun of (Ast.name * arity * exp)
 and arity = int
@@ -25,8 +23,7 @@ and exp =
   | UnOp of (Ast.unop * exp)
   | Seq of (exp * exp)
   | While of (exp * exp)
-  | SetGlobal of (exp * int)
-  | ReadGlobal of (int)
+  | Ext of ext
 and constant = 
   | Unit 
   | Bool of bool 
@@ -39,3 +36,9 @@ and var =
   | Argument of int 
   | Local of int
   | Free of int
+and ext =   
+  | SetGlobal of (exp * int)
+  | ReadGlobal of (int)
+  | SetLocal of (int * exp)
+  | Goto of (string * exp list)
+  | Label of (string * exp)

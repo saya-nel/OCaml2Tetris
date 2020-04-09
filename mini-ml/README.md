@@ -11,6 +11,7 @@
 [AST] -> (ast_lift) -> [AST].
 [AST] -> (ast_print) -> {OCaml}.
 [AST] -> (ast2iast) -> [IAST].
+[IAST] -> (iast_tailrec) -> [IAST].     (élimination des appels terminaux)
 [IAST] -> (iast2kast) -> [KAST].
 [KAST] -> (kast2bc) -> [BC].
 [BC] -> (bc_fold) -> [BC].

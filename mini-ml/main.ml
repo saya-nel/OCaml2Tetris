@@ -55,6 +55,7 @@ let compile genv (mdl : Ast.tmodule) =
   try 
     if !print_ast then print_string @@ Ast_print.sprint_module 0 mdl;
     let mdl = Ast2iast.visit_tmodule mdl in
+    let mdl = Iast_tailrec.rewrite_tmodule mdl in
     let genv0 = Iast2kast.{genv with mod_name=Iast.(mdl.mod_name); init=[]} in
     let genv',kast = Iast2kast.rewrite_tmodule genv0 mdl in
     let bc_mdl = Kast2bc.bytecode_of_tmodule genv' kast in
