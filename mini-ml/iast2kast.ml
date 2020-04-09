@@ -81,48 +81,45 @@ let lenv_extend_tail x lenv = (* réutilse les variables de même nom déjà dé
     (i2,{lenv with locals=locals'})
 
 
-
-let rec rewrite_tmodule genv Iast.{mod_name;decls} = 
-  let (genv',kds) = rewrite_decls mod_name genv decls in
+(* convertit l'IAST du module mdl en KAST *)
+let rec rewrite genv mdl =
+  let Iast.{mod_name;decls} = mdl in
+  let (genv',kds) = rw_decls mod_name genv decls in
   (genv',Kast.{mod_name;decls=kds;init=(List.map fst genv'.globals)})
-and rewrite_decls mod_name genv ds = 
+and rw_decls mod_name genv ds = 
   let genv,kds =
     List.fold_left 
       (fun (genv,acc) d -> 
-        match rewrite_decl mod_name genv d with
+        match rw_decl mod_name genv d with
         | (genv,[]) ->
            (genv,acc)
         | (genv,kds) ->
            (genv,kds @ acc)) (genv,[]) ds in
   (genv,List.rev kds)
-and rewrite_decl mod_name genv = function
-  (* Iast.Type (name,ty) -> (match ty with 
-                           | Iast.Sum(names) -> 
-                             let genv' = env_extends_constructors genv names in (genv',[])
-                           | _ -> (genv,[])) *)
+and rw_decl mod_name genv = function
   | Iast.Exp(e) ->
-     rewrite_decl mod_name genv @@
+     rw_decl mod_name genv @@
        let name = gensym ~prefix:"voidExpr" in
        Iast.DefVar (name,e)
   | Iast.DefVar (name,e) ->
      let name_init = "__init__" ^ name in
      let i,genv' = genv_extend genv name in
      let genv0 = {genv' with init = (mod_name ^ "." ^ name_init) :: genv'.init} in
-     let genv1,d1 = rewrite_decl mod_name genv0 @@
+     let genv1,d1 = rw_decl mod_name genv0 @@
                       Iast.DefFun ([name_init,[],Iast.Ext(Iast.SetGlobal(e,i))]) in
-     let genv2,d2 = rewrite_decl mod_name genv1 @@
+     let genv2,d2 = rw_decl mod_name genv1 @@
                       Iast.DefFun ([name,[],Iast.Ext(Iast.ReadGlobal(i))]) in
      (genv2,(d1 @ d2))
-  | Iast.DefFun l -> rewrite_defun mod_name genv l
-  | Iast.DefFunRec l -> rewrite_defun mod_name genv ~recflag:true l
-and rewrite_defun mod_name genv ?(recflag=false) dfs =
+  | Iast.DefFun l -> rw_defun mod_name genv l
+  | Iast.DefFunRec l -> rw_defun mod_name genv ~recflag:true l
+and rw_defun mod_name genv ?(recflag=false) dfs =
   let gnames = List.map (fun (name,args,e) -> mod_name ^ "." ^ name)  dfs in
   let genv' = {genv with global_funs = gnames @ genv.global_funs} in
   let by = List.concat
              (List.map
                 (fun (name,args,e) ->
                   let lenv = frame args in
-                  let ke = rewrite_exp lenv
+                  let ke = rw_exp lenv
                              (if recflag
                               then genv'
                               else genv) e
@@ -130,8 +127,8 @@ and rewrite_defun mod_name genv ?(recflag=false) dfs =
                   let arity = List.length args in
                   [Kast.DefFun (name,arity,ke)]) dfs) in
   (genv',by)
-and rewrite_exp lenv genv = function
-  | Iast.Constant c -> rewrite_constant lenv genv c
+and rw_exp lenv genv = function
+  | Iast.Constant c -> rw_constant lenv genv c
   | Iast.Ident (name) ->
      (match List.assoc_opt name lenv.locals with
       | None ->
@@ -162,11 +159,11 @@ and rewrite_exp lenv genv = function
   | Iast.Let(name,e1,e2) ->
      let i,lenv' = lenv_extend_tail name lenv in (* optimisation : recyclage des variables masquées, 
                                                    attention, dans, let x = e1(x) in e2, e1 doit bien utiliser l'ancienne valeur de x *)
-     Kast.Let(i,rewrite_exp lenv genv e1, rewrite_exp lenv' genv e2)
+     Kast.Let(i,rw_exp lenv genv e1, rw_exp lenv' genv e2)
   | Iast.Fun(name,e) ->
     (*let ww = List.map fst lenv.locals @ List.map fst lenv.arguments in
     let free_vars = Bindings.collect ww [name] e in
-    let ke = rewrite_exp lenv genv @@ e in
+    let ke = rw_exp lenv genv @@ e in
     Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments)*)
 
      let lenv' = {lenv with 
@@ -175,13 +172,13 @@ and rewrite_exp lenv genv = function
                    List.map (fun (c,i) -> (c,i+n)) lenv.arguments); 
             arguments=[(name,0)];
             locals=[]} in
-    let ke = rewrite_exp lenv' genv @@ e in
+    let ke = rw_exp lenv' genv @@ e in
     Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments) 
     
     (* let vars = Bindings.collect ke in
     let len = List.length vars in
-    let kmake = rewrite_exp lenv genv Iast.(Ident("Array.create_uninitialized")) in
-    let kset = rewrite_exp lenv genv Iast.(Ident("Array.set")) in
+    let kmake = rw_exp lenv genv Iast.(Ident("Array.create_uninitialized")) in
+    let kset = rw_exp lenv genv Iast.(Ident("Array.set")) in
     let i,lenv' = lenv_extend name lenv in 
     Kast.Let(i,Kast.App(kmake,[Kast.Constant(Kast.Int len)]), 
       let j,e = List.fold_left (fun (j,acc) x ->
@@ -189,50 +186,50 @@ and rewrite_exp lenv genv = function
          Kast.Seq(Kast.App(kset,[Kast.Variable(Kast.Local i);Kast.Constant(Kast.Int j);Kast.Variable(x)]),acc)))
     (0,Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments)) vars in e) *)
   | Iast.App(e,args) -> 
-     Kast.App(rewrite_exp lenv genv e, List.map (rewrite_exp lenv genv) args)
+     Kast.App(rw_exp lenv genv e, List.map (rw_exp lenv genv) args)
   | Iast.If(e1,e2,e3) ->
-     Kast.If(rewrite_exp lenv genv e1,
-             rewrite_exp lenv genv e2,
-             rewrite_exp lenv genv e3)
+     Kast.If(rw_exp lenv genv e1,
+             rw_exp lenv genv e2,
+             rw_exp lenv genv e3)
   | Iast.BinOp(op,e1,e2) ->
-     Kast.BinOp(op,rewrite_exp lenv genv e1,rewrite_exp lenv genv e2)
-  | Iast.UnOp(op,e1) -> Kast.UnOp(op,rewrite_exp lenv genv e1)
+     Kast.BinOp(op,rw_exp lenv genv e1,rw_exp lenv genv e2)
+  | Iast.UnOp(op,e1) -> Kast.UnOp(op,rw_exp lenv genv e1)
   | Iast.Ref_access(e1) ->
-     rewrite_exp lenv genv @@ 
+     rw_exp lenv genv @@ 
        Iast.App(Iast.(Ident("Pervasives.ref_contents"),[e1]))
   | Iast.Ref_assign(e1,e2) ->
-     rewrite_exp lenv genv @@  
+     rw_exp lenv genv @@  
        Iast.App(Iast.(Ident("Pervasives.ref_set_contents"),[e1;e2]))
   | Iast.Ref(e) ->
-     rewrite_exp lenv genv @@
+     rw_exp lenv genv @@
        Iast.App(Iast.(Ident("Pervasives.ref"),[e]))
   | Iast.Array_access(e1,e2) ->
-     rewrite_exp lenv genv @@
+     rw_exp lenv genv @@
        Iast.App(Iast.(Ident("Array.get"),[e1;e2])) 
   | Iast.Array_assign(e1,e2,e3) ->
-     rewrite_exp lenv genv @@
+     rw_exp lenv genv @@
        Iast.App(Iast.(Ident("Array.set"),[e1;e2;e3])) 
   | Iast.Ext(ext) ->
     (match ext with 
      | Iast.Array_alloc(e) ->
-        rewrite_exp lenv genv @@
+        rw_exp lenv genv @@
           Iast.App(Iast.(Ident("Array.create_uninitialized"),[e])) 
      | Iast.SetGlobal(e,i) ->
-         Kast.Ext(Kast.SetGlobal (rewrite_exp lenv genv e,i))
+         Kast.Ext(Kast.SetGlobal (rw_exp lenv genv e,i))
      | Iast.ReadGlobal(i) ->
          Kast.Ext(Kast.ReadGlobal(i))
      | Iast.Label(s,e) -> 
-         Kast.Ext(Kast.Label(s,rewrite_exp lenv genv e))
+         Kast.Ext(Kast.Label(s,rw_exp lenv genv e))
      | Iast.Goto(s,xs) -> 
-         Kast.Ext(Kast.Goto(s,List.map (rewrite_exp lenv genv) xs)))
+         Kast.Ext(Kast.Goto(s,List.map (rw_exp lenv genv) xs)))
   | Iast.Pair(e1,e2) ->
-     rewrite_exp lenv genv @@
+     rw_exp lenv genv @@
        Iast.App(Iast.(Ident("Internal.pair"),[e1;e2])) 
   | Iast.Cons(e1,e2) ->
-     rewrite_exp lenv genv @@
+     rw_exp lenv genv @@
        Iast.App(Iast.(Ident("Internal.cons"),[e1;e2])) 
   | Iast.Array_create(xs) ->
-     rewrite_exp lenv genv @@
+     rw_exp lenv genv @@
        let n = List.length xs in
        let a = gensym ~prefix:"tmp" in
        Iast.Let(a,Iast.Ext(Iast.Array_alloc(Iast.Constant(Iast.Int(n)))),
@@ -244,11 +241,11 @@ and rewrite_exp lenv genv = function
                                               Iast.Constant(Iast.Int(i)),e),
                             aux (i+1) es) in aux 0 xs)                        
   | Iast.Seq(e1,e2) ->
-     Kast.Seq(rewrite_exp lenv genv e1, rewrite_exp lenv genv e2)
+     Kast.Seq(rw_exp lenv genv e1, rw_exp lenv genv e2)
   | Iast.While(e1,e2) ->
-     Kast.While(rewrite_exp lenv genv e1, rewrite_exp lenv genv e2)
+     Kast.While(rw_exp lenv genv e1, rw_exp lenv genv e2)
   | Iast.For(name,e0,e1,e2) -> 
-     rewrite_exp lenv genv @@
+     rw_exp lenv genv @@
        let name_zz = gensym ~prefix:name in
        let len_zz = gensym ~prefix:"L" in
        let open Iast in
@@ -271,7 +268,7 @@ and rewrite_exp lenv genv = function
      in
      let smst = List.sort (fun (c1,_) (c2,_) -> compare c1 c2) sms in
      let var = gensym ~prefix:"L" in
-     rewrite_exp lenv genv @@
+     rw_exp lenv genv @@
        Iast.Let(var,e,
                let rec aux = function
                  | [] -> (match otherw with 
@@ -292,7 +289,7 @@ and rewrite_exp lenv genv = function
                                                         Iast.Constant(md)),e',aux l2)) in
                aux smst) 
   | Iast.Assert(e,pos) ->
-     rewrite_exp lenv genv @@ 
+     rw_exp lenv genv @@ 
        Iast.If(e,
               Iast.Constant(Iast.Unit),
               Iast.Seq(
@@ -307,11 +304,11 @@ and rewrite_exp lenv genv = function
                       (Printf.sprintf "at %s : %s. exit." (genv.mod_name) (Parseutils.string_of_position pos)))]),
                 Iast.App(Iast.Ident("Pervasives.exit"),
                        [Iast.Constant (Iast.Int(0))])))))
-and rewrite_constant lenv genv c = match c with 
+and rw_constant lenv genv c = match c with 
 | Iast.String(s) ->
      let rev_xs = ref [] in
      String.iter (fun c -> rev_xs := (c :: !rev_xs)) s;
-     rewrite_exp lenv genv @@
+     rw_exp lenv genv @@
        Iast.Array_create(List.rev_map (fun c -> Iast.Constant(Iast.Char(c))) !rev_xs) 
 | _ -> Kast.Constant(match c with 
   | Iast.Unit ->

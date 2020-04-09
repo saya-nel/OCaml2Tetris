@@ -47,7 +47,7 @@ let next_lambda =
 
 let indent_string = Past_print.indent_string
 
-(* annote le bytecode *)
+(* annote le bc *)
 let comment name lvl by = 
   match _TRACE with
   | {status=On} ->
@@ -55,7 +55,7 @@ let comment name lvl by =
      [Comment (s ^ "(" ^ name) ] @ by @ [Comment (s ^ ")") ]
   | _ -> by
 
-let rec bytecode_of_prog bc_mdls =
+let rec bc_of_prog bc_mdls =
   let accgb = ref [] in
   let files =
     List.map (function {mod_name;bc_decls;init} ->
@@ -67,27 +67,27 @@ let rec bytecode_of_prog bc_mdls =
   let apply_file = ("Apply",(Function ("Apply.apply",0) :: !apply_code) @ !lambda_code) in
   (* let lambda_lifting_file = ("Lambda",*)
    apply_file :: main :: files
-and bytecode_of_tmodule genv Kast.{mod_name;decls} = 
-  let bc_decls = bytecode_of_decls mod_name decls in
+and bc_of_tmodule genv Kast.{mod_name;decls} = 
+  let bc_decls = bc_of_decls mod_name decls in
   {mod_name;bc_decls;init=Iast2kast.(genv.init)}
-and bytecode_of_decls mod_name ds = 
-  mapcat (bytecode_of_decl mod_name) ds
-and bytecode_of_decl mod_name = function 
+and bc_of_decls mod_name ds = 
+  mapcat (bc_of_decl mod_name) ds
+and bc_of_decl mod_name = function 
   | Kast.DefFun (name,arity,e) ->
-     let bc_e = bytecode_of_exp 0 e in
+     let bc_e = bc_of_exp 0 e in
      let full_name = mod_name ^ "." ^ name in
      (* if full_name = "Main.main" then failwith "nom de fonction reservée" else *)
      [Function (full_name,nb_local bc_e)] @ bc_e @ [Return]
-and bytecode_of_exp lvl = function
+and bc_of_exp lvl = function
   | Kast.Constant c ->
-     comment "<const>" lvl (bytecode_of_constant c)
+     comment "<const>" lvl (bc_of_constant c)
   | Kast.Variable v ->
-     comment "<var>" lvl (bytecode_of_variable v)
+     comment "<var>" lvl (bc_of_variable v)
   | Kast.If(e1,e2,e3) ->
      comment "<if>" lvl (
-         let bc_e1 = bytecode_of_exp (lvl+1) e1 
-         and bc_e2 = bytecode_of_exp (lvl+1) e2
-         and bc_e3 = bytecode_of_exp (lvl+1) e3 in
+         let bc_e1 = bc_of_exp (lvl+1) e1 
+         and bc_e2 = bc_of_exp (lvl+1) e2
+         and bc_e3 = bc_of_exp (lvl+1) e3 in
          let lbl_if_false = gensym "IfFalse"
          and lbl_end = gensym "IfEnd" in
          bc_e1 @ [Op Not; IfGoto lbl_if_false] @
@@ -95,14 +95,14 @@ and bytecode_of_exp lvl = function
              bc_e3 @ [Label lbl_end])
   | Kast.While(e1,e2) ->
      comment "<while>" lvl (
-         let bc_e1 = bytecode_of_exp (lvl+1) e1 
-         and bc_e2 = bytecode_of_exp (lvl+1) e2 in
+         let bc_e1 = bc_of_exp (lvl+1) e1 
+         and bc_e2 = bc_of_exp (lvl+1) e2 in
          let lbl_begin = gensym "WhileBegin"
          and lbl_end = gensym "WhileEnd" in
          [Label lbl_begin] @ bc_e1 @ [Op Not; IfGoto lbl_end] @
            bc_e2 @ [Goto lbl_begin; Label lbl_end])
   | Kast.Fun(e,ka,kl) -> 
-      let n = next_lambda (bytecode_of_exp lvl e) in
+      let n = next_lambda (bc_of_exp lvl e) in
       (match ka,kl with 
       | 0,0 -> [Push (Constant n)]
       | _ -> failwith "fonction close uniquement")
@@ -110,51 +110,51 @@ and bytecode_of_exp lvl = function
      associé au code de la fonction dans Apply.apply *)
   | Kast.Let(n,e1,e2) ->
      comment "<let>" lvl (
-         let bc_e1 = bytecode_of_exp (lvl+1) e1
-         and bc_e2 = bytecode_of_exp (lvl+1) e2 in
+         let bc_e1 = bc_of_exp (lvl+1) e1
+         and bc_e2 = bc_of_exp (lvl+1) e2 in
          bc_e1 @ [Pop(Local n)] @ bc_e2)
   | Kast.Seq(e1,e2) ->
      comment "<seq>" lvl (
-         let bc_e1 = bytecode_of_exp (lvl+1) e1 
-         and bc_e2 = bytecode_of_exp (lvl+1) e2 in
+         let bc_e1 = bc_of_exp (lvl+1) e1 
+         and bc_e2 = bc_of_exp (lvl+1) e2 in
          bc_e1 @ [Pop Anywhere] @ bc_e2)
   | Kast.App(f,args) ->
      comment "<app>" lvl (
          let arity = List.length args in
-         mapcat (bytecode_of_exp (lvl+1)) args @
+         mapcat (bc_of_exp (lvl+1)) args @
            (match f with
             | Kast.GFun ("ML_obj.magic") -> [] (* cas particulier : fonction pour influer sur le typeur => pas de calcul *)
             | Kast.GFun (name) -> [Call(name,arity)]
-            | _ -> (bytecode_of_exp (lvl+1) f) @
+            | _ -> (bc_of_exp (lvl+1) f) @
                    List.map (fun _ -> Call("Apply.apply",2)) args))
-          (*  raise (Cannot_generate_bytecode "limite d'implantation : seules les fonctions globales peuvent être appliquées"))) *)
+          (*  raise (Cannot_generate_bc "limite d'implantation : seules les fonctions globales peuvent être appliquées"))) *)
   | Kast.BinOp(op,e1,e2) ->
      comment "<binop>" lvl (
-         let bc_e1 = bytecode_of_exp (lvl+1) e1 
-         and bc_e2 = bytecode_of_exp (lvl+1) e2 in
-         bc_e1 @ bc_e2 @ bytecode_of_binop op)
+         let bc_e1 = bc_of_exp (lvl+1) e1 
+         and bc_e2 = bc_of_exp (lvl+1) e2 in
+         bc_e1 @ bc_e2 @ bc_of_binop op)
   | Kast.UnOp(op,e1) ->
      comment "<unop>" lvl (
-         let bc_e1 = bytecode_of_exp (lvl+1) e1  in
-         bc_e1 @ bytecode_of_unop op)
+         let bc_e1 = bc_of_exp (lvl+1) e1  in
+         bc_e1 @ bc_of_unop op)
   | Kast.GFun (name) ->
      [Call (name,0)] (* !!!!! variables globales, bof *)
   | Kast.Ext(ext) -> 
     (match ext with 
      | Kast.SetGlobal (e1,i) ->
-       let bc_e1 = bytecode_of_exp (lvl+1) e1 in
+       let bc_e1 = bc_of_exp (lvl+1) e1 in
         bc_e1 @ [Pop (Static(i))] @ [Push (Static(i));Pop (Temp(7))]
      | Kast.ReadGlobal (i) -> 
         [Push (Static(i))]
      | Kast.SetLocal(n,e) -> 
-       (bytecode_of_exp (lvl+1) e) @ [Pop (Local n)]
+       (bc_of_exp (lvl+1) e) @ [Pop (Local n)]
      | Kast.Label (s,e) -> 
-        [Label s] @ (bytecode_of_exp (lvl+1) e)
+        [Label s] @ (bc_of_exp (lvl+1) e)
      | Kast.Goto (s,args) -> 
-          let xs = mapcat (bytecode_of_exp (lvl+1)) (List.rev args) in
+          let xs = mapcat (bc_of_exp (lvl+1)) (List.rev args) in
           let m = List.mapi (fun i _ -> Pop(Argument(i))) args in
           xs @ m @ [Goto s])
-and bytecode_of_constant = function
+and bc_of_constant = function
   | Kast.Unit ->
      [Push (Constant 0)]
   | Kast.Int n ->
@@ -167,15 +167,15 @@ and bytecode_of_constant = function
      [Push (Constant 0)]
   | Kast.Bool b ->
      if not b then [Push(Constant 0)] else [Push(Constant 0);Op(Not)]
-and bytecode_of_variable = function
-  | Kast.Global name -> [Call (name,0)] (* bytecode_of_exp 0 @@ Kast.App (Kast.GFun(name),[]) *)  (* les variables globales  sont des fonction d'arité 0 *)
+and bc_of_variable = function
+  | Kast.Global name -> [Call (name,0)] (* bc_of_exp 0 @@ Kast.App (Kast.GFun(name),[]) *)  (* les variables globales  sont des fonction d'arité 0 *)
   | Kast.Argument (n) ->
      [ Push(Argument n) ]
   | Kast.Local (n) ->
      [ Push(Local n) ]
   | Kast.Free (n) ->
      [ Push(Local n) ]
-and bytecode_of_binop = function
+and bc_of_binop = function
   | Ast.Add -> [Op Add]
   | Ast.Minus -> [Op Sub]
   | Ast.Mult -> [Op Mult]
@@ -189,7 +189,7 @@ and bytecode_of_binop = function
   | Ast.And | Ast.Land -> [Op And]
   | Ast.Or | Ast.Lor -> [Op Or]
 
-and bytecode_of_unop = function
+and bc_of_unop = function
   | Ast.Not ->
      [Op Not]
   | Ast.UMinus ->
