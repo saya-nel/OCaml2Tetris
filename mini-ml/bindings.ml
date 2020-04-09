@@ -9,16 +9,15 @@ let rec collect lenv cenv e =
   collect_exp lenv cenv e;
   !coll
 and collect_exp lenv cenv = function
-  | Ast.Annotation (e,ty) -> collect_exp lenv cenv e
   | Constant _ -> ()
   | Ident name -> 
     if not (List.mem name cenv) || List.mem name lenv 
     then coll := name :: !coll
-  | Let((name,_),e1,e2) -> 
+  | Let(name,e1,e2) -> 
     let cenv' = name :: cenv in 
     collect_exp lenv cenv' e1;
     collect_exp lenv cenv' e2 
-  | Fun((name,_),e) ->
+  | Fun(name,e) ->
     let cenv' = name :: cenv in 
     collect_exp lenv cenv' e
   | BinOp(op,e1,e2) ->
@@ -68,12 +67,8 @@ and collect_exp lenv cenv = function
     collect_exp lenv cenv' e3  
   | Assert(e,_) ->
      collect_exp lenv cenv e
-  | Magic(e) ->
-     collect_exp lenv cenv e
   | Match(e,cases) ->
     collect_exp lenv cenv e;
     (List.iter 
       (function Case (_,e) | Otherwise (e) -> collect_exp lenv cenv e)
      cases)
-  | Array_alloc _ | SetGlobal _ | ReadGlobal _ -> 
-     failwith "bug : AST interne (noeud temporaire pour la réécriture en Kast), ne devrait pas pouvoir être construit par le parseur, ni affiché ..."

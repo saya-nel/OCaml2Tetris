@@ -25,7 +25,7 @@ let () =
       " : spécifie le dossier où seront placés les fichiers compilés");
     ("-stdlib",Arg.Set_string stdlib, 
       "chemin vers la bibliothèque d'execution de mini-ml");
-    ("-assert", Arg.Set Folding.compile_assertions,
+    ("-assert", Arg.Set Ast_fold.compile_assertions,
        " : embarque les assertions dans le code.")
     ] add_file "Usage:\n  ./compile [options] <filenames ..>"	
 
@@ -51,35 +51,36 @@ let parse_modules fs =
 let compile genv (mdl : Past.tmodule) = 
   try 
     let genv = if not !type_check then genv 
-      else let env = Typing.type_check mdl Ast2kast.(genv.typed_decls) in    
-         Ast2kast.{genv with typed_decls = env} in
+      else let env = Typing.type_check mdl Iast2kast.(genv.typed_decls) in    
+         Iast2kast.{genv with typed_decls = env} in
     let mdl = Past2ast.visit_tmodule mdl in
-    let mdl = Folding.visit_tmodule mdl in
-    let mdl = Lifting.visit_tmodule mdl in
+    let mdl = Ast_fold.visit_tmodule mdl in
+    let mdl = Ast_lift.visit_tmodule mdl in
     
-    if !print_ast then print_string @@ Print_ast.sprint_module 0 mdl;
+    if !print_ast then print_string @@ Ast_print.sprint_module 0 mdl;
     
-    let genv0 = Ast2kast.{genv with mod_name=Ast.(mdl.mod_name); init=[]} in
-    let genv',kast = Ast2kast.rewrite_tmodule genv0 mdl in
-    let bc_mdl = Kast2bytecode.bytecode_of_tmodule genv' kast in
+    let mdl = Ast2iast.visit_tmodule mdl in
+    let genv0 = Iast2kast.{genv with mod_name=Iast.(mdl.mod_name); init=[]} in
+    let genv',kast = Iast2kast.rewrite_tmodule genv0 mdl in
+    let bc_mdl = Kast2bc.bytecode_of_tmodule genv' kast in
     (genv',bc_mdl)
-  with Kast2bytecode.Cannot_generate_bytecode msg -> 
+  with Kast2bc.Cannot_generate_bytecode msg -> 
        (Printf.printf "cannot generate bytecode.\n%s\n" msg; exit 1)
 
 let compile_all mdls =
  let (genv2,bc_mdls) = List.fold_left (fun (genv,acc) mdl -> 
                     let genv',bc_mdl = compile genv mdl in 
                     (genv',acc @ [bc_mdl]))
-   (Ast2kast.empty_genv Runtime.primitives "",[]) mdls in 
-  Kast2bytecode.bytecode_of_prog bc_mdls
+   (Iast2kast.empty_genv Runtime.primitives "",[]) mdls in 
+  Kast2bc.bytecode_of_prog bc_mdls
 
 let () = 
   let dir = !destination_dir in
   let files = List.map (Filename.concat !source_dir) !inputs in
   let mdls = parse_modules files in
   List.iter (fun (name,bc) ->
-    let oc = open_out (Filename.concat dir (Bytecode2string.prefix ^ name ^ ".vm")) in
-    Printf.fprintf oc "%s\n" (Bytecode2string.string_of_instrs bc);
+    let oc = open_out (Filename.concat dir (Bc_print.prefix ^ name ^ ".vm")) in
+    Printf.fprintf oc "%s\n" (Bc_print.string_of_instrs bc);
     close_out oc) (compile_all mdls);
  
   Runtime.init dir 

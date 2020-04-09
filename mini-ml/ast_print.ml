@@ -23,12 +23,8 @@ and sprint_module lvl {mod_name;decls} =
     (mapcat " ;;\n\n" (sprint_decl (next lvl)) decls)
     (indent_string lvl) 
 and sprint_decl lvl = function
-  | Type (name,ty) ->
-     sptf "%stype %s = "
-       (indent_string lvl)
-       (name ^ (sprint_ty lvl ty))
-  | DefVar (var,e) ->
-     let w = sptf "let %s = " (sprint_var lvl var) in
+  | DefVar (name,e) ->
+     let w = sptf "let %s = " name in
      let z = get_indent_level w lvl in
      sptf "%s%s" w
        (sprint_exp z e)
@@ -44,29 +40,22 @@ and sprint_fun ?(recflag=false) lvl l =
   (indent_string lvl) ^
     (if recflag then "let rec" else "let") ^
       String.concat ("\n" ^ indent_string lvl ^ "and") @@
-        List.map (fun (name,args,tyopt,e) ->
-            let s = sptf " %s %s %s= " name (mapcat " " (sprint_var lvl) args) 
-            (match tyopt with 
-              | None -> ""
-              | Some ty -> sptf ": %s " (sprint_ty lvl ty)) in
+        List.map (fun (name,args,e) ->
+            let s = sptf " %s %s = " name (String.concat " " args) in  
             s ^ "\n" ^ (indent_string (next lvl)) ^ (sprint_exp (next lvl) e)) l
 and sprint_exp lvl = function
-  | Ast.Annotation (e,ty) ->
-     sptf "(%s : %s)"
-       (sprint_exp (lvl+1) e)
-       (sprint_ty (lvl+1) ty)
   | Constant(c) ->
      sprint_constant lvl c
   | Ident name -> name
-  | Let(var,e1,e2) ->
-     let w = sptf "(let %s = " (sprint_var lvl var) in
+  | Let(name,e1,e2) ->
+     let w = sptf "(let %s = " name in
      let z = get_indent_level w lvl in
      sptf "%s%s in\n%s%s)" w
        (sprint_exp (z) e1)
        (indent_string lvl)
        (sprint_exp lvl e2)
-  | Fun(var,e) ->
-     let w = sptf "(fun %s -> " (sprint_var lvl var) in
+  | Fun(name,e) ->
+     let w = sptf "(fun %s -> " name in
      let z = get_indent_level w lvl in
      sptf "%s%s)" w (sprint_exp z e)
   | BinOp(op,e1,e2) ->
@@ -151,9 +140,6 @@ and sprint_exp lvl = function
                  let lvl' = get_indent_level s lvl in
                  s ^ (sprint_exp lvl' e))
              cases)) ^ ")"
-  | Magic(e) -> sptf "(Obj.magic %s)" (sprint_exp 0 e)
-  | Array_alloc _ | SetGlobal _ | ReadGlobal _ -> 
-     failwith "bug : AST interne (noeud temporaire pour la réécriture en Kast), ne devrait pas pouvoir être construit par le parseur, ni affiché ..."
 and sprint_constant lvl = function
   | Unit -> sptf "()"
   | Bool b -> sptf "%b" b
@@ -180,43 +166,4 @@ and sprint_binop lvl = function
   | Land -> "land"
 and sprint_unop lvl = function
   | Not -> "not"
-  | UMinus -> "-"  
-and sprint_ty lvl ty = 
-  let open Types in 
-  match ty with
-  (*| Sum (names) -> String.concat " | " names *)
-  | Tint -> "int"
-  | Tbool -> "bool"
-  | Tchar -> "char"
-  | Tunit -> "unit"
-  | Tstring -> "string"
-  | Tident (name) -> name 
-  | Tproduct (t1,t2) ->
-     sptf "(%s * %s)"
-       (sprint_ty lvl t1)
-       (sprint_ty lvl t2)
-  | Tarrow (t1,t2) ->
-     sptf "(%s -> %s)"
-       (sprint_ty lvl t1)
-       (sprint_ty lvl t2)
-  | Tlist t ->
-     sptf "(%s list)"
-       (sprint_ty lvl t)
-  | Tarray t ->
-     sptf "(%s array)"
-       (sprint_ty lvl t)
-  | Tref t ->
-     sptf "(%s ref)"
-       (sprint_ty lvl t)
-  | Tvar v ->
-     (match v.def with 
-      | None -> Printf.sprintf "'a%d" v.id
-      | Some ty -> sprint_ty lvl ty)
-  | Tconstr (name,args) -> failwith "print_ast : todo"
-and sprint_var lvl (p,opt) = 
-  match opt with 
-  | None -> p
-  | Some ty ->
-     sptf "(%s : %s)"
-       p
-       (sprint_ty lvl ty)
+  | UMinus -> "-"

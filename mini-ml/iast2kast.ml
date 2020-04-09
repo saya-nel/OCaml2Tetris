@@ -6,13 +6,13 @@ let gensym =
     Printf.sprintf "__%s%d" prefix !c)
 
 type genv = {
-    mod_name : Ast.name;
-    globals : (Ast.name * int) list;
-    constrs : (Ast.name * int) list;
+    mod_name : Iast.name;
+    globals : (Iast.name * int) list;
+    constrs : (Iast.name * int) list;
     global_funs : string list;
-    primitives : (Ast.name * Ast.name) list;
+    primitives : (Iast.name * Iast.name) list;
     typed_decls : Types.env;
-    init : Ast.name list }
+    init : Iast.name list }
 
 let empty_genv prims mod_name =
   {
@@ -44,9 +44,9 @@ let env_extends_constructors genv cstrs =
   {genv with constrs=(!r)}
 
 type lenv = {
-    arguments : (Ast.name * int) list ;
-    locals : (Ast.name * int) list ;
-    free : (Ast.name * int) list ;
+    arguments : (Iast.name * int) list ;
+    locals : (Iast.name * int) list ;
+    free : (Iast.name * int) list ;
     nexts : lenv option
   }
           
@@ -69,7 +69,7 @@ let lenv_extend x lenv =
   (i2,{lenv with locals=locals'})
 
 
-let rec rewrite_tmodule genv Ast.{mod_name;decls} = 
+let rec rewrite_tmodule genv Iast.{mod_name;decls} = 
   let (genv',kds) = rewrite_decls mod_name genv decls in
   (genv',Kast.{mod_name;decls=kds;init=(List.map fst genv'.globals)})
 and rewrite_decls mod_name genv ds = 
@@ -83,33 +83,32 @@ and rewrite_decls mod_name genv ds =
            (genv,kds @ acc)) (genv,[]) ds in
   (genv,List.rev kds)
 and rewrite_decl mod_name genv = function
-| Ast.Type (name,ty) -> (genv,[]) (* TODO *)
-  (*| Ast.Type (name,ty) -> (match ty with 
-                           | Ast.Sum(names) -> 
+  (* Iast.Type (name,ty) -> (match ty with 
+                           | Iast.Sum(names) -> 
                              let genv' = env_extends_constructors genv names in (genv',[])
                            | _ -> (genv,[])) *)
-  | Ast.Exp(e) ->
+  | Iast.Exp(e) ->
      rewrite_decl mod_name genv @@
        let name = gensym ~prefix:"voidExpr" in
-       Ast.DefVar ((name,None),e)
-  | Ast.DefVar ((name,_),e) ->
+       Iast.DefVar (name,e)
+  | Iast.DefVar (name,e) ->
      let name_init = "__init__" ^ name in
      let i,genv' = genv_extend genv name in
      let genv0 = {genv' with init = (mod_name ^ "." ^ name_init) :: genv'.init} in
      let genv1,d1 = rewrite_decl mod_name genv0 @@
-                      Ast.DefFun ([name_init,[],None,Ast.SetGlobal(e,i)]) in
+                      Iast.DefFun ([name_init,[],Iast.SetGlobal(e,i)]) in
      let genv2,d2 = rewrite_decl mod_name genv1 @@
-                      Ast.DefFun ([name,[],None,Ast.ReadGlobal(i)]) in
+                      Iast.DefFun ([name,[],Iast.ReadGlobal(i)]) in
      (genv2,(d1 @ d2))
-  | Ast.DefFun l -> rewrite_defun mod_name genv l
-  | Ast.DefFunRec l -> rewrite_defun mod_name genv ~recflag:true l
+  | Iast.DefFun l -> rewrite_defun mod_name genv l
+  | Iast.DefFunRec l -> rewrite_defun mod_name genv ~recflag:true l
 and rewrite_defun mod_name genv ?(recflag=false) dfs =
-  let gnames = List.map (fun (name,args,_,e) -> mod_name ^ "." ^ name)  dfs in
+  let gnames = List.map (fun (name,args,e) -> mod_name ^ "." ^ name)  dfs in
   let genv' = {genv with global_funs = gnames @ genv.global_funs} in
   let by = List.concat
              (List.map
-                (fun (name,args,_,e) ->
-                  let lenv = frame (List.map fst args) in
+                (fun (name,args,e) ->
+                  let lenv = frame args in
                   let ke = rewrite_exp lenv
                              (if recflag
                               then genv'
@@ -119,10 +118,8 @@ and rewrite_defun mod_name genv ?(recflag=false) dfs =
                   [Kast.DefFun (name,arity,ke)]) dfs) in
   (genv',by)
 and rewrite_exp lenv genv = function
-  | Ast.Annotation (e,_) ->
-     rewrite_exp lenv genv e
-  | Ast.Constant c -> rewrite_constant lenv genv c
-  | Ast.Ident (name) ->
+  | Iast.Constant c -> rewrite_constant lenv genv c
+  | Iast.Ident (name) ->
      (match List.assoc_opt name lenv.locals with
       | None ->
          (match List.assoc_opt name lenv.arguments with
@@ -149,10 +146,10 @@ and rewrite_exp lenv genv = function
             | Some i -> Kast.Variable(Kast.Free (i)))
           | Some i -> Kast.Variable(Kast.Argument (i)))
       | Some i -> Kast.Variable(Kast.Local i))
-  | Ast.Let((name,_),e1,e2) ->
+  | Iast.Let(name,e1,e2) ->
      let i,lenv' = lenv_extend name lenv in 
      Kast.Let(i,rewrite_exp lenv' genv e1, rewrite_exp lenv' genv e2)
-  | Ast.Fun((name,_),e) ->
+  | Iast.Fun(name,e) ->
     (*let ww = List.map fst lenv.locals @ List.map fst lenv.arguments in
     let free_vars = Bindings.collect ww [name] e in
     let ke = rewrite_exp lenv genv @@ e in
@@ -169,150 +166,149 @@ and rewrite_exp lenv genv = function
     
     (* let vars = Bindings.collect ke in
     let len = List.length vars in
-    let kmake = rewrite_exp lenv genv Ast.(Ident("Array.create_uninitialized")) in
-    let kset = rewrite_exp lenv genv Ast.(Ident("Array.set")) in
+    let kmake = rewrite_exp lenv genv Iast.(Ident("Array.create_uninitialized")) in
+    let kset = rewrite_exp lenv genv Iast.(Ident("Array.set")) in
     let i,lenv' = lenv_extend name lenv in 
     Kast.Let(i,Kast.App(kmake,[Kast.Constant(Kast.Int len)]), 
       let j,e = List.fold_left (fun (j,acc) x ->
         (j+1, 
          Kast.Seq(Kast.App(kset,[Kast.Variable(Kast.Local i);Kast.Constant(Kast.Int j);Kast.Variable(x)]),acc)))
     (0,Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments)) vars in e) *)
-  | Ast.App(e,args) -> 
+  | Iast.App(e,args) -> 
      Kast.App(rewrite_exp lenv genv e, List.map (rewrite_exp lenv genv) args)
-  | Ast.If(e1,e2,e3) ->
+  | Iast.If(e1,e2,e3) ->
      Kast.If(rewrite_exp lenv genv e1,
              rewrite_exp lenv genv e2,
              rewrite_exp lenv genv e3)
-  | Ast.BinOp(op,e1,e2) ->
+  | Iast.BinOp(op,e1,e2) ->
      Kast.BinOp(op,rewrite_exp lenv genv e1,rewrite_exp lenv genv e2)
-  | Ast.UnOp(op,e1) -> Kast.UnOp(op,rewrite_exp lenv genv e1)
-  | Ast.Ref_access(e1) ->
+  | Iast.UnOp(op,e1) -> Kast.UnOp(op,rewrite_exp lenv genv e1)
+  | Iast.Ref_access(e1) ->
      rewrite_exp lenv genv @@ 
-       Ast.App(Ast.(Ident("Pervasives.ref_contents"),[e1]))
-  | Ast.Ref_assign(e1,e2) ->
+       Iast.App(Iast.(Ident("Pervasives.ref_contents"),[e1]))
+  | Iast.Ref_assign(e1,e2) ->
      rewrite_exp lenv genv @@  
-       Ast.App(Ast.(Ident("Pervasives.ref_set_contents"),[e1;e2]))
-  | Ast.Ref(e) ->
+       Iast.App(Iast.(Ident("Pervasives.ref_set_contents"),[e1;e2]))
+  | Iast.Ref(e) ->
      rewrite_exp lenv genv @@
-       Ast.App(Ast.(Ident("Pervasives.ref"),[e]))
-  | Ast.Array_access(e1,e2) ->
+       Iast.App(Iast.(Ident("Pervasives.ref"),[e]))
+  | Iast.Array_access(e1,e2) ->
      rewrite_exp lenv genv @@
-       Ast.App(Ast.(Ident("Array.get"),[e1;e2])) 
-  | Ast.Array_assign(e1,e2,e3) ->
+       Iast.App(Iast.(Ident("Array.get"),[e1;e2])) 
+  | Iast.Array_assign(e1,e2,e3) ->
      rewrite_exp lenv genv @@
-       Ast.App(Ast.(Ident("Array.set"),[e1;e2;e3])) 
-  | Ast.Array_alloc(e) ->
+       Iast.App(Iast.(Ident("Array.set"),[e1;e2;e3])) 
+  | Iast.Array_alloc(e) ->
      rewrite_exp lenv genv @@
-       Ast.App(Ast.(Ident("Array.create_uninitialized"),[e])) 
-  | Ast.Pair(e1,e2) ->
+       Iast.App(Iast.(Ident("Array.create_uninitialized"),[e])) 
+  | Iast.Pair(e1,e2) ->
      rewrite_exp lenv genv @@
-       Ast.App(Ast.(Ident("Internal.pair"),[e1;e2])) 
-  | Ast.Cons(e1,e2) ->
+       Iast.App(Iast.(Ident("Internal.pair"),[e1;e2])) 
+  | Iast.Cons(e1,e2) ->
      rewrite_exp lenv genv @@
-       Ast.App(Ast.(Ident("Internal.cons"),[e1;e2])) 
-  | Ast.Array_create(xs) ->
+       Iast.App(Iast.(Ident("Internal.cons"),[e1;e2])) 
+  | Iast.Array_create(xs) ->
      rewrite_exp lenv genv @@
        let n = List.length xs in
        let a = gensym ~prefix:"tmp" in
-       Ast.Let((a,None),Ast.Array_alloc(Ast.Constant(Ast.Int(n))),
+       Iast.Let(a,Iast.Array_alloc(Iast.Constant(Iast.Int(n))),
                let rec aux i = function
                  | [] ->
-                    Ast.Ident(a)
+                    Iast.Ident(a)
                  | e::es ->
-                    Ast.Seq(Ast.Array_assign (Ast.Ident(a),
-                                              Ast.Constant(Ast.Int(i)),e),
+                    Iast.Seq(Iast.Array_assign (Iast.Ident(a),
+                                              Iast.Constant(Iast.Int(i)),e),
                             aux (i+1) es) in aux 0 xs)                        
-  | Ast.Seq(e1,e2) ->
+  | Iast.Seq(e1,e2) ->
      Kast.Seq(rewrite_exp lenv genv e1, rewrite_exp lenv genv e2)
-  | Ast.While(e1,e2) ->
+  | Iast.While(e1,e2) ->
      Kast.While(rewrite_exp lenv genv e1, rewrite_exp lenv genv e2)
-  | Ast.For(name,e0,e1,e2) -> 
+  | Iast.For(name,e0,e1,e2) -> 
      rewrite_exp lenv genv @@
        let name_zz = gensym ~prefix:name in
        let len_zz = gensym ~prefix:"L" in
-       let open Ast in
-       Let((name_zz,None), 
+       let open Iast in
+       Let(name_zz, 
            Ref(e0),
-           Let((len_zz, None),e1,
-               While(BinOp (Le,Ref_access(Ident(name_zz)),Ident(len_zz)),
-                     Let((name,None), Ref_access(Ident(name_zz)),
-                         Seq(e2,App(Ast.Ident("Pervasives.incr"),[Ident(name_zz)]))))))
-  | Ast.Match (e,ms) -> 
+           Let(len_zz,e1,
+               While(BinOp (Ast.Le,Ref_access(Ident(name_zz)),Ident(len_zz)),
+                     Let(name, Ref_access(Ident(name_zz)),
+                         Seq(e2,App(Iast.Ident("Pervasives.incr"),[Ident(name_zz)]))))))
+  | Iast.Match (e,ms) -> 
      let ms',otherw = let rec aux acc = function
                         | [] ->
                            (acc,None)
-                        | Ast.Otherwise e :: _ ->
+                        | Iast.Otherwise e :: _ ->
                            (acc,Some e)
                         | h::t ->
                            aux (h::acc) t in aux [] ms in
-     let sms = List.map (function Ast.Case(c,e) -> (c,e)
+     let sms = List.map (function Iast.Case(c,e) -> (c,e)
                                 | _ -> assert false) ms'
      in
      let smst = List.sort (fun (c1,_) (c2,_) -> compare c1 c2) sms in
      let var = gensym ~prefix:"L" in
      rewrite_exp lenv genv @@
-       Ast.Let((var, None),e,
+       Iast.Let(var,e,
                let rec aux = function
                  | [] -> (match otherw with 
                           | None ->
-                             Ast.App(Ast.Ident("Pervasives.exit"),
-                                     [Ast.Constant (Ast.Int(1))]) (* match failure *)
+                             Iast.App(Iast.Ident("Pervasives.exit"),
+                                     [Iast.Constant (Iast.Int(1))]) (* match failure *)
                           | Some e ->
                              e)
                  | [(_,h)] -> h
                  | ms -> let (md,e') = List.nth ms (List.length ms / 2) in
                          let l1,l2 = List.partition (fun (c,_) -> c < md) ms in
                          let l2 = List.tl l2 in 
-                         Ast.If(Ast.BinOp(Ast.Lt,
-                                          Ast.Ident(var),
-                                          Ast.Constant(md)),
-                                aux l1,Ast.If(Ast.BinOp(Ast.Eq,
-                                                        Ast.Ident(var),
-                                                        Ast.Constant(md)),e',aux l2)) in
+                         Iast.If(Iast.BinOp(Ast.Lt,
+                                          Iast.Ident(var),
+                                          Iast.Constant(md)),
+                                aux l1,Iast.If(Iast.BinOp(Ast.Eq,
+                                                        Iast.Ident(var),
+                                                        Iast.Constant(md)),e',aux l2)) in
                aux smst) 
-  | Ast.Assert(e,pos) ->
+  | Iast.Assert(e,pos) ->
      rewrite_exp lenv genv @@ 
-       Ast.If(e,
-              Ast.Constant(Ast.Unit),
-              Ast.Seq(
-                Ast.App(Ast.Ident("Pervasives.print_string"),
-                  [Ast.Constant
-                    (Ast.String 
-                      (Printf.sprintf "assertion fail [%s]" (Print_ast.sprint_exp 0 e)))]),
-                Ast.Seq(Ast.App(Ast.Ident("Pervasives.print_newline"),[ Ast.Constant(Ast.Unit)]),
-                Ast.Seq(Ast.App(Ast.Ident("Pervasives.print_string"),
-                  [Ast.Constant
-                    (Ast.String 
+       Iast.If(e,
+              Iast.Constant(Iast.Unit),
+              Iast.Seq(
+                Iast.App(Iast.Ident("Pervasives.print_string"),
+                  [Iast.Constant
+                    (Iast.String 
+                      (Printf.sprintf "assertion fail [%s]"    "" (* (Print_ast.sprint_exp 0 e)))]) *)))]),
+                Iast.Seq(Iast.App(Iast.Ident("Pervasives.print_newline"),[ Iast.Constant(Iast.Unit)]),
+                Iast.Seq(Iast.App(Iast.Ident("Pervasives.print_string"),
+                  [Iast.Constant
+                    (Iast.String 
                       (Printf.sprintf "at %s : %s. exit." (genv.mod_name) (Parseutils.string_of_position pos)))]),
-                Ast.App(Ast.Ident("Pervasives.exit"),
-                       [Ast.Constant (Ast.Int(0))])))))
-  | Ast.Magic (e) -> rewrite_exp lenv genv e
-  | Ast.SetGlobal(e,i) ->
+                Iast.App(Iast.Ident("Pervasives.exit"),
+                       [Iast.Constant (Iast.Int(0))])))))
+  | Iast.SetGlobal(e,i) ->
      Kast.SetGlobal (rewrite_exp lenv genv e,i)
-  | Ast.ReadGlobal(i) ->
+  | Iast.ReadGlobal(i) ->
      Kast.ReadGlobal(i)
 and rewrite_constant lenv genv c = match c with 
-| Ast.String(s) ->
+| Iast.String(s) ->
      let rev_xs = ref [] in
      String.iter (fun c -> rev_xs := (c :: !rev_xs)) s;
      rewrite_exp lenv genv @@
-       Ast.Array_create(List.rev_map (fun c -> Ast.Constant(Ast.Char(c))) !rev_xs) 
+       Iast.Array_create(List.rev_map (fun c -> Iast.Constant(Iast.Char(c))) !rev_xs) 
 | _ -> Kast.Constant(match c with 
-  | Ast.Unit ->
+  | Iast.Unit ->
      Kast.Unit
-  | Ast.Int n ->
+  | Iast.Int n ->
      Kast.Int n
-  | Ast.Char c ->
+  | Iast.Char c ->
      Kast.Int (int_of_char c)
-  | Ast.Constr name ->
+  | Iast.Constr name ->
      Kast.Int (match List.assoc_opt (genv.mod_name ^ "." ^ name) genv.constrs with 
                | None -> (List.assoc name genv.constrs)
                | Some c -> c)
-  | Ast.Bool b ->
+  | Iast.Bool b ->
      Kast.Bool b 
-  | Ast.Array_empty ->
+  | Iast.Array_empty ->
      Kast.Array_empty
-  | Ast.List_empty ->
+  | Iast.List_empty ->
      Kast.List_empty
-  | Ast.String _ ->
+  | Iast.String _ ->
      assert false) (* déjà traité *)

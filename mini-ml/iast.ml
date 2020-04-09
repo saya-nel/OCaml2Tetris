@@ -1,37 +1,29 @@
-type loc = Parseutils.pos
 
 type prog = tmodule list
 and tmodule = { mod_name : name ;
                 decls : decl list }
 and name = string
-and var = (name * Types.typ option)
 
-and decl = { decl_desc: declaration_desc; 
-             decl_loc : loc
-             }
-and declaration_desc =
+and decl = 
   | Exp of (exp)
-  | DefVar of (var * exp)
-  | DefFun of    ((name * var list * Types.typ option * exp) list)
-  | DefFunRec of ((name * var list * Types.typ option * exp) list)
-  | Type of (name * Types.typ)
-and exp = { exp_desc: expression_desc; 
-            exp_loc : loc }
-and expression_desc =
-  | Annotation of (exp * Types.typ)
+  | DefVar of (name * exp)
+  | DefFun of    ((name * name list * exp) list)
+  | DefFunRec of ((name * name list * exp) list)
+and exp = 
   | Constant of (constant)
   | Ident of (name)
-  | Let of (var * exp * exp)
-  | Fun of (var * exp)
+  | Let of (name * exp * exp)
+  | Fun of (name * exp)
   (*  | LetFun of (name * name list * exp * exp) *)
   | App of (exp * exp list)
   | If of (exp * exp * exp)
   | Match of (exp * match_case list)
-  | BinOp of (binop * exp * exp)
-  | UnOp of (unop * exp)
+  | BinOp of (Ast.binop * exp * exp)
+  | UnOp of (Ast.unop * exp)
   | Pair of (exp * exp)
   | Cons of (exp * exp)
   | Array_create of (exp list)
+  | Array_alloc of (exp)
   | Array_assign of (exp * exp * exp)
   | Array_access of (exp * exp)
   | Ref of (exp)
@@ -40,8 +32,9 @@ and expression_desc =
   | Seq of (exp * exp)
   | While of (exp * exp)
   | For of (name * exp * exp * exp)
-  | Magic of (exp)
   | Assert of (exp * Parseutils.pos)
+  | SetGlobal of (exp * int) (* privé *)
+  | ReadGlobal of (int)  (* privé *)
 and constant = 
   | Unit
   | Bool of bool
@@ -54,22 +47,3 @@ and constant =
 and match_case =
   | Case of (constant * exp)
   | Otherwise of (exp)
-and binop =
-  | Add
-  | Minus
-  | Mult
-  | Div
-  | Lt
-  | Le
-  | Neq
-  | Eq
-  | Ge
-  | Gt
-  | Or
-  | And
-  | Lor
-  | Land
-
-and unop =
-  | UMinus
-  | Not

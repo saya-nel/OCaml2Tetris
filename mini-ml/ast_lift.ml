@@ -19,11 +19,9 @@ and visit_decl = function
   | Ast.DefVar(v,e) -> Ast.DefVar(v,visit_exp e)
   | Ast.DefFun(l) -> Ast.DefFun (visit_fundecs l)
   | Ast.DefFunRec(l) -> Ast.DefFunRec (visit_fundecs l)
-  | d -> d
 and visit_fundecs l = 
-  List.map (fun (name,args,t,e) -> (name,args,t,visit_exp e)) l 
+  List.map (fun (name,args,e) -> (name,args,visit_exp e)) l 
 and visit_exp = function
-| Ast.Annotation (e,ty) -> Ast.Annotation (visit_exp e,ty)
 | Ast.Constant c -> visit_constant c
 | Ast.Let(v,e1,e2) -> Ast.Let(v,visit_exp e1,visit_exp e2)
 | Ast.App(e,args) -> Ast.App(visit_exp e,List.map visit_exp args) 
@@ -35,7 +33,6 @@ and visit_exp = function
 | Ast.Ref(e) -> Ast.Ref(visit_exp e)
 | Ast.Array_access(e1,e2) -> Ast.Array_access(visit_exp e1,visit_exp e2) 
 | Ast.Array_assign(e1,e2,e3)  -> Ast.Array_assign(visit_exp e1,visit_exp e2,visit_exp e3)
-| Ast.Array_alloc(e) -> Ast.Array_alloc(visit_exp e)
 | Ast.Pair(e1,e2) -> Ast.Pair(visit_exp e1,visit_exp e2) 
 | Ast.Cons(e1,e2) -> Ast.Cons(visit_exp e1,visit_exp e2)
 | Ast.Array_create(xs) -> Ast.Array_create(List.map visit_exp xs)
@@ -44,14 +41,11 @@ and visit_exp = function
 | Ast.For(name,e0,e1,e2) -> Ast.For(name,visit_exp e0,visit_exp e1,visit_exp e2)
 | Ast.Match(e,ms) -> Ast.Match (visit_exp e,List.map (function Ast.Case(c,e) -> Ast.Case(c,visit_exp e) | Ast.Otherwise e -> Ast.Otherwise(visit_exp e)) ms) 
 | Ast.Assert(e,pos) -> Ast.Constant(Ast.Unit)
-| Ast.Magic(e) -> Ast.Magic(visit_exp e) 
-| Ast.SetGlobal(e,i) -> Ast.SetGlobal(visit_exp e,i)
-| Ast.ReadGlobal(i) -> Ast.ReadGlobal(i) 
 | e -> e
 and visit_constant = function
 | (Ast.String _) as s -> 
   let k = gensym () in
-  collect := (Ast.DefVar((k,None),Ast.Constant(s))):: !collect;
+  collect := (Ast.DefVar(k,Ast.Constant(s))):: !collect;
   Ast.Ident(k);
 | c -> Ast.Constant(c)
 

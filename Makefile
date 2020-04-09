@@ -1,8 +1,8 @@
 # variante run.sh
 
 # usage :
-# make I=samples/test.cmo        # prépare le cmo, compile la zam et lance le simulateur
-# make short I=samples/test.cmo  # prépare le cmo et compile la zam 
+# make I=samples/test1.cmo        # prépare le cmo, compile la zam et lance le simulateur
+# make short I=samples/test1.cmo  # prépare le cmo et compile la zam 
 
 I=
 ASSERT=-assert

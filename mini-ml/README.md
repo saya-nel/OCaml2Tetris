@@ -1,5 +1,22 @@
 # mini-ml
 
+## structure du compilateur :
+```
+{} -> (lexer) -> (parser) -> [PAST].
+[PAST] -> (past_print) -> {OCaml}.
+[PAST] -> (typing).
+[PAST] -> (past2ast) -> [AST]. 
+[AST] -> (ast_fold) ->  [AST].
+[AST] -> (ast_lift) -> [AST].
+[AST] -> (ast_print) -> {OCaml}.
+[AST] -> (ast2iast) -> [IAST].
+[IAST] -> (iast2kast) -> [KAST].
+[KAST] -> (kast2bc) -> [BC].
+[BC] -> (opti à définir ?) -> [BC].
+[BC] -> (bc_print) -> {VM nand2Tetris}.
+```
+
+## usage :
 ```
 $ cd mini-ml
 $ make

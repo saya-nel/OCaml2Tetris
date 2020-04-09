@@ -1,4 +1,4 @@
-open Bytecode
+open Bc
 
 exception Cannot_generate_bytecode of string
 
@@ -45,7 +45,7 @@ let next_lambda =
                   Label l] @ !apply_code;
     k)
 
-let indent_string = Print_ast.indent_string
+let indent_string = Past_print.indent_string
 
 (* annote le bytecode *)
 let comment name lvl by = 
@@ -69,7 +69,7 @@ let rec bytecode_of_prog bc_mdls =
    apply_file :: main :: files
 and bytecode_of_tmodule genv Kast.{mod_name;decls} = 
   let bc_decls = bytecode_of_decls mod_name decls in
-  {mod_name;bc_decls;init=Ast2kast.(genv.init)}
+  {mod_name;bc_decls;init=Iast2kast.(genv.init)}
 and bytecode_of_decls mod_name ds = 
   mapcat (bytecode_of_decl mod_name) ds
 and bytecode_of_decl mod_name = function 

@@ -9,20 +9,20 @@ let rec visit_tmodule Past.{mod_name;decls} =
 and visit_decl Past.{decl_desc;decl_loc} = 
 match decl_desc with
   | Past.Exp(e) -> Some (Ast.Exp(visit_exp e))
-  | Past.DefVar(v,e) -> Some (Ast.DefVar(v,visit_exp e))
+  | Past.DefVar((name,_),e) -> Some (Ast.DefVar(name,visit_exp e))
   | Past.DefFun(l) -> Some (Ast.DefFun ((visit_fundecs l)))
   | Past.DefFunRec(l) -> Some (Ast.DefFunRec ((visit_fundecs l)))
   | Past.Type _ -> None
 and visit_fundecs l = 
-  List.map (fun (name,args,t,e) -> (name,args,t,visit_exp e)) l 
+  List.map (fun (name,args,_,e) -> (name,List.map fst args,visit_exp e)) l 
 and visit_exp Past.{exp_desc;exp_loc} =
   match exp_desc with
   | Past.Ident name -> Ast.Ident name
-  | Past.Annotation (e,ty) -> Ast.Annotation (visit_exp e,ty)
+  | Past.Annotation (e,_) -> visit_exp e
   | Past.Constant c -> Ast.Constant(visit_cst c)
-  | Past.Let(v,e1,e2) ->  Ast.Let(v,visit_exp e1,visit_exp e2)
+  | Past.Let((name,_),e1,e2) ->  Ast.Let(name,visit_exp e1,visit_exp e2)
   | Past.App(e,args) -> Ast.App(visit_exp e,List.map visit_exp args)
-  | Past.Fun (var,e) -> Ast.Fun (var,visit_exp e) 
+  | Past.Fun ((name,_),e) -> Ast.Fun (name,visit_exp e) 
   | Past.If(e1,e2,e3) -> Ast.If(visit_exp e1,visit_exp e2,visit_exp e3)
   | Past.BinOp(op,e1,e2) -> Ast.BinOp(visit_binop op,visit_exp e1,visit_exp e2)
   | Past.UnOp(op,e1) -> Ast.UnOp(visit_unop op,visit_exp e1)
@@ -31,7 +31,6 @@ and visit_exp Past.{exp_desc;exp_loc} =
   | Past.Ref(e) -> Ast.Ref(visit_exp e)
   | Past.Array_access(e1,e2) -> Ast.Array_access(visit_exp e1,visit_exp e2) 
   | Past.Array_assign(e1,e2,e3)  -> Ast.Array_assign(visit_exp e1,visit_exp e2,visit_exp e3)
-  | Past.Array_alloc(e) -> Ast.Array_alloc(visit_exp e)
   | Past.Pair(e1,e2) -> Ast.Pair(visit_exp e1,visit_exp e2) 
   | Past.Cons(e1,e2) -> Ast.Cons(visit_exp e1,visit_exp e2)
   | Past.Array_create(xs) -> Ast.Array_create(List.map visit_exp xs)
@@ -41,8 +40,6 @@ and visit_exp Past.{exp_desc;exp_loc} =
   | Past.Match (e,ms) -> Ast.Match (visit_exp e,List.map (function Past.Case(c,e) -> Ast.Case(visit_cst c,visit_exp e) | Past.Otherwise e -> Ast.Otherwise(visit_exp e)) ms) 
   | Past.Assert(e,pos) -> Ast.Assert(visit_exp e,pos) 
   | Past.Magic(e) -> visit_exp e
-  | Past.SetGlobal(e,i) -> Ast.SetGlobal(visit_exp e,i)
-  | Past.ReadGlobal(i) -> Ast.ReadGlobal(i) 
 and visit_cst = function
 | Past.Unit -> Ast.Unit
 | Past.Bool b -> Ast.Bool b

@@ -19,7 +19,7 @@ let initial_env primitives =
 let rec w env decs = function
 | [] -> decs
 | d::ds -> let xts = w_dec env d in
-     List.iter (fun (x,t) -> Printf.printf "%s : %s\n" x (Print_ast.sprint_ty 0 t)) xts; 
+     List.iter (fun (x,t) -> Printf.printf "%s : %s\n" x (Past_print.sprint_ty 0 t)) xts; 
      let env' = List.fold_left (fun env (x,t) -> add true x (canon t) env) env xts in
      w env' (decs @ xts) ds 
 and w_dec env {decl_desc;decl_loc} = 
@@ -126,10 +126,6 @@ match exp_desc with
       let v = Tvar (V.create ()) in 
       List.iter (fun e -> unify (w_exp env e) v) es; 
       Tarray v
-   | Array_alloc e1 ->
-     unify (w_exp env e1) Tint;
-     let v = Tvar (V.create ()) in
-     Tarray v
    | Array_assign (e1,e2,e3) ->
      let t1 = w_exp env e1 in
      let t2 = w_exp env e2 in
@@ -184,7 +180,6 @@ match exp_desc with
      unify ty Tbool; 
      Tunit
    | Magic e -> let _ = w_exp env e in Tvar (V.create ())
-   | _ -> failwith "private"
 
 and w_constant = function
 | Unit -> Tunit
@@ -227,6 +222,6 @@ let type_check {decls;mod_name} env =
   with 
   | UnificationFailure (t1,t2,loc) -> 
       Printf.printf "\nError: %s\nThis expression has type %s but an expression was expected of type
-         %s\n" (Parseutils.string_of_position loc) (Print_ast.sprint_ty 0 t1) (Print_ast.sprint_ty 0 t2); exit 0
+         %s\n" (Parseutils.string_of_position loc) (Past_print.sprint_ty 0 t1) (Past_print.sprint_ty 0 t2); exit 0
   | Unbound_value (x,loc) -> Printf.printf "Error: %s\nUnbound value %s\n" (Parseutils.string_of_position loc)  x; exit 0
 

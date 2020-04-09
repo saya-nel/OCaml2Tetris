@@ -3,20 +3,17 @@ type prog = tmodule list
 and tmodule = { mod_name : name ;
                 decls : decl list }
 and name = string
-and var = (name * Types.typ option)
 
 and decl = 
   | Exp of (exp)
-  | DefVar of (var * exp)
-  | DefFun of    ((name * var list * Types.typ option * exp) list)
-  | DefFunRec of ((name * var list * Types.typ option * exp) list)
-  | Type of (name * Types.typ)
+  | DefVar of (name * exp)
+  | DefFun of    ((name * name list * exp) list)
+  | DefFunRec of ((name * name list * exp) list)
 and exp = 
-  | Annotation of (exp * Types.typ)
   | Constant of (constant)
   | Ident of (name)
-  | Let of (var * exp * exp)
-  | Fun of (var * exp)
+  | Let of (name * exp * exp)
+  | Fun of (name * exp)
   (*  | LetFun of (name * name list * exp * exp) *)
   | App of (exp * exp list)
   | If of (exp * exp * exp)
@@ -26,7 +23,6 @@ and exp =
   | Pair of (exp * exp)
   | Cons of (exp * exp)
   | Array_create of (exp list)
-  | Array_alloc of (exp)
   | Array_assign of (exp * exp * exp)
   | Array_access of (exp * exp)
   | Ref of (exp)
@@ -35,10 +31,7 @@ and exp =
   | Seq of (exp * exp)
   | While of (exp * exp)
   | For of (name * exp * exp * exp)
-  | Magic of (exp)
   | Assert of (exp * Parseutils.pos)
-  | SetGlobal of (exp * int) (* privé *)
-  | ReadGlobal of (int)  (* privé *)
 and constant = 
   | Unit
   | Bool of bool
