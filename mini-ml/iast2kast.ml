@@ -68,6 +68,19 @@ let lenv_extend x lenv =
        (i2,((x,i2)::lenv.locals)) in
   (i2,{lenv with locals=locals'})
 
+let lenv_extend_tail x lenv = (* réutilse les variables de même nom déjà définies *)
+  let i2,locals' =
+    match lenv.locals with 
+    | [] -> 
+       (0,[(x,0)])
+    | ((_,i)::_) as l -> 
+      let i2 = (match List.assoc_opt x l with 
+                | None -> i + 1
+                | Some i -> i) in
+      (i2,((x,i2)::lenv.locals)) in
+    (i2,{lenv with locals=locals'})
+
+
 
 let rec rewrite_tmodule genv Iast.{mod_name;decls} = 
   let (genv',kds) = rewrite_decls mod_name genv decls in
@@ -147,8 +160,9 @@ and rewrite_exp lenv genv = function
           | Some i -> Kast.Variable(Kast.Argument (i)))
       | Some i -> Kast.Variable(Kast.Local i))
   | Iast.Let(name,e1,e2) ->
-     let i,lenv' = lenv_extend name lenv in 
-     Kast.Let(i,rewrite_exp lenv' genv e1, rewrite_exp lenv' genv e2)
+     let i,lenv' = lenv_extend_tail name lenv in (* optimisation : recyclage des variables masquées, 
+                                                   attention, dans, let x = e1(x) in e2, e1 doit bien utiliser l'ancienne valeur de x *)
+     Kast.Let(i,rewrite_exp lenv genv e1, rewrite_exp lenv' genv e2)
   | Iast.Fun(name,e) ->
     (*let ww = List.map fst lenv.locals @ List.map fst lenv.arguments in
     let free_vars = Bindings.collect ww [name] e in

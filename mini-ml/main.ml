@@ -3,6 +3,7 @@ let action = ref (`Compile : [ `Compile | `PrintAst])
 let stdlib = ref "stdlib"
 
 let type_check = ref false
+let inline_depth = ref 0
 let print_ast = ref false
 
 let set_action a () = action := a
@@ -17,6 +18,8 @@ let () =
        " : affiche l'AST en syntaxe Caml (après typage et optimisation)");
     ("-typecheck", Arg.Set type_check, 
       " : type le programme est abandonne si celui-ci est mal typé");
+    ("-inline", Arg.Set_int inline_depth,
+       " : profondeur d'inlining");
     ("-compile", Arg.Unit (set_action `Compile), 
        " : compile vers le langage de la VM Nand2Tetris");
     ("-src", Arg.Set_string source_dir,
@@ -48,17 +51,9 @@ let parse filename =
 let parse_modules fs = 
   List.map parse fs
 
-let compile genv (mdl : Past.tmodule) = 
+let compile genv (mdl : Ast.tmodule) = 
   try 
-    let genv = if not !type_check then genv 
-      else let env = Typing.type_check mdl Iast2kast.(genv.typed_decls) in    
-         Iast2kast.{genv with typed_decls = env} in
-    let mdl = Past2ast.visit_tmodule mdl in
-    let mdl = Ast_fold.visit_tmodule mdl in
-    let mdl = Ast_lift.visit_tmodule mdl in
-    
     if !print_ast then print_string @@ Ast_print.sprint_module 0 mdl;
-    
     let mdl = Ast2iast.visit_tmodule mdl in
     let genv0 = Iast2kast.{genv with mod_name=Iast.(mdl.mod_name); init=[]} in
     let genv',kast = Iast2kast.rewrite_tmodule genv0 mdl in
@@ -68,10 +63,17 @@ let compile genv (mdl : Past.tmodule) =
        (Printf.printf "cannot generate bytecode.\n%s\n" msg; exit 1)
 
 let compile_all mdls =
- let (genv2,bc_mdls) = List.fold_left (fun (genv,acc) mdl -> 
+ let genv = Iast2kast.empty_genv Runtime.primitives "" in
+ if !type_check then (let env = ref (Iast2kast.(genv.typed_decls)) in
+                      List.iter (fun mdl -> env := Typing.type_check mdl Iast2kast.(!env)) mdls);
+ let mdls = List.map Past2ast.visit_tmodule mdls in
+ let mdls = List.map Ast_lift.visit_tmodule mdls in
+ let mdls = List.map (Ast_inline.visit_tmodule ~depth_max:!inline_depth) mdls in
+ let mdls = List.map Ast_fold.visit_tmodule mdls in
+ let (genv2,bc_mdls) = 
+   List.fold_left (fun (genv,acc) mdl -> 
                     let genv',bc_mdl = compile genv mdl in 
-                    (genv',acc @ [bc_mdl]))
-   (Iast2kast.empty_genv Runtime.primitives "",[]) mdls in 
+                    (genv',acc @ [bc_mdl])) (genv,[])  mdls in 
   Kast2bc.bytecode_of_prog bc_mdls
 
 let () = 

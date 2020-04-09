@@ -1,9 +1,9 @@
 
 type bcmodule = { 
-  mod_name : Ast.name ; 
-  bc_decls : instr list ;
-  init : Ast.name list ;
-}
+    mod_name : Ast.name ; 
+    bc_decls : instr list ;
+    init : Ast.name list ;
+  }
 and instrs = instr list          
 and instr =
   | Comment of string
@@ -29,4 +29,8 @@ and segment =
 and label = string
 and fun_name = string
 
-and vm_operator = Add | Sub | Mult | Div | Eq | Gt | Lt | And | Or | Not | Access | Assign | Alloc
+and vm_operator =
+  Add | Sub | Mult | Div | Eq
+  | Gt | Lt | And | Or | Not |
+  Access | Assign | Alloc
+                      
