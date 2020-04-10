@@ -4,14 +4,14 @@
 ```
 {} -> (lexer) -> (parser) -> [PAST].
 [PAST] -> (past_print) -> {OCaml}.
-[PAST] -> (typing).
+[PAST] -> (typing).                     (typage à la ML)
 [PAST] -> (past2ast) -> [AST]. 
 [AST] -> (ast_lift) -> [AST].           (lambda lifting)
 [AST] -> (ast_inline) -> [AST].         (intégration d'appels de fonction)
 [AST] -> (ast_fold) ->  [AST].          (propagation de constantes)
 [AST] -> (ast_globz) -> [AST].          (globalisation des valeurs allouées immutables)
 [AST] -> (ast_print) -> {OCaml}.
-[AST] -> (ast2iast) -> [IAST].
+[AST] -> (ast2iast) -> [IAST].          (introduction des fermetures)
 [IAST] -> (iast_tailrec) -> [IAST].     (élimination des appels terminaux)
 [IAST] -> (iast2kast) -> [KAST].
 [KAST] -> (kast2bc) -> [BC].

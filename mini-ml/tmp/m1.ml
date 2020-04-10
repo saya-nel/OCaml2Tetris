@@ -1,16 +1,33 @@
-let _ =
+let g = (fun x -> print_int x)
+let h = (fun x -> print_int (x*2))
+
+let f x =
+  (if x < 0 then g else h) 42
+
+let _ = f (17)
+
+(* let _ =
   let a = 42 in
   (fun x -> print_int (a+x)) 10
+*)
 
-(*let _ = 
+(*
+let _ = 
+  ((fun x -> fun y -> print_int (x + y)) 42) 1
+*)
+
+(*
+let _ = 
   ((fun x -> fun y -> print_int (x + y)) 42) 1
 *)
 (*
 let un f = f 1
 
-let _ = un (fun x -> print_int (x + 41)) *)
-
-
+let _ = un (fun x -> print_int (x + 41)) 
+*)
+(*
+let _ = un (fun x -> print_int (x + 41)) 
+*)
 (*
 
 let rec aux acc n =

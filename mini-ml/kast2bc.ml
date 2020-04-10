@@ -24,6 +24,7 @@ let gensym =
 
 let lambda_code = ref []
 
+let apply_closure_code = ref [Label "EndApplyClosure";Return] 
 let apply_code = ref [Label "EndApply";Return] 
 
 
@@ -31,7 +32,7 @@ let next_closure bc_e addr =
   let l = ("A" ^ string_of_int addr) in
      let f = ("Apply.closure" ^ string_of_int addr) in
      lambda_code := ([Function (f,nb_local bc_e)] @ bc_e @ [Return]) @ !lambda_code;
-     apply_code := [Push(Argument(1));
+     apply_closure_code := [Push(Argument(1));
                     Push(Constant(0));
                     Call("Array.get",2);
                     Push(Constant(addr));
@@ -41,7 +42,7 @@ let next_closure bc_e addr =
                     Push(Argument(0));
                     Push(Argument(1));
                     Call(f,2);
-                    Goto "EndApply";
+                    Goto "EndApplyClosure";
                   Label l] @ !apply_code
 
 let next_lambda = 
@@ -83,8 +84,7 @@ let rec bc_of_prog bc_mdls =
   let init_globals = List.rev (mapcat (fun g -> [Call (g,0)]) !accgb) in
   let main = ("Start",([Function ("Start.main",0)] @ init_globals @ 
                         [Push(Constant(0));Return])) in
-  let apply_file = ("Apply",(Function ("Apply.apply",0) :: !apply_code) @ !lambda_code) in
-  (* let lambda_lifting_file = ("Lambda",*)
+  let apply_file = ("Apply",(Function ("Apply.closure",0) :: !apply_closure_code) @ (Function ("Apply.apply",0) :: !apply_code) @ !lambda_code) in
    apply_file :: main :: files
 and bc_of_tmodule genv Kast.{mod_name;decls} = 
   let bc_body = bc_of_decls mod_name decls in
@@ -128,10 +128,8 @@ and bc_of_exp lvl = function
   (* une valeur fonctionnelle close est l'entier
      associé au code de la fonction dans Apply.apply *)
   | Kast.Closure ((addr,ke),closure_env) ->
-    (* let n = next_lambda (bc_of_exp lvl e) *)
     next_closure (bc_of_exp lvl ke) addr;
     bc_of_exp lvl closure_env (* la fermeture est un tableau (module Array)) dont le premier élément est l'id (~+/- l'adresse) de la closure, et les élément suivant sont l'environnement *)
-    (* [Push (Constant addr)] *)
   | Kast.Let(n,e1,e2) ->
      comment "<let>" lvl (
          let bc_e1 = bc_of_exp (lvl+1) e1
@@ -150,7 +148,6 @@ and bc_of_exp lvl = function
             | Kast.GFun (name) -> [Call(name,arity)]
             | _ -> (bc_of_exp (lvl+1) f) @
                    List.map (fun _ -> Call("Apply.apply",2)) args))
-          (*  raise (Cannot_generate_bc "limite d'implantation : seules les fonctions globales peuvent être appliquées"))) *)
   | Kast.BinOp(op,e1,e2) ->
      comment "<binop>" lvl (
          let bc_e1 = bc_of_exp (lvl+1) e1 
@@ -161,7 +158,7 @@ and bc_of_exp lvl = function
          let bc_e1 = bc_of_exp (lvl+1) e1  in
          bc_e1 @ bc_of_unop op)
   | Kast.GFun (name) ->
-     [Call (name,0)] (* !!!!! variables globales, bof *)
+     [Call (name,0)] (* !!!!! variables globales, bof *) (* je ne sais plus ce que ça veut dire ??? *)
   | Kast.Ext(ext) -> 
     (match ext with 
      | Kast.SetGlobal (e1,i) ->
@@ -197,7 +194,7 @@ and bc_of_variable = function
   | Kast.Local (n) ->
      [ Push(Local n) ]
   | Kast.Free (n) ->
-     [Push(Argument 1);Push(Constant ((n+2)));Call("Array.get",2)] (* la nieme valeur de l'env, (sans compter l'addresse en position 0) *)
+     [Push(Argument 1);Push(Constant ((n+1)));Call("Array.get",2)] (* la nieme valeur de l'env, (sans compter l'addresse en position 0) *)
 and bc_of_binop = function
   | Ast.Add -> [BinOp Add]
   | Ast.Minus -> [BinOp Sub]

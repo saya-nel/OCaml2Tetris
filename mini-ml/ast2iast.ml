@@ -20,7 +20,7 @@ and rw_exp env = function
   | Ast.Fun (name,e) -> 
     (match env with 
      | [] -> Iast.Fun (name,rw_exp [name] e)
-     | _ -> let env = name :: env in
+     | _ -> let env = env in
             let addr = gen_closure_id () in
             let code = rw_exp env e in
             let closure_env = List.map (fun name -> Iast.Ident(name)) env in
