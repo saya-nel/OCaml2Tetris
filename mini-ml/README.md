@@ -6,15 +6,16 @@
 [PAST] -> (past_print) -> {OCaml}.
 [PAST] -> (typing).
 [PAST] -> (past2ast) -> [AST]. 
-[AST] -> (ast_inline) ->  [AST].        (intégration d'appels de fonction)
-[AST] -> (ast_fold) ->  [AST].          (propagation de constante)
-[AST] -> (ast_lift) -> [AST].
+[AST] -> (ast_lift) -> [AST].           (lambda lifting)
+[AST] -> (ast_inline) -> [AST].         (intégration d'appels de fonction)
+[AST] -> (ast_fold) ->  [AST].          (propagation de constantes)
+[AST] -> (ast_globz) -> [AST].          (globalisation des valeurs allouées immutables)
 [AST] -> (ast_print) -> {OCaml}.
 [AST] -> (ast2iast) -> [IAST].
 [IAST] -> (iast_tailrec) -> [IAST].     (élimination des appels terminaux)
 [IAST] -> (iast2kast) -> [KAST].
 [KAST] -> (kast2bc) -> [BC].
-[BC] -> (bc_fold) -> [BC].
+[BC] -> (bc_fold) -> [BC].              (propagation de constantes)
 [BC] -> (bc_print) -> {VM nand2Tetris}.
 ```
 

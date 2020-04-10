@@ -121,12 +121,12 @@ ty :
  | constructor PIPE sum_ty { $1::$3 }
  | constructor OF            { error_exit (pos()) "constructeur paramétré non supporté" }
  ;*/
-
+/*
 constructor :
 | IDENT_CAPITALIZE                { $1 }
 | IDENT_CAPITALIZE DOT constructor { $1 ^ "." ^ $3}
 ;
-
+*/
 expr_ty:
  | LPAREN expr_ty RPAREN         { $2 }
  | IDENT                         { match $1 with 
@@ -165,6 +165,18 @@ expression :
 | expr                                   { $1 }
 | FUN argu_strict RIGHT_ARROW seq        { exp_create @@ Fun($2,$4) }
 | LET argu_strict EQ seq IN seq          { exp_create @@ Let($2,$4,$6) }
+| LET defuns IN seq                      
+ { 
+    List.fold_right
+       (fun (name,args,tyopt,e) exp ->
+    	exp_create @@ Let((name,None),
+    		List.fold_right 
+    		  (fun a e -> exp_create @@ Fun(a,e)) 
+    		  args (match tyopt with
+		    		| None -> e 
+		    		| Some ty -> exp_create @@ Annotation(e,ty)),
+    		exp))
+         $2 $4}
 | expression WHERE argu EQ seq           { exp_create @@ 
 	                                       match $3 with 
 	                                       | None,None -> Seq($5,$1)
@@ -275,7 +287,7 @@ constant:
  | CHAR                                  { Char($1) }
  | BOOL                                  { Bool($1) }
  | STRING                                { String($1) }
- | constructor                           { Constr($1) }
+ /* | constructor                           { Constr($1) }*/
  | LBRACKET RBRACKET                     { List_empty }
  | ARRAY_OPEN ARRAY_CLOSE                { Array_empty }
  ;

@@ -82,8 +82,9 @@ and fold_exp = function
         | Ast.Array_assign _ | Ast.Ref_assign _ -> Ast.Seq (e1,fold_exp @@ replace v (Ast.Constant(Ast.Unit)) e2)
       | _ ->
          (match e1,occ v e2 with
+          | Ast.Ident (x),_ -> (replace v (Ast.Ident (x)) e2)  (* let y = x in e(x,y) ~> e(x) *)
           | Ast.Constant _,0 -> e2
-          | Ast.Constant _,_ | Ast.Ident _,_ -> fold_exp (replace v e1 e2)
+          | Ast.Constant _,_ -> fold_exp (replace v e1 e2)
           | _ -> Ast.Let(v,e1,e2)))
   | Ast.App(e,args) -> Ast.App(fold_exp e,List.map fold_exp args) 
   | Ast.If(e1,e2,e3) -> (match fold_exp e1 with 

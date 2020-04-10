@@ -3,8 +3,9 @@ let action = ref (`Compile : [ `Compile | `PrintAst])
 let stdlib = ref "stdlib"
 
 let type_check = ref false
-let inline_depth = ref 0
+let inline_depth = ref 10
 let print_ast = ref false
+let globalize = ref true
 let lifting = ref true
 and folding = ref true
 
@@ -22,8 +23,8 @@ let () =
        " : type le programme est abandonne si celui-ci est mal typé");
       ("-inline", Arg.Set_int inline_depth,
        " : profondeur d'inlining");
-      ("-nolifting", Arg.Clear lifting,
-       " : désactive la globalisation des chaînes de caractères.");
+      ("-noglobalize", Arg.Clear globalize,
+       " : désactive la globalisation des valeurs immutables allouées.");
       ("-nofolding", Arg.Clear folding,
        " : désactive la propagation des constantes");
       ("-compile", Arg.Unit (set_action `Compile), 
@@ -69,13 +70,24 @@ let compile genv (mdl : Ast.tmodule) =
   with Kast2bc.Cannot_generate_bytecode msg -> 
     (Printf.printf "cannot generate bytecode.\n%s\n" msg; exit 1)
 
+
+(* compile le programme formés des modules mdls *)
 let compile_all mdls =
   let genv = Iast2kast.empty_genv Runtime.primitives "" in
   if !type_check then (let env = ref (Iast2kast.(genv.typed_decls)) in
                        List.iter (fun mdl -> env := Typing.type_check mdl Iast2kast.(!env)) mdls);
   let mdls = List.map Past2ast.visit_tmodule mdls in
-  let mdls = if !lifting then List.map Ast_lift.rewrite mdls else mdls in
+
+  (* lambda lifting *)
+  let mdls = List.map Ast_lift.rewrite mdls in
+  
+  (* globalisation des valeurs immutables allouées *)
+  let mdls = if !globalize then List.map Ast_globz.rewrite mdls else mdls in
+
+  (* intégration des appels de fonctions *)
   let mdls = List.map (Ast_inline.visit_tmodule ~depth_max:!inline_depth) mdls in
+  
+  (* propagation de constantes *)
   let mdls = if !folding then List.map Ast_fold.rewrite mdls else mdls in
   let (genv2,bc_mdls) = 
     List.fold_left (fun (genv,acc) mdl -> 
@@ -83,6 +95,8 @@ let compile_all mdls =
         (genv',acc @ [bc_mdl])) (genv,[])  mdls in 
   Kast2bc.bc_of_prog bc_mdls
 
+
+(* point d'entrée du compilateur *)
 let () = 
   let dir = !destination_dir in
   let files = List.map (Filename.concat !source_dir) !inputs in
