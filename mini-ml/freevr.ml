@@ -12,7 +12,7 @@ let rec collect env lenv e =
 and collect_exp coll env lenv = function
   | Ast.Constant _ -> ()
   | Ast.Ident name -> 
-    if not (List.mem name lenv) || List.mem name env 
+    if not (List.mem name lenv) && List.mem name env 
     then coll := name :: !coll
   | Ast.Let(name,e1,e2) -> 
     let lenv' = name :: lenv in 

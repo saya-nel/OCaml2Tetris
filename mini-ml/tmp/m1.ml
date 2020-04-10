@@ -1,6 +1,16 @@
+let _ =
+  let a = 42 in
+  (fun x -> print_int (a+x)) 10
+
+(*let _ = 
+  ((fun x -> fun y -> print_int (x + y)) 42) 1
+*)
+(*
 let un f = f 1
 
-let _ = un (fun x -> print_int (x + 41))
+let _ = un (fun x -> print_int (x + 41)) *)
+
+
 (*
 
 let rec aux acc n =

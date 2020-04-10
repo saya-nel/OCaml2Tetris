@@ -32,9 +32,10 @@ and rw_exp cl env lenv = function
                         let sym = gensym () in
                         let vars = Freevr.collect env lenv e in
                         (match vars with 
-                        |[] ->  let d = Ast.DefFun([(sym,[name],e)]) in
+                        |[] ->  Ast.Fun (name,e) 
+                        (* let d = Ast.DefFun([(sym,[name],e)]) in
                                 cl := d :: !cl;
-                                Ast.Ident (sym)
+                                Ast.Ident (sym) *)
                         | _ ->  let d = Ast.DefVar(sym,List.fold_right (fun x e -> Ast.Fun (x,e)) (vars @ [name]) e) in
                                 cl := d :: !cl;
                                 Ast.App(Ast.Ident (sym),List.map (fun v -> Ast.Ident(v)) vars))

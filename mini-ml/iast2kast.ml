@@ -153,7 +153,8 @@ and rw_exp lenv genv = function
                               in
                               Kast.GFun(f))
               | Some i -> Kast.Variable(Kast.Global (genv.mod_name ^ "." ^ name))) (* Kast.App (Kast.GFun(genv.mod_name ^ "." ^ name),[])) *)
-            | Some i -> Kast.Variable(Kast.Free (i)))
+            | Some i -> (* Kast.Variable(Kast.Argument (0)); *)
+                        Kast.Variable(Kast.Free (i)) ) 
           | Some i -> Kast.Variable(Kast.Argument (i)))
       | Some i -> Kast.Variable(Kast.Local i))
   | Iast.Let(name,e1,e2) ->
@@ -161,30 +162,41 @@ and rw_exp lenv genv = function
                                                    attention, dans, let x = e1(x) in e2, e1 doit bien utiliser l'ancienne valeur de x *)
      Kast.Let(i,rw_exp lenv genv e1, rw_exp lenv' genv e2)
   | Iast.Fun(name,e) ->
-    (*let ww = List.map fst lenv.locals @ List.map fst lenv.arguments in
-    let free_vars = Bindings.collect ww [name] e in
-    let ke = rw_exp lenv genv @@ e in
-    Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments)*)
+  (* après lambda-lifting *)
+  (* let lenv' = {lenv with 
+               free=[name]
+            arguments=[(name,0)];
+            locals=[]} in
+
+  Array_create ([name;Ast.Constant(0)]) *)
+
+
 
      let lenv' = {lenv with 
-                 free=lenv.locals @ 
+                 free=[]; (* lenv.locals @
                   (let n = List.length lenv.locals in 
-                   List.map (fun (c,i) -> (c,i+n)) lenv.arguments); 
+                   List.map (fun (c,i) -> (c,i+n)) lenv.arguments);  *)
             arguments=[(name,0)];
             locals=[]} in
     let ke = rw_exp lenv' genv @@ e in
     Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments) 
-    
-    (* let vars = Bindings.collect ke in
-    let len = List.length vars in
-    let kmake = rw_exp lenv genv Iast.(Ident("Array.create_uninitialized")) in
-    let kset = rw_exp lenv genv Iast.(Ident("Array.set")) in
-    let i,lenv' = lenv_extend name lenv in 
-    Kast.Let(i,Kast.App(kmake,[Kast.Constant(Kast.Int len)]), 
-      let j,e = List.fold_left (fun (j,acc) x ->
-        (j+1, 
-         Kast.Seq(Kast.App(kset,[Kast.Variable(Kast.Local i);Kast.Constant(Kast.Int j);Kast.Variable(x)]),acc)))
-    (0,Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments)) vars in e) *)
+  | Iast.Closure((id,c),name,v) ->
+    let lenv_code = {lenv with 
+             free= lenv.locals @
+              (let n = List.length lenv.locals in 
+               List.map (fun (c,i) -> (c,i+n)) lenv.arguments);
+        arguments=[(name,0)];
+        locals=[]} in
+    let i,lenv_v = lenv_extend name lenv in
+    let kc = rw_exp lenv_code genv c in
+    let kv = rw_exp lenv_v genv v in
+    Kast.Closure((id,kc),kv)
+
+     (* let ke = rw_exp lenv' genv @@ e in
+     rw_exp e Array.create (env*)
+
+(* Kast.Closure(ke,Array.Array_create(name))  *)
+
   | Iast.App(e,args) -> 
      Kast.App(rw_exp lenv genv e, List.map (rw_exp lenv genv) args)
   | Iast.If(e1,e2,e3) ->

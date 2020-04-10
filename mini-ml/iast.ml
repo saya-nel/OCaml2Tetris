@@ -14,6 +14,7 @@ and exp =
   | Ident of (name)
   | Let of (name * exp * exp)
   | Fun of (name * exp)
+  | Closure of ((int * exp) * string * exp) (* [adresse,code,nom du parametre formel, env] *)
   (*  | LetFun of (name * name list * exp * exp) *)
   | App of (exp * exp list)
   | If of (exp * exp * exp)
