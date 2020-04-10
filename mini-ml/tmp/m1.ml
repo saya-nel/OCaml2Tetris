@@ -1,9 +1,35 @@
+let un f = f 1
+
+let _ = un (fun x -> print_int (x + 41))
+(*
+
+let rec aux acc n =
+  if n = 0 then acc else aux (n * acc) (n - 1)
+
+let fact n =
+  aux 1 n 
+
+let _ = fact 6
+*)
+(* let compose = (fun f -> (fun g -> f (g x)))
+
+ let f x = 5
+
+ let g x = 17 + x
+*)
+
+
+ (* let f a = Array.iter (fun x -> Pervasives.print_int x) a
+
+ let _ = f [|1;2;3;4|]*)
+
+ (*
  let f x =
   let a = 42 in
   let g y = 
     let h u = u + a in h y + 1 in
   g x 
-
+*)
 (* let f x =
   let a = 42 in
 	let g y = y in

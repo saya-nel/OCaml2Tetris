@@ -1,5 +1,7 @@
 compile
 input.ml
+zam/bin/
+nand2tetris/tools/bin
 mini-ml/generated_files/*
 
 *.annot

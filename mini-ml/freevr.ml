@@ -1,10 +1,11 @@
-open Ast
-
 type collect = string list 
 
 let create () = ref []
 
 let rec collect env lenv e =
+  match env with 
+  | [] -> [] (* pas de variable libre, car pas d'environnements locaux englobant *)
+  | _ -> 
   let coll = create () in 
   collect_exp coll env lenv e;
   !coll

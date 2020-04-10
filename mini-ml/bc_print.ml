@@ -24,10 +24,14 @@ and string_of_instr = function
   | Return ->
      indent ^ "return"
   | Function (f,n) ->
-     sptf "///////////////////////////////////////////////////////////////\n\
-           function %s %d" (prefix ^ f) n
+     sptf "// val \"%s\"\n\
+           function %s %d" f (prefix ^ f) n
   | Call (f,n) -> indent ^ sptf "call %s %d" (prefix ^ f) n
-  | Op s -> string_of_op s
+  | BinOp s -> string_of_binop s
+  | UnOp s -> string_of_unop s
+  | True ->
+    sptf "%spush constant 0\n%snot" indent indent
+  | False -> indent ^ "push constant 0"
 and string_of_segment = function
   | Anywhere ->
      string_of_segment (Temp 0)
@@ -45,7 +49,7 @@ and string_of_segment = function
      sptf "temp %d" n
   | Pointer n ->
      sptf "pointer %d" n
-and string_of_op = function
+and string_of_binop = function
   | Add ->
      indent ^ "add"
   | Sub ->
@@ -60,9 +64,17 @@ and string_of_op = function
      indent ^  "and"
   | Or ->
      indent ^  "or"
+  | Mult -> "call Math.multiply 2"
+  | Div -> "call Math.divide 2"
+  | Assign -> "call Memory.poke 2"
+and string_of_unop = function
   | Not ->
      indent ^  "not"
-  | Mult ->
+
+  | Access -> "call Memory.peek 1"
+  | Alloc -> "call Memory.alloc 1"
+
+  (*
      string_of_instrs [Call ("Math.multiply",2)]
   | Div ->
      string_of_instrs [Call ("Math.divide",2)]
@@ -71,4 +83,4 @@ and string_of_op = function
   | Assign ->
      string_of_instrs [Call ("Memory.poke",2)]
   | Alloc ->
-     string_of_instrs [Call ("Memory.alloc",1)]
+     string_of_instrs [Call ("Memory.alloc",1)] *)

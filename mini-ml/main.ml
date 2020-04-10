@@ -5,6 +5,7 @@ let stdlib = ref "stdlib"
 let type_check = ref false
 let inline_depth = ref 10
 let print_ast = ref false
+let print_past = ref false
 let globalize = ref true
 let lifting = ref true
 and folding = ref true
@@ -17,8 +18,10 @@ let destination_dir = ref "generated_files"
 
 let () =
   Arg.parse [
+      ("-printpast", Arg.Set print_past,
+       " : affiche l'AST en syntaxe Caml");
       ("-printast", Arg.Set print_ast,
-       " : affiche l'AST en syntaxe Caml (après typage et optimisation)");
+       " : affiche l'AST simplifié en syntaxe Caml (après typage et optimisation)");
       ("-typecheck", Arg.Set type_check, 
        " : type le programme est abandonne si celui-ci est mal typé");
       ("-inline", Arg.Set_int inline_depth,
@@ -66,6 +69,7 @@ let compile genv (mdl : Ast.tmodule) =
     let genv0 = Iast2kast.{genv with mod_name=Iast.(mdl.mod_name); init=[]} in
     let genv',kast = Iast2kast.rewrite genv0 mdl in
     let bc_mdl = Kast2bc.bc_of_tmodule genv' kast in
+    let bc_mdl = Bc_fold.rewrite bc_mdl in
     (genv',bc_mdl)
   with Kast2bc.Cannot_generate_bytecode msg -> 
     (Printf.printf "cannot generate bytecode.\n%s\n" msg; exit 1)
@@ -74,6 +78,7 @@ let compile genv (mdl : Ast.tmodule) =
 (* compile le programme formés des modules mdls *)
 let compile_all mdls =
   let genv = Iast2kast.empty_genv Runtime.primitives "" in
+  if !print_past then List.iter (fun mdl -> print_string @@ Past_print.sprint_module 0 mdl) mdls;
   if !type_check then (let env = ref (Iast2kast.(genv.typed_decls)) in
                        List.iter (fun mdl -> env := Typing.type_check mdl Iast2kast.(!env)) mdls);
   let mdls = List.map Past2ast.visit_tmodule mdls in

@@ -1,7 +1,7 @@
 
 type bcmodule = { 
     mod_name : Ast.name ; 
-    bc_decls : instr list ;
+    bc_body : instr list ;
     init : Ast.name list ;
   }
 and instrs = instr list          
@@ -15,7 +15,10 @@ and instr =
   | Return
   | Function of fun_name * int (* nb locales *)
   | Call of fun_name * int (* arité *)
-  | Op of vm_operator
+  | BinOp of vm_binop
+  | UnOp of vm_unop
+  | False
+  | True
 and segment =
   | Anywhere
   | Argument of int
@@ -29,8 +32,8 @@ and segment =
 and label = string
 and fun_name = string
 
-and vm_operator =
+and vm_binop =
   Add | Sub | Mult | Div | Eq
-  | Gt | Lt | And | Or | Not |
-  Access | Assign | Alloc
+  | Gt | Lt | And | Or | Assign
+and vm_unop = Not | Access | Alloc
                       

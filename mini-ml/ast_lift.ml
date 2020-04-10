@@ -26,14 +26,13 @@ and rw_decl cl = function
 and rw_fundecs cl lf = 
   List.map (fun (name,args,e) -> (name,args,rw_exp cl [] [] e)) lf
 and rw_exp cl env lenv = function
-  | Ast.Fun (name,e) -> 
-                        let env = lenv @ env in
+  | Ast.Fun (name,e) -> let env = lenv @ env in
                         let lenv = [name] in
                         let e = rw_exp cl env lenv e in
                         let sym = gensym () in
                         let vars = Freevr.collect env lenv e in
                         (match vars with 
-                        |[] -> let d = Ast.DefFun([(sym,[name],e)]) in
+                        |[] ->  let d = Ast.DefFun([(sym,[name],e)]) in
                                 cl := d :: !cl;
                                 Ast.Ident (sym)
                         | _ ->  let d = Ast.DefVar(sym,List.fold_right (fun x e -> Ast.Fun (x,e)) (vars @ [name]) e) in
