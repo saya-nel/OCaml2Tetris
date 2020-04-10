@@ -2,18 +2,23 @@
 
 open Bc
 
+let bc_int n = let k = (n + 0xFFFF) mod 0xFFFF in
+   if k < 0x8000 (* if positif *)
+   then [Push (Constant(k))]
+   else [Push (Constant(k land 0x7FFF)); BinOp(Sub)]
+
 let rec rewrite bcm = 
   {bcm with bc_body=rw (bcm.bc_body)}
 and rw = function
 | [] -> []
 | Push(Constant n) :: Push(Constant m) :: BinOp(Add) :: bc -> 
-  rw @@ Push (Constant ((n + m) mod 0x8FFF)) :: bc
+  rw @@ (bc_int ((n + m) mod 0xFFFF)) @ bc
 | Push(Constant n) :: Push(Constant m) :: BinOp(Sub) :: bc -> 
-  rw @@ Push (Constant ((n - m) mod 0x8FFF)) :: bc
+  rw @@ (bc_int ((n - m) mod 0xFFFF)) @ bc
 | Push(Constant n) :: Push(Constant m) :: BinOp(Mult) :: bc -> 
-  rw @@ Push (Constant ((n * m) mod 0x8FFF)) :: bc
+  rw @@ (bc_int ((n * m) mod 0xFFFF)) @ bc
 | Push(Constant n) :: Push(Constant m) :: BinOp(Div) :: bc -> 
-  rw @@ Push (Constant ((n / m) mod 0x8FFF)) :: bc
+  rw @@ (bc_int ((n / m) mod 0xFFFF)) @ bc
 | Push(Constant n) :: Push(Constant m) :: BinOp(Eq) :: bc -> 
   rw @@ (if n = m then True else False) :: bc
 | Push(Constant n) :: Push(Constant m) :: BinOp(Gt) :: bc -> 

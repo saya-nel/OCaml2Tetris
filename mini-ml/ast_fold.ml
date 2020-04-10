@@ -131,10 +131,10 @@ and fold_exp = function
      else Ast.Constant(Ast.Unit)
   | e -> e
 and eval_binop = function
-  | (Ast.Add,Ast.Constant(Ast.Int(n)),Ast.Constant(Ast.Int(m))) -> Ast.Constant(Ast.Int(n+m))
-  | (Ast.Minus,Ast.Constant(Ast.Int(n)),Ast.Constant(Ast.Int(m))) -> Ast.Constant(Ast.Int(n-m))
-  | (Ast.Mult,Ast.Constant(Ast.Int(n)),Ast.Constant(Ast.Int(m))) -> Ast.Constant(Ast.Int(n*m))
-  | (Ast.Div,Ast.Constant(Ast.Int(n)),Ast.Constant(Ast.Int(m))) -> Ast.Constant(Ast.Int(n/m))
+  | (Ast.Add,Ast.Constant(Ast.Int(n)),Ast.Constant(Ast.Int(m))) -> Ast.Constant(Ast.Int((n+m) land 0xFFFF)
+  | (Ast.Minus,Ast.Constant(Ast.Int(n)),Ast.Constant(Ast.Int(m))) -> Ast.Constant(Ast.Int(n-m) land 0xFFFF)
+  | (Ast.Mult,Ast.Constant(Ast.Int(n)),Ast.Constant(Ast.Int(m))) -> Ast.Constant(Ast.Int(n*m) land 0xFFFF)
+  | (Ast.Div,Ast.Constant(Ast.Int(n)),Ast.Constant(Ast.Int(m))) -> Ast.Constant(Ast.Int(n/m) land 0xFFFF)
   | (Ast.Lt,Ast.Constant(Ast.Int(n)),Ast.Constant(Ast.Int(m))) -> Ast.Constant(Ast.Bool(n < m))
   | (Ast.Le,Ast.Constant(Ast.Int(n)),Ast.Constant(Ast.Int(m))) -> Ast.Constant(Ast.Bool(n <= m))
   | (Ast.Neq,Ast.Constant(c1),Ast.Constant(c2)) -> Ast.Constant(Ast.Bool(c1 <> c2))
