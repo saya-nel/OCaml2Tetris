@@ -24,18 +24,16 @@ and sprint_module lvl {mod_name;decls} =
     (indent_string lvl) 
 and sprint_decl lvl {decl_desc} = match decl_desc with
   | Type (name,ty) ->
-     sptf "%stype %s = "
-       (indent_string lvl)
-       (name ^ (sprint_ty lvl ty))
+     let sty = match ty with 
+               | Exp_ty t -> (sprint_ty lvl t)
+               | Sum (l) -> mapcat " | " (function (c,[]) -> c | (c,args) ->
+               c ^ " of " ^ (mapcat " * " (sprint_ty 0) args)) l in
+     sptf "%stype %s = %s" (indent_string lvl) name sty
   | DefVar (var,e) ->
      let w = sptf "let %s = " (sprint_var lvl var) in
      let z = get_indent_level w lvl in
      sptf "%s%s" w
        (sprint_exp z e)
-  | Exp (e) ->
-     sptf "%slet _ = %s"
-       (indent_string lvl)
-       (sprint_exp lvl e)
   | DefFun (dfs) ->
      sprint_fun lvl dfs
   | DefFunRec (dfs) ->
@@ -210,7 +208,7 @@ and sprint_ty lvl ty =
      (match v.def with 
       | None -> Printf.sprintf "'a%d" v.id
       | Some ty -> sprint_ty lvl ty)
-  | Tconstr (name,args) -> failwith "print_ast : todo"
+  | Tconstr (name,args) -> sptf "((%s) %s)" (mapcat " " (sprint_ty lvl) args) name (* à revoir *)
 and sprint_var lvl (p,opt) = 
   match opt with 
   | None -> p

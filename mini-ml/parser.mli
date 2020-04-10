@@ -27,6 +27,7 @@ type token =
   | ATAT
   | FUN
   | SHARP
+  | OF
   | IDENT of (string)
   | IDENT_CAPITALIZE of (string)
   | VM_IDENT of (string)
@@ -64,7 +65,6 @@ type token =
   | RBRACKET
   | SEMICOL
   | COMMA
-  | OF
   | ARRAY_OPEN
   | ARRAY_CLOSE
   | ARRAY_ACCESS_OPEN

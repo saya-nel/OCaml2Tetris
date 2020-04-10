@@ -1,10 +1,16 @@
+
+type t = A | B of int | C of (int * t)
+
+let x = B 4
+
+(*
 let g = (fun x -> print_int x)
 let h = (fun x -> print_int (x*2))
 
 let f x =
   (if x < 0 then g else h) 42
 
-let _ = f (17)
+let _ = f (17) *)
 
 (* let _ =
   let a = 42 in

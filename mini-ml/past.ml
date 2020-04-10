@@ -1,20 +1,21 @@
 type loc = Parseutils.pos
 
 type prog = tmodule list
-and tmodule = { mod_name : name ;
+and tmodule = { mod_name : name ; 
                 decls : decl list }
 and name = string
 and var = (name * Types.typ option)
 
 and decl = { decl_desc: declaration_desc; 
              decl_loc : loc
-             }
+            }
 and declaration_desc =
-  | Exp of (exp)
   | DefVar of (var * exp)
   | DefFun of    ((name * var list * Types.typ option * exp) list)
   | DefFunRec of ((name * var list * Types.typ option * exp) list)
-  | Type of (name * Types.typ)
+  | Type of (name * ty)
+and ty = Exp_ty of Types.typ | Sum of constr list
+and constr = name * Types.typ list
 and exp = { exp_desc: expression_desc; 
             exp_loc : loc }
 and expression_desc =
@@ -23,7 +24,7 @@ and expression_desc =
   | Ident of (name)
   | Let of (var * exp * exp)
   | Fun of (var * exp)
-  (*  | LetFun of (name * name list * exp * exp) *)
+  (* | LetFun of (name * name list * exp * exp) *)
   | App of (exp * exp list)
   | If of (exp * exp * exp)
   | Match of (exp * match_case list)

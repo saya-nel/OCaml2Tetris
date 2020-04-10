@@ -65,10 +65,10 @@ let rec rewrite mdl =
   Ast.{mod_name;decls}
 
 and fold_decl = function
-  | Ast.Exp(e) -> Ast.Exp(fold_exp e)
   | Ast.DefVar(v,e) -> Ast.DefVar(v,fold_exp e)
   | Ast.DefFun(l) -> Ast.DefFun (fold_fundecs l)
   | Ast.DefFunRec(l) -> Ast.DefFunRec (fold_fundecs l)
+  | d -> d 
 and fold_fundecs l = 
   List.map (fun (name,args,e) -> (name,args,fold_exp e)) l 
 and fold_exp = function

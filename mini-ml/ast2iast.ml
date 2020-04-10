@@ -9,10 +9,10 @@ let rec rewrite Ast.{mod_name;decls} =
   Iast.{mod_name;decls}
 
 and rw_decl = function
-  | Ast.Exp(e) -> Iast.Exp(rw_exp [] e)
   | Ast.DefVar(v,e) -> Iast.DefVar(v,rw_exp [] e)
   | Ast.DefFun(l) -> Iast.DefFun (rw_fundecs l)
   | Ast.DefFunRec(l) -> Iast.DefFunRec (rw_fundecs l)
+  | Ast.Type(s,ty) -> Iast.Type(s,ty)
 and rw_fundecs l = 
   List.map (fun (name,args,e) -> (name,args,(rw_exp []) e)) l 
 and rw_exp env = function
@@ -54,7 +54,7 @@ and rw_constant = function
   | Ast.Unit -> Iast.Unit
   | Ast.Int n -> Iast.Int n
   | Ast.Char c -> Iast.Char (c)
-  | Ast.Constr name -> failwith "todo"
+  | Ast.Constr name -> Iast.Constr name
   | Ast.Bool b -> Iast.Bool b 
   | Ast.Array_empty -> Iast.Array_empty
   | Ast.List_empty -> Iast.List_empty

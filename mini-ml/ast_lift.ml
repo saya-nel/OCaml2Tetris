@@ -19,10 +19,10 @@ let rec rewrite mdl =
   Ast.{mod_name;decls}
 
 and rw_decl cl = function
-  | Ast.Exp(e) -> Ast.Exp(rw_exp cl [] [] e)
   | Ast.DefVar(v,e) -> Ast.DefVar(v,rw_exp cl [] [] e)
   | Ast.DefFun(l) -> Ast.DefFun (rw_fundecs cl l)
   | Ast.DefFunRec(l) -> Ast.DefFunRec (rw_fundecs cl l)
+  | d -> d 
 and rw_fundecs cl lf = 
   List.map (fun (name,args,e) -> (name,args,rw_exp cl [] [] e)) lf
 and rw_exp cl env lenv = function

@@ -1,18 +1,16 @@
 let rec visit_tmodule Past.{mod_name;decls} = 
   let decls = let rec aux acc = function (* map filter *)
               | [] -> List.rev acc  
-              | d::t -> (match visit_decl d with
-                         | Some d -> aux (d::acc) t
-                         | None -> aux acc t) in aux [] decls in
+              | d::t -> let d' = visit_decl d in aux (d'::acc) t 
+                        in aux [] decls in
   Ast.{mod_name;decls}
 
 and visit_decl Past.{decl_desc;decl_loc} = 
 match decl_desc with
-  | Past.Exp(e) -> Some (Ast.Exp(visit_exp e))
-  | Past.DefVar((name,_),e) -> Some (Ast.DefVar(name,visit_exp e))
-  | Past.DefFun(l) -> Some (Ast.DefFun ((visit_fundecs l)))
-  | Past.DefFunRec(l) -> Some (Ast.DefFunRec ((visit_fundecs l)))
-  | Past.Type _ -> None
+  | Past.DefVar((name,_),e) -> Ast.DefVar(name,visit_exp e)
+  | Past.DefFun(l) -> Ast.DefFun ((visit_fundecs l))
+  | Past.DefFunRec(l) -> Ast.DefFunRec ((visit_fundecs l))
+  | Past.Type (s,ty) -> Ast.Type (s,ty)
 and visit_fundecs l = 
   List.map (fun (name,args,_,e) -> (name,List.map fst args,visit_exp e)) l 
 and visit_exp Past.{exp_desc;exp_loc} =

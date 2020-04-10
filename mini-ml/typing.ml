@@ -24,9 +24,6 @@ let rec w env decs = function
      w env' (decs @ xts) ds 
 and w_dec env {decl_desc;decl_loc} = 
 match decl_desc with
-| Exp (e) -> 
-  let t = w_exp env e in 
-  ([("_",t)])
 | DefVar ((x,tyopt),e) -> 
   let t = w_exp env e in
   unify_opt t tyopt decl_loc;
@@ -43,9 +40,12 @@ match decl_desc with
                                let t = w_defun env f decl_loc in 
                                add true x t env) env funs in
   List.map (fun (x,_,_,_) -> (x,find x decl_loc env')) funs
-| Type (name,ty) -> 
-  (Types.alias := (name,ty) :: !Types.alias);
-  [] (* failwith "todo" *)
+| Type (name,Exp_ty ty) -> 
+  (Types.alias := (name,ty) :: !Types.alias); (* A REVOIR, c'EST OK *)
+  [] 
+  | Type (name,Sum cs) -> 
+    List.map (fun (c,tys) -> 
+                (c,List.fold_right (fun ty tn -> Tarrow(ty,tn)) tys (Tident name))) cs
 and w_defun env (f,args,tyropt,e) decl_loc = 
   let env' = List.fold_left 
                (fun env (xi,tyopt) -> 
@@ -64,7 +64,7 @@ match exp_desc with
     let t1 = w_exp env e in
     unify ty t1;
     ty
-  | Constant c -> (w_constant c)
+  | Constant c -> (w_constant env exp_loc c)
   | Ident x -> 
     find x exp_loc env
   | Let ((x,tyopt), e1, e2) ->
@@ -107,7 +107,7 @@ match exp_desc with
   | Match (e1,ms) ->
       let t1 = w_exp env e1 in
       let aux t = function 
-      | Case(c,e) -> unify t (w_constant c); w_exp env e
+      | Case(c,e) -> unify t (w_constant env exp_loc c); w_exp env e
       | Otherwise e -> w_exp env e in
       (match ms with 
        | [] -> assert false
@@ -181,7 +181,7 @@ match exp_desc with
      Tunit
    | Magic e -> let _ = w_exp env e in Tvar (V.create ())
 
-and w_constant = function
+and w_constant env exp_loc = function
 | Unit -> Tunit
 | Bool _ -> Tbool
 | Int _ -> Tint 
@@ -189,7 +189,7 @@ and w_constant = function
 | String _ -> Tstring
 | List_empty -> let v = Tvar (V.create ()) in Tlist v
 | Array_empty -> let v = Tvar (V.create ()) in Tarray v
-| Constr _ -> failwith "todo" 
+| Constr s -> find s exp_loc env
 
 and w_binop = function
 | Add -> Tarrow(Tint,Tarrow(Tint,Tint))

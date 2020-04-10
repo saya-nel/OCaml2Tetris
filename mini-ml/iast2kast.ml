@@ -39,9 +39,9 @@ let env_extends_constructors genv cstrs =
   let r = ref genv.constrs in
   List.iteri
     (fun i x ->
-      r := ((genv.mod_name ^ "." ^ x),i) :: !r)
+      r := ((genv.mod_name ^ "." ^ x),i) :: !r)                      (* genv.mod_name ^ "." ^  *)
     cstrs;
-  {genv with constrs=(!r)}
+  { genv with constrs=(!r) @ genv.constrs }
 
 type lenv = {
     arguments : (Iast.name * int) list ;
@@ -97,10 +97,10 @@ and rw_decls mod_name genv ds =
            (genv,kds @ acc)) (genv,[]) ds in
   (genv,List.rev kds)
 and rw_decl mod_name genv = function
-  | Iast.Exp(e) ->
-     rw_decl mod_name genv @@
-       let name = gensym ~prefix:"voidExpr" in
-       Iast.DefVar (name,e)
+  | Iast.DefVar ("_",e) -> 
+    rw_decl mod_name genv @@
+      let name = gensym ~prefix:"voidExpr" in
+      Iast.DefVar (name,e)
   | Iast.DefVar (name,e) ->
      let name_init = "__init__" ^ name in
      let i,genv' = genv_extend genv name in
@@ -112,6 +112,10 @@ and rw_decl mod_name genv = function
      (genv2,(d1 @ d2))
   | Iast.DefFun l -> rw_defun mod_name genv l
   | Iast.DefFunRec l -> rw_defun mod_name genv ~recflag:true l
+  | Iast.Type(s,Past.Sum l) ->
+    let genv' = env_extends_constructors genv (List.map fst l) in
+    (genv',[])
+  | _ -> (genv,[])
 and rw_defun mod_name genv ?(recflag=false) dfs =
   let gnames = List.map (fun (name,args,e) -> mod_name ^ "." ^ name)  dfs in
   let genv' = {genv with global_funs = gnames @ genv.global_funs} in
@@ -123,7 +127,7 @@ and rw_defun mod_name genv ?(recflag=false) dfs =
                              (if recflag
                               then genv'
                               else genv) e
-                  in (* genv si non recursif *) 
+                  in (* genv si non recursif *)
                   let arity = List.length args in
                   [Kast.DefFun (name,arity,ke)]) dfs) in
   (genv',by)
@@ -197,7 +201,14 @@ and rw_exp lenv genv = function
 
 (* Kast.Closure(ke,Array.Array_create(name))  *)
 
-  | Iast.App(e,args) -> 
+
+  | Iast.App(Iast.Constant(Iast.Constr name),args) ->
+    let n = match List.assoc_opt (genv.mod_name ^ "." ^ name) genv.constrs with 
+            | None -> Printf.printf "###%s" name;List.iter (fun (c,_) -> Printf.printf "-->%s\n" c) genv.constrs; (**** ****************** *)
+                      failwith "iast2kast (constructeurs)" 
+            | Some n -> n in
+    rw_exp lenv genv @@ Iast.Array_create(Iast.Constant(Iast.Int(n))::args)
+  | Iast.App(e,args) ->
      Kast.App(rw_exp lenv genv e, List.map (rw_exp lenv genv) args)
   | Iast.If(e1,e2,e3) ->
      Kast.If(rw_exp lenv genv e1,
@@ -329,10 +340,12 @@ and rw_constant lenv genv c = match c with
      Kast.Int n
   | Iast.Char c ->
      Kast.Int (int_of_char c)
-  | Iast.Constr name ->
-     Kast.Int (match List.assoc_opt (genv.mod_name ^ "." ^ name) genv.constrs with 
-               | None -> (List.assoc name genv.constrs)
-               | Some c -> c)
+  | Iast.Constr name -> assert false (* TODO ?? *)
+  (* let n = Kast.Int (match List.assoc_opt (genv.mod_name ^ "." ^ name) genv.constrs with 
+                    | None -> (match List.assoc_opt name genv.constrs with Some x -> x | None -> failwith "iast2kast : Iast.Constr")
+                    | Some c -> c) *)
+     
+     (*  *)
   | Iast.Bool b ->
      Kast.Bool b 
   | Iast.Array_empty ->

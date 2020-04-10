@@ -41,11 +41,11 @@ and visit_decls ?(depth_max=10) env acc = function
                  List.fold_left (fun env (name,args,e) -> 
                      if depth e < depth_max then (name,(args,e))::env else env) env l in
      visit_decls env (Ast.DefFun(l)::acc) ds
-  | Ast.Exp(e)::ds -> visit_decls env (Ast.Exp(visit_exp env e) :: acc) ds
   | Ast.DefVar(v,e)::ds -> visit_decls env (Ast.DefVar(v,visit_exp env e) :: acc) ds
   | Ast.DefFunRec(l)::ds -> 
      let l = List.map (fun (name,args,e) -> (name,args,visit_exp env e)) l in
      visit_decls env (Ast.DefFunRec(l) :: acc) ds
+  | d::ds ->  visit_decls env (d :: acc) ds
 and visit_exp env e = 
   match e with
   | Ast.Ident name -> e

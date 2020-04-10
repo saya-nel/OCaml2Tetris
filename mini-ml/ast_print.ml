@@ -28,14 +28,11 @@ and sprint_decl lvl = function
      let z = get_indent_level w lvl in
      sptf "%s%s" w
        (sprint_exp z e)
-  | Exp (e) ->
-     sptf "%slet _ = %s"
-       (indent_string lvl)
-       (sprint_exp lvl e)
   | DefFun (dfs) ->
      sprint_fun lvl dfs
   | DefFunRec (dfs) ->
      sprint_fun ~recflag:true lvl dfs
+  | Type (p,ty) -> "..." (* TODO *)
 and sprint_fun ?(recflag=false) lvl l =
   (indent_string lvl) ^
     (if recflag then "let rec" else "let") ^
