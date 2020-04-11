@@ -1,18 +1,40 @@
-type t = A
+type t = Q | T of int * int * int 
+
+let print x = 
+  match x with 
+  | Q -> print_int 42
+  | T (a,b,c) -> (print_int (a+b+c))
+
+let x = T 10
+let y = x 6
+let z = y 1
+
+let _ = print z
+
+
+(* type t = A
        | B of int
        | C of (int * t * int)
 
 let _ = B 4
 let c = C 5
+*)
 
+(* 
 type option = None | Some of int
 
+let print_opt x = 
+  match x with 
+  | None -> print_string "(none)"
+  | Some(n) -> print_int n
 
-let f x = match x with 
-          | None -> print_string "none !"
-          | Some(n) -> print_int n
+let a = (fun x -> Some x)
 
-let _ = f None
+let _ = print_opt (a 6)
+
+*)
+
+
 
 (*
 type t = A
@@ -36,11 +58,11 @@ let _ = f (17)
 *)
 (*
  let _ =
-   let a = 42 in
-   (fun x -> print_int (a)) 10
-
-
+   let a = 32 in
+   (fun x -> print_int (a+x)) 10
 *)
+
+
 (*
 let _ = 
   ((fun x -> fun y -> print_int (x + y)) 42) 1

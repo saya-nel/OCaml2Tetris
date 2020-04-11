@@ -52,12 +52,12 @@ function ML_Apply.closure10001 1
     pop local 0
     push local 0
     push constant 0
-    push constant 2
+    push constant 1
     call ML_Array.set 3
     pop temp 0
     push local 0
     push constant 1
-    push constant 5
+    push constant 10
     call ML_Array.set 3
     pop temp 0
     push local 0

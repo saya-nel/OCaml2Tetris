@@ -305,6 +305,7 @@ match_body_aux:
 match_case:
 | WILDCARD RIGHT_ARROW seq  { Otherwise($3) }
 | constant cst_parameters RIGHT_ARROW seq  { Case($1,$2,$4) }
+| error { error_exit (pos()) "match clause malformée." }
 ;
 
 cst_parameters:
@@ -312,8 +313,8 @@ cst_parameters:
 | LPAREN cst_parameters_aux RPAREN { $2 }
 ;
 cst_parameters_aux:
-| argument_aux                      { [$1] }
-| argument_aux COMMA cst_parameters {$1::$3}
+| argument_aux                          { [$1] }
+| argument_aux COMMA cst_parameters_aux {$1::$3}
 ;
 
 array_content:

@@ -50,13 +50,19 @@ and visit_match ec ms =
   (* possiblité d'éviter un let dans le cas (match x with ...) où x est un ident *)
   let name = gensym ~prefix:"match" in  (* !!!!!!!! *)
   Ast.Let (name,visit_exp ec,
-  Ast.Match (Ast.Ident(name),
-  List.map (function Past.Case(c,args,e) -> 
-    let e = visit_exp e in
-    let e' = List.fold_right2 (fun arg v e -> Ast.Let (arg,v,e)) 
-    args (List.mapi (fun i _ -> Ast.Array_access(Ast.Ident(name),Ast.Constant(Ast.Int(i)))) args) e in
-    (* TODO *)
-    Ast.Case(visit_cst c,e') | Past.Otherwise e -> Ast.Otherwise(visit_exp e)) ms))
+  Ast.Match (Ast.If(Ast.BinOp(Ast.Le,
+                              Ast.Ident(name),
+                              Ast.Constant(Ast.Int(256))),
+                    Ast.Ident(name),
+                    Ast.Array_access(Ast.Ident(name),Ast.Constant(Ast.Int(0)))),
+  List.map (function 
+            | Past.Case(c,[],e) -> Ast.Case(visit_cst c,visit_exp e)
+            | Past.Case(c,args,e) -> 
+            let e = visit_exp e in
+            let e' = List.fold_right2 (fun arg v e -> Ast.Let (arg,v,e)) 
+            args (List.mapi (fun i _ -> Ast.Array_access(Ast.Ident(name),Ast.Constant(Ast.Int(i+1)))) args) e in
+            (* TODO *)
+            Ast.Case(visit_cst c,e') | Past.Otherwise e -> Ast.Otherwise(visit_exp e)) ms))
 and visit_cst = function
 | Past.Unit -> Ast.Unit
 | Past.Bool b -> Ast.Bool b
