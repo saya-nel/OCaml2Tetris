@@ -4,15 +4,16 @@ let gen_closure_id =
   (fun () -> incr c; !c)
 
 
-let rec rewrite Iast.{mod_name;decls} = 
+let rec rewrite m =
+    match m with Iast.Module(mod_name,decls) ->
   let decls = List.map rw_decl decls in
-  Iast.{mod_name;decls}
+  Iast.Module(mod_name,decls)
 
 and rw_decl = function
   | Iast.DefVar(v,e) -> Iast.DefVar(v,rw_exp [] e)
   | Iast.DefFun(l) -> Iast.DefFun (rw_fundecs l)
   | Iast.DefFunRec(l) -> Iast.DefFunRec (rw_fundecs l)
-  | Iast.Type(s,ty) -> Iast.Type(s,ty)
+  | Iast.Type(s,lvs,ty) -> Iast.Type(s,lvs,ty)
 and rw_fundecs l = 
   List.map (fun (name,args,e) -> (name,args,(rw_exp []) e)) l 
 and rw_exp env = function
@@ -49,3 +50,4 @@ and rw_exp env = function
                  List.map (function Iast.Case(c,e) -> Iast.Case(c,rw_exp env e)
                                   | Iast.Otherwise e -> Iast.Otherwise(rw_exp env e)) ms) 
   | Iast.Assert(e,pos) -> Iast.Constant(Iast.Unit)
+  | e -> e (* supposer ne pas contenir de valeur fonctionnelle à transformer. (à vérifier) *)

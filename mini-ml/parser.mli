@@ -36,7 +36,7 @@ type token =
   | CHAR of (char)
   | INT of (int)
   | BOOL of (bool)
-  | TVAR of (char)
+  | TVAR of (string)
   | PLUS
   | MINUS
   | TIMES

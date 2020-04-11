@@ -2,12 +2,12 @@
 
 ## structure du compilateur :
 ```
-{} -> (lexer) -> (parser) -> [PAST].
+{input} -> (lexer) -> (parser) -> [PAST].
 [PAST] -> (past_print) -> {OCaml}.
 [PAST] -> (typing).                     (typage à la ML)
 [PAST] -> (past2ast) -> [AST]. 
 [AST] -> (ast_lift) -> [AST].           (lambda lifting)
-[AST] -> (ast_inline) -> [AST].         (intégration d'appels de fonction)
+[AST] -> (ast_inline) -> [AST].         (intégration d'appels de fonctions)
 [AST] -> (ast_fold) ->  [AST].          (propagation de constantes)
 [AST] -> (ast_globz) -> [AST].          (globalisation des valeurs allouées immutables)
 [AST] -> (ast_print) -> {OCaml}.

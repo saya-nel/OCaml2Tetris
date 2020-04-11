@@ -59,10 +59,11 @@ let replace v x e =
 
 
 (* applique la propagation des constantes dans le modules *)
-let rec rewrite mdl = 
-  let Ast.{mod_name;decls} = mdl in
-  let decls = List.map fold_decl decls in
-  Ast.{mod_name;decls}
+let rec rewrite m =
+    match m with Ast.Module(mod_name,decls) ->
+    let decls = List.map fold_decl decls in
+    Ast.Module(mod_name,decls)
+
 
 and fold_decl = function
   | Ast.DefVar(v,e) -> Ast.DefVar(v,fold_exp e)

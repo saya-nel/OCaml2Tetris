@@ -1,0 +1,109 @@
+// val "Pervasives.exit"
+function ML_Pervasives.exit 0
+    push argument 0
+    call ML_Internal.exit 1
+    return
+// val "Pervasives.ref"
+function ML_Pervasives.ref 0
+    push constant 1
+    push argument 0
+    call ML_Internal.array_make 2
+    return
+// val "Pervasives.ref_contents"
+function ML_Pervasives.ref_contents 0
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    return
+// val "Pervasives.ref_set_contents"
+function ML_Pervasives.ref_set_contents 0
+    push argument 0
+    push constant 0
+    push argument 1
+    call ML_Internal.array_set 3
+    return
+// val "Pervasives.incr"
+function ML_Pervasives.incr 1
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 1
+    add
+    pop local 0
+    push argument 0
+    push constant 0
+    push local 0
+    call ML_Internal.array_set 3
+    return
+// val "Pervasives.decr"
+function ML_Pervasives.decr 1
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 1
+    add
+    pop local 0
+    push argument 0
+    push constant 0
+    push local 0
+    call ML_Internal.array_set 3
+    return
+// val "Pervasives.fst"
+function ML_Pervasives.fst 0
+    push argument 0
+    call ML_Internal.left 1
+    return
+// val "Pervasives.snd"
+function ML_Pervasives.snd 0
+    push argument 0
+    call ML_Internal.right 1
+    return
+// val "Pervasives.print_int"
+function ML_Pervasives.print_int 0
+    push argument 0
+    call ML_Internal.print_int 1
+    return
+// val "Pervasives.print_char"
+function ML_Pervasives.print_char 0
+    push argument 0
+    call ML_Internal.print_char 1
+    return
+// val "Pervasives.print_newline"
+function ML_Pervasives.print_newline 0
+    push argument 0
+    call ML_Internal.print_newline 1
+    return
+// val "Pervasives.print_string"
+function ML_Pervasives.print_string 0
+    push argument 0
+    call ML_Internal.print_char_array 1
+    return
+// val "Pervasives.failwith"
+function ML_Pervasives.failwith 0
+    push argument 0
+    call ML_Internal.print_char_array 1
+    pop temp 0
+    push constant 0
+    call ML_Internal.print_newline 1
+    pop temp 0
+    push constant 1
+    call ML_Internal.exit 1
+    return
+// val "Pervasives.abs"
+function ML_Pervasives.abs 0
+    push argument 0
+    push constant 0
+    lt
+    not
+    not
+    if-goto IfFalse1
+    push argument 0
+    goto IfEnd2
+label IfFalse1
+    push argument 0
+    pop temp 0
+    push constant 0
+    push temp 0
+    sub
+label IfEnd2
+    return

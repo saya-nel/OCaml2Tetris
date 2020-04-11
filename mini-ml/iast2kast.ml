@@ -87,9 +87,10 @@ let lenv_extend_tail x lenv = (* réutilse les variables de même nom déjà dé
     (i2,{lenv with locals=locals'})
 
 
-(* convertit l'IAST du module mdl en KAST *)
-let rec rewrite genv mdl =
-  let Iast.{mod_name;decls} = mdl in
+
+(* convertit l'IAST du module m en KAST *)
+let rec rewrite genv m =
+  match m with Iast.Module(mod_name,decls) ->
   let (genv',kds) = rw_decls mod_name genv decls in
   (genv',Kast.{mod_name;decls=kds;init=(List.map fst genv'.globals)})
 and rw_decls mod_name genv ds = 
@@ -118,7 +119,7 @@ and rw_decl mod_name genv = function
      (genv2,(d1 @ d2))
   | Iast.DefFun l -> rw_defun mod_name genv l
   | Iast.DefFunRec l -> rw_defun mod_name genv ~recflag:true l
-  | Iast.Type(s,Past.Sum l) ->
+  | Iast.Type(s,_,Past.Sum l) ->
     let genv' = env_extends_constructors genv l in
     (genv',[])
   | _ -> (genv,[])

@@ -16,7 +16,9 @@ let get_indent_level s lvl =
 
 let rec sprint_prog ms =
   List.map (sprint_module 0) ms
-and sprint_module lvl {mod_name;decls} =
+and sprint_module lvl m = 
+  match m with 
+  Module(mod_name,decls) ->
   sptf "%smodule %s = struct\n%s ;;\n%send\n\n"
     (indent_string lvl)
     mod_name 
@@ -32,7 +34,7 @@ and sprint_decl lvl = function
      sprint_fun lvl dfs
   | DefFunRec (dfs) ->
      sprint_fun ~recflag:true lvl dfs
-  | Type (p,ty) -> "..." (* TODO *)
+  | Type (p,lvs,ty) -> "..." (* TODO *)
 and sprint_fun ?(recflag=false) lvl l =
   (indent_string lvl) ^
     (if recflag then "let rec" else "let") ^

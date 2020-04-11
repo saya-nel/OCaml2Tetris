@@ -1,18 +1,27 @@
 
-
+type t = int and v = A
+(*
 type t = Q | T of (int * int * int) 
 
 let print x = 
-  match x with 
+  match x with
   | Q -> print_int 42
-  | T (a,b,c) -> (print_int (a+b+c))
+  | T (a,b,c) -> print_int (a+b+c) ;;
 
 let x = T 10
 let y = x 6
 let z = y 1
+let g = (1,2)
+let u = T (10,6) ;;
+*)
+(* type 'a list = Nil | Cons of ('a * 'a list)
 
-let _ = print (T 10 6 1)
+let x = Cons (42,Nil)
+*)
 
+
+
+(*
 
 
 type liste = Nil | Cons of (int * liste)
@@ -26,7 +35,7 @@ let rec iter f l =
 
 let _ = iter (fun x -> print_int x) l0 
 
-
+*)
 
 
 (* type t = A

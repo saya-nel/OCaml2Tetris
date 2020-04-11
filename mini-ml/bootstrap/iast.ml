@@ -1,20 +1,19 @@
-
-type ty = Past.ty
-type pos = Parseutils.pos
+type name = string
 
 type prog = tmodule list
 and tmodule = Module of (name * decl list)
-and name = string
 and decl = 
   | DefVar of (name * exp)
   | DefFun of    ((name * name list * exp) list)
   | DefFunRec of ((name * name list * exp) list)
-  | Type of (name * name list * ty)
+  | Type of (Past.name * Past.name list)
 and exp = 
   | Constant of (constant)
   | Ident of (name)
   | Let of (name * exp * exp)
   | Fun of (name * exp)
+  | Closure of ((int * exp) * string * exp) (* [adresse,code,nom du parametre formel, env] *)
+  (*  | LetFun of (name * name list * exp * exp) *)
   | App of (exp * exp list)
   | If of (exp * exp * exp)
   | Match of (exp * match_case list)
@@ -31,7 +30,8 @@ and exp =
   | Seq of (exp * exp)
   | While of (exp * exp)
   | For of (name * exp * exp * exp)
-  | Assert of (exp * pos)
+  | Assert of (exp * string)
+  | Ext of ext
 and constant = 
   | Unit
   | Bool of bool
@@ -43,7 +43,13 @@ and constant =
   | Array_empty
 and match_case =
   | Case of (constant * exp)
-  | Otherwise of (exp) 
+  | Otherwise of (exp)
+and ext = 
+  | Array_alloc of (exp) 
+  | SetGlobal of (exp * int)
+  | ReadGlobal of (int)
+  | Goto of (string * exp list)
+  | Label of (string * exp)
 
 and binop =
   | Add

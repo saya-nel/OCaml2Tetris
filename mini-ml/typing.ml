@@ -40,10 +40,10 @@ match decl_desc with
                                let t = w_defun env f decl_loc in 
                                add true x t env) env funs in
   List.map (fun (x,_,_,_) -> (x,find x decl_loc env')) funs
-| Type (name,Exp_ty ty) -> 
+| Type (name,_,Exp_ty ty) -> 
   (Types.alias := (name,ty) :: !Types.alias); (* A REVOIR, c'EST OK *)
   []
-  | Type (name,Sum cs) -> 
+  | Type (name,_,Sum cs) -> 
     (Types.alias := (name,Trec name) :: !Types.alias);   (* ATTENTION ERREUR, type compatible avec tout *)
     List.map (fun (c,tys) -> 
                 (c,List.fold_right (fun ty tn -> Tarrow(ty,tn)) tys (* (Tident name) *)

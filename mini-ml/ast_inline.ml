@@ -28,10 +28,11 @@ and depth_list l =
   List.fold_left (fun acc e -> max acc (depth e)) 0 l
 
 
-let rec visit_tmodule ?(depth_max=5) (Ast.{mod_name;decls} as m) =
+let rec visit_tmodule ?(depth_max=5) m =
   if depth_max <= 0 then m else 
+    match m with Ast.Module(mod_name,decls) ->
     let _,decls = visit_decls ~depth_max [] [] decls in
-    Ast.{mod_name;decls}
+    Ast.Module(mod_name,decls)
 
 and visit_decls ?(depth_max=10) env acc = function
   | [] -> (env,List.rev acc)

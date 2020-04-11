@@ -1,14 +1,13 @@
 
 type prog = tmodule list
-and tmodule = { mod_name : name ;
-                decls : decl list }
+and tmodule = Module of (name * decl list)
 and name = string
 
 and decl = 
   | DefVar of (name * exp)
   | DefFun of    ((name * name list * exp) list)
   | DefFunRec of ((name * name list * exp) list)
-  | Type of (Past.name * Past.ty)
+  | Type of (Past.name * Past.name list * Past.ty)
 and exp = 
   | Constant of (constant)
   | Ident of (name)

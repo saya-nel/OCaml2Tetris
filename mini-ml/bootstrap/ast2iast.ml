@@ -1,23 +1,10 @@
-
-
-
 let gen_closure_id = 
   let c = ref 10000 in 
-  (fun () -> incr c; !c)
+  (fun _ -> incr c; !c)
 
-let rec rewrite m =
-    match m with Ast.Module(mod_name,decls) ->
-  let decls = List.map rw_decl decls in
-  Iast.Module(mod_name,decls)
-
-and rw_decl = function
-  | Ast.DefVar(v,e) -> Iast.DefVar(v,rw_exp [] e)
-  | Ast.DefFun(l) -> Iast.DefFun (rw_fundecs l)
-  | Ast.DefFunRec(l) -> Iast.DefFunRec (rw_fundecs l)
-  | Ast.Type(s,lvs,ty) -> Iast.Type(s,lvs,ty)
-and rw_fundecs l = 
-  List.map (fun (name,args,e) -> (name,args,(rw_exp []) e)) l 
-and rw_exp env e = 
+(* let rec rw_fundecs l = 
+  List.map (fun f -> match f with (name,args,e) -> (name,args,(rw_exp []) e)) l  *)
+let rec rw_exp env e = 
   match e with 
   | Ast.Ident (name) -> Iast.Ident(name)
   | Ast.Fun (name,e) -> let e0 = rw_exp [] e in
@@ -92,3 +79,10 @@ and rw_constant c =
   | Ast.Bool (b) -> Iast.Bool (b)
   | Ast.Array_empty -> Iast.Array_empty
   | Ast.List_empty -> Iast.List_empty
+
+(*
+let _ = 
+  let n = Ast.Int(42) in
+  let c = Ast.Constant(n) in
+  let l = Ast.Let ("foo",c,Ast.Ident("foo")) in
+  rw_exp [] l *)

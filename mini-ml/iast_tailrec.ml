@@ -1,9 +1,10 @@
 exception Abort
 
-let rec rewrite Iast.{mod_name;decls} = 
+let rec rewrite m =
+    match m with Iast.Module(mod_name,decls) ->
   let decls = List.map rw_decl decls in
-  Iast.{mod_name;decls}
-  
+  Iast.Module(mod_name,decls)
+
 and rw_decl d = match d with
   | Iast.DefFunRec l -> 
      Iast.DefFunRec (List.map (fun ((name,args,e) as f) -> 

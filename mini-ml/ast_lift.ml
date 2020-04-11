@@ -11,12 +11,14 @@ let gensym =
 let create () = ref []
 
 (* globalise les chaînes de caractères dans le module mdl *)  
-let rec rewrite mdl = 
-  let Ast.{mod_name;decls} = mdl in
+
+let rec rewrite ?(depth_max=5) m =
+  match m with Ast.Module(mod_name,decls) ->
   let collect = create () in
   let decls = List.map (rw_decl collect) decls in
   let decls = !collect @ decls in
-  Ast.{mod_name;decls}
+  Ast.Module(mod_name,decls)
+
 
 and rw_decl cl = function
   | Ast.DefVar(v,e) -> Ast.DefVar(v,rw_exp cl [] [] e)

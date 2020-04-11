@@ -20,7 +20,7 @@ let exp_create e = Past.{exp_desc = e; exp_loc = pos()}
 %token <int> INT
 %token <bool> BOOL
 
-%token <char> TVAR
+%token <string> TVAR
 
 %token PLUS MINUS TIMES DIV AND OR LAND LOR EQ NEQ GT LT GE LE NOT TRUE FALSE TYPE
 %token REC
@@ -69,8 +69,8 @@ decls {$1}
 
 decls :
  | EOF                      { [] }
- | decl decls               { (decl_create $1)::$2 }
- | decl terminaison decls   { (decl_create $1)::$3 }
+ | decl decls               { $1 @ $2 }
+ | decl terminaison decls   { $1 @ $3 }
  | { error_exit (pos()) "programme malformé" }
  ;
 
@@ -81,12 +81,25 @@ decls :
  ;
 
 decl : 
- | LET argument EQ seq                        { DefVar($2,$4) }
- | LET defuns                                 { DefFun($2) }
- | LET REC defuns                             { DefFunRec($3) }
- | TYPE IDENT EQ ty                           { Type($2,$4) }
+ | LET argument EQ seq                        { [decl_create @@ DefVar($2,$4)] }
+ | LET defuns                                 { [decl_create @@ DefFun($2)] }
+ | LET REC defuns                             { [decl_create @@ DefFunRec($3)] }
+ | decl_types                                 { List.rev $1 }
  | LET error { error_exit (pos()) "déclaration `let` malformée. J'attend {let <ident> [...] = <expr> in <expr>}" }
  | error { error_exit (pos()) "déclaration malformée (`let` ou `type` attendu)" }
+ ;
+
+decl_type:
+ | param_type_decl IDENT EQ ty { decl_create @@ Type($2,$1,$4) }
+ | error { error_exit (pos()) "..." }
+ ;
+
+ decl_types:
+ | TYPE decl_types_aux { $2 }
+ ;
+ decl_types_aux:
+ | decl_type { [$1] }
+ | decl_type AND_KW decl_types_aux { $1::$3 }
  ;
 
 defun:
@@ -105,6 +118,7 @@ ignore:
 
 ty :
  | exp_ty    { Exp_ty($1) }
+ | PIPE sum_ty    { Sum($2) }
  | sum_ty    { Sum($1) }
  ;
 
@@ -112,6 +126,8 @@ sum_ty:
 | sum_ty_cc               { [$1] }
 | sum_ty_cc PIPE sum_ty   { $1::$3 }
 ;
+
+
 sum_ty_cc:
 | constructor                      { ($1,[]) } 
 | constructor OF ty_cst_parameters { ($1,$3) } 
@@ -167,6 +183,16 @@ ident_ty:
 tvar:
 | TVAR                          { Tvar (V.create ()) }
 ;
+
+param_type_decl:
+|                                       { [] }
+| LPAREN param_type_decl_aux RPAREN     {$2}
+| TVAR                                 {[$1]}
+|  error { error_exit (pos()) "(('a,'b ...) t)" }
+;
+param_type_decl_aux:
+| TVAR                               { [$1] }
+| TVAR COMMA param_type_decl_aux      { $1::$3 }
 
 
 ident_in_mod:
@@ -266,6 +292,7 @@ app:
  | exp ATAT app                          { exp_create @@ App($1,[$3]) }
  | SHARP exp                             { exp_create @@ Magic($2) }
  | ASSERT exp                            { exp_create @@ Assert ($2,pos()) }
+ | extra_app_constructor                 { $1 }
  ;
 
 exprs :
@@ -330,3 +357,19 @@ array_content_aux:
 | expression                            { [$1] }
 | expression SEMICOL array_content_aux  { $1::$3 }
 ;
+
+
+extra_app_constructor:
+/* | constructor              { exp_create @@ Constant(Constr($1)) } */
+| constructor tuple        { exp_create @@ App(exp_create @@ Constant(Constr($1)),$2) }
+;
+
+tuple:
+/* | exp                      { [$1] } */
+| LPAREN tuple_aux RPAREN  { $2 }
+;
+
+tuple_aux:
+| expr                      { [$1] }
+| expr COMMA tuple_aux      { $1::$3 }
+

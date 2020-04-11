@@ -67,7 +67,7 @@ let compile genv (mdl : Ast.tmodule) =
     let mdl = Ast2iast.rewrite mdl in
     let mdl = Iast_closure.rewrite mdl in
     let mdl = Iast_tailrec.rewrite mdl in
-    let genv0 = Iast2kast.{genv with mod_name=Iast.(mdl.mod_name); init=[]} in
+    let genv0 = Iast2kast.{genv with mod_name=(match mdl with Iast.Module(mod_name,_) -> mod_name); init=[]} in
     let genv',kast = Iast2kast.rewrite genv0 mdl in
     let bc_mdl = Kast2bc.bc_of_tmodule genv' kast in
     let bc_mdl = Bc_fold.rewrite bc_mdl in

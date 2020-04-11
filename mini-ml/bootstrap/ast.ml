@@ -1,10 +1,9 @@
+type pos = string
 
-type ty = Past.ty
-type pos = Parseutils.pos
+type name = string
 
 type prog = tmodule list
 and tmodule = Module of (name * decl list)
-and name = string
 and decl = 
   | DefVar of (name * exp)
   | DefFun of    ((name * name list * exp) list)

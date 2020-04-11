@@ -11,14 +11,14 @@ let rec visit_tmodule Past.{mod_name;decls} =
               | [] -> List.rev acc  
               | d::t -> let d' = visit_decl d in aux (d'::acc) t 
                         in aux [] decls in
-  Ast.{mod_name;decls}
+  Ast.Module(mod_name,decls)
 
 and visit_decl Past.{decl_desc;decl_loc} = 
 match decl_desc with
   | Past.DefVar((name,_),e) -> Ast.DefVar(name,visit_exp e)
   | Past.DefFun(l) -> Ast.DefFun ((visit_fundecs l))
   | Past.DefFunRec(l) -> Ast.DefFunRec ((visit_fundecs l))
-  | Past.Type (s,ty) -> Ast.Type (s,ty)
+  | Past.Type (s,lvs,ty) -> Ast.Type (s,lvs,ty)
 and visit_fundecs l = 
   List.map (fun (name,args,_,e) -> (name,List.map fst args,visit_exp e)) l 
 and visit_exp Past.{exp_desc;exp_loc} =

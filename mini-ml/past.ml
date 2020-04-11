@@ -13,7 +13,7 @@ and declaration_desc =
   | DefVar of (var * exp)
   | DefFun of    ((name * var list * Types.typ option * exp) list)
   | DefFunRec of ((name * var list * Types.typ option * exp) list)
-  | Type of (name * ty)
+  | Type of (name * name list * ty)
 and ty = Exp_ty of Types.typ | Sum of constr list
 and constr = name * Types.typ list
 and exp = { exp_desc: expression_desc; 

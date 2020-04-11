@@ -1,0 +1,11 @@
+// val "M1.x"
+function ML_M1.x 0
+    push static 0
+    return
+// val "M1.__init__x"
+function ML_M1.__init__x 0
+    push constant 0
+    pop static 0
+    push static 0
+    pop temp 7
+    return
