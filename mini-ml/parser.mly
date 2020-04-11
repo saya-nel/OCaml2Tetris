@@ -12,7 +12,7 @@ let exp_create e = Past.{exp_desc = e; exp_loc = pos()}
 
 /* (* reserved words *) */
 %token LET WHERE IN IF THEN ELSE ASSERT WHILE FOR TO DO DONE MATCH WITH PIPE BEGIN END EXTERNAL AND_KW CONS
-%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT FUN SHARP OF
+%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT FUN SHARP OF IMPLY
 
 %token <string> IDENT IDENT_CAPITALIZE VM_IDENT
 %token <string> STRING
@@ -118,8 +118,9 @@ sum_ty_cc:
 ;
 
 cst_parameters:
+| LPAREN cst_parameters RPAREN { $2 }
 | exp_ty                       { [$1] }
-| exp_ty TIMES cst_parameters  { $1::$3 }
+| exp_ty IMPLY cst_parameters  { $1::$3 }
 ;
 
 constructor :

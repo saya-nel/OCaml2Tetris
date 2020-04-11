@@ -17,18 +17,11 @@ and rw_fundecs l =
   List.map (fun (name,args,e) -> (name,args,(rw_exp []) e)) l 
 and rw_exp env = function
   | Ast.Ident name -> Iast.Ident name
-  | Ast.Fun (name,e) -> 
-    (match env with 
-     | [] -> Iast.Fun (name,rw_exp [name] e)
-     | _ -> let env = env in
-            let addr = gen_closure_id () in
-            let code = rw_exp env e in
-            let closure_env = List.map (fun name -> Iast.Ident(name)) env in
-            let closure = Iast.Constant(Iast.Int addr)::closure_env in
-            Iast.Closure((addr,code),name,Iast.Array_create(closure)))
+  | Ast.Fun (name,e) -> Iast.Fun (name,rw_exp [] e)
     (* Iast.Fun (name,rw_exp env e) *)
   | Ast.Constant c -> Iast.Constant (rw_constant c)
   | Ast.Let(v,e1,e2) -> Iast.Let(v,rw_exp env e1,rw_exp env e2)
+  
   | Ast.App(e,args) -> Iast.App(rw_exp env e,List.map (rw_exp env) args) 
   | Ast.If(e1,e2,e3) -> Iast.If(rw_exp env e1,rw_exp env e2,rw_exp env e3)
   | Ast.BinOp(op,e1,e2) -> Iast.BinOp(op,rw_exp env e1,rw_exp env e2)

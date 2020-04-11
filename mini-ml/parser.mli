@@ -28,6 +28,7 @@ type token =
   | FUN
   | SHARP
   | OF
+  | IMPLY
   | IDENT of (string)
   | IDENT_CAPITALIZE of (string)
   | VM_IDENT of (string)

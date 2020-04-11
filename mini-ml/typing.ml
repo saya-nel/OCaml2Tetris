@@ -42,8 +42,9 @@ match decl_desc with
   List.map (fun (x,_,_,_) -> (x,find x decl_loc env')) funs
 | Type (name,Exp_ty ty) -> 
   (Types.alias := (name,ty) :: !Types.alias); (* A REVOIR, c'EST OK *)
-  [] 
+  []
   | Type (name,Sum cs) -> 
+    (Types.alias := (name,Tvar (V.create ())) :: !Types.alias);   (* ATTENTION ERREUR, type compatible avec tout *)
     List.map (fun (c,tys) -> 
                 (c,List.fold_right (fun ty tn -> Tarrow(ty,tn)) tys (Tident name))) cs
 and w_defun env (f,args,tyropt,e) decl_loc = 

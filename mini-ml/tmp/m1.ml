@@ -1,7 +1,12 @@
 
-type t = A | B of int | C of (int * t)
+type t = A
+       | B of int
+       | C of int => t => int
 
-let x = B 4
+let c = C 5
+
+let _ = print_int (c A 5)
+
 
 (*
 let g = (fun x -> print_int x)
@@ -10,18 +15,20 @@ let h = (fun x -> print_int (x*2))
 let f x =
   (if x < 0 then g else h) 42
 
-let _ = f (17) *)
-
-(* let _ =
-  let a = 42 in
-  (fun x -> print_int (a+x)) 10
+let _ = f (17) 
 *)
+(*
+ let _ =
+   let a = 42 in
+   (fun x -> print_int (a)) 10
 
+
+*)
 (*
 let _ = 
   ((fun x -> fun y -> print_int (x + y)) 42) 1
-*)
 
+*)
 (*
 let _ = 
   ((fun x -> fun y -> print_int (x + y)) 42) 1
