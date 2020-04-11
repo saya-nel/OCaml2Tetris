@@ -113,14 +113,14 @@ sum_ty:
 | sum_ty_cc PIPE sum_ty   { $1::$3 }
 ;
 sum_ty_cc:
-| constructor                   { ($1,[]) } 
-| constructor OF cst_parameters { ($1,$3) } 
+| constructor                      { ($1,[]) } 
+| constructor OF ty_cst_parameters { ($1,$3) } 
 ;
 
-cst_parameters:
-| LPAREN cst_parameters RPAREN { $2 }
-| exp_ty                       { [$1] }
-| exp_ty IMPLY cst_parameters  { $1::$3 }
+ty_cst_parameters:
+| LPAREN ty_cst_parameters RPAREN { $2 }
+| exp_ty_cstrparam                       { [$1] }
+| exp_ty_cstrparam TIMES ty_cst_parameters  { $1::$3 }
 ;
 
 constructor :
@@ -128,25 +128,41 @@ constructor :
 | IDENT_CAPITALIZE DOT constructor { $1 ^ "." ^ $3}
 ;
 
+
+exp_ty_cstrparam:
+ | LPAREN exp_ty RPAREN         { $2 }
+ | ident_ty                     { $1 }
+ | tvar                         { $1 }
+ | error { error_exit (pos()) "expression de type malformée." }
+;
+
 exp_ty:
  | LPAREN exp_ty RPAREN         { $2 }
- | IDENT                         { match $1 with 
- 	                               | "int" -> Tint
- 	                               | "unit" -> Tunit
- 	                               | "bool" -> Tbool
- 	                               | "char" -> Tchar
- 	                               | "string" -> Tstring
- 	                               | s -> Tident(s) }
- | TVAR                          { Tvar (V.create ()) }
- | exp_ty IDENT                 { match $2 with 
+ | ident_ty                     { $1 }
+ | tvar                         { $1 }
+ | exp_ty TIMES exp_ty          { Tproduct($1,$3) }
+ | exp_ty RIGHT_ARROW exp_ty    { Tarrow($1,$3) }
+ | error { error_exit (pos()) "expression de type malformée." }
+;
+
+ident_ty:
+| ident_in_mod                  { Tident($1) }
+| IDENT                         { match $1 with 
+                                 | "int" -> Tint
+                                 | "unit" -> Tunit
+                                 | "bool" -> Tbool
+                                 | "char" -> Tchar
+                                 | "string" -> Tstring
+                                 | s -> Tident(s) }
+| exp_ty IDENT                 { match $2 with 
                                    | "array" -> Tarray $1 
                                    | "ref" -> Tref $1
                                    | "list" -> Tlist $1
                                    | s -> Tconstr(s,[$1])  }
- | ident_in_mod                  { Tident($1) }
- | exp_ty TIMES exp_ty         { Tproduct($1,$3) }
- | exp_ty RIGHT_ARROW exp_ty   { Tarrow($1,$3) }
- | error { error_exit (pos()) "expression de type malformée." }
+;
+
+tvar:
+| TVAR                          { Tvar (V.create ()) }
 ;
 
 
@@ -170,19 +186,19 @@ expression :
  { 
     List.fold_right
        (fun (name,args,tyopt,e) exp ->
-    	exp_create @@ Let((name,None),
-    		List.fold_right 
-    		  (fun a e -> exp_create @@ Fun(a,e)) 
-    		  args (match tyopt with
-		    		| None -> e 
-		    		| Some ty -> exp_create @@ Annotation(e,ty)),
-    		exp))
+      exp_create @@ Let((name,None),
+        List.fold_right 
+          (fun a e -> exp_create @@ Fun(a,e)) 
+          args (match tyopt with
+            | None -> e 
+            | Some ty -> exp_create @@ Annotation(e,ty)),
+        exp))
          $2 $4}
 | expression WHERE argument EQ seq   { exp_create @@ 
-	                                       match $3 with 
-	                                       | "_",None -> Seq($5,$1)
-	                                       | "_",Some t -> Seq(exp_create @@ Annotation($5,t),$1)
-	                                       | x,tyopt -> Let((x,tyopt),$5,$1) }
+                                         match $3 with 
+                                         | "_",None -> Seq($5,$1)
+                                         | "_",Some t -> Seq(exp_create @@ Annotation($5,t),$1)
+                                         | x,tyopt -> Let((x,tyopt),$5,$1) }
 | IF seq THEN expression ELSE expression { exp_create @@ If($2,$4,$6) }
 | IF seq THEN expression                 { exp_create @@ If($2,$4,exp_create @@ Constant(Unit))}
 | MATCH seq WITH match_body              { exp_create @@ Match($2,$4)}
@@ -236,8 +252,8 @@ expr:
  | expression LAND expression            { exp_create @@ BinOp(Land,$1,$3) }
  | expr ASSIGN expression                { exp_create @@ Ref_assign($1,$3) } 
  | MINUS expr                            { exp_create @@ UnOp(UMinus,$2) }
- | expression COMMA expression 		     { exp_create @@ Pair($1,$3) }
- | expression CONS expression 		     { exp_create @@ Cons($1,$3) }
+ | expression COMMA expression         { exp_create @@ Pair($1,$3) }
+ | expression CONS expression          { exp_create @@ Cons($1,$3) }
 /* | error                                 { raise (Parse_Exception ("malformed expression ")) }*/
 ;
 
@@ -288,7 +304,16 @@ match_body_aux:
 ;
 match_case:
 | WILDCARD RIGHT_ARROW seq  { Otherwise($3) }
-| constant RIGHT_ARROW seq  { Case($1,$3) }
+| constant cst_parameters RIGHT_ARROW seq  { Case($1,$2,$4) }
+;
+
+cst_parameters:
+|                                  { [] }
+| LPAREN cst_parameters_aux RPAREN { $2 }
+;
+cst_parameters_aux:
+| argument_aux                      { [$1] }
+| argument_aux COMMA cst_parameters {$1::$3}
 ;
 
 array_content:
@@ -301,4 +326,3 @@ array_content_aux:
 | expression                            { [$1] }
 | expression SEMICOL array_content_aux  { $1::$3 }
 ;
-

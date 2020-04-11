@@ -1,0 +1,76 @@
+// val "Apply.apply"
+function ML_Apply.apply 0
+    push argument 1
+    push constant 0
+    eq
+    not
+    if-goto A0
+    push argument 0
+    call ML_Apply.lambda0 1
+    goto EndApply
+label A0
+    push argument 1
+    push constant 0
+    call ML_Array.get 2
+    push constant 10001
+    eq
+    not
+    if-goto A10001
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10001 2
+    goto EndApply
+label A10001
+label EndApply
+    return
+// val "Apply.lambda0"
+function ML_Apply.lambda0 2
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10001
+    call ML_Array.set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push local 0
+    call ML_Array.set 3
+    pop temp 0
+    push local 1
+    push constant 2
+    push argument 0
+    call ML_Array.set 3
+    pop temp 0
+    push local 1
+    return
+// val "Apply.closure10001"
+function ML_Apply.closure10001 1
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 0
+    push local 0
+    push constant 0
+    push constant 2
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 1
+    push constant 5
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 2
+    push argument 0
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    push constant 3
+    push argument 1
+    push constant 2
+    call ML_Array.get 2
+    call ML_Array.set 3
+    pop temp 0
+    push local 0
+    return

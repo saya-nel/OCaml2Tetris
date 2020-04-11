@@ -138,9 +138,12 @@ and sprint_exp lvl {exp_desc} = match exp_desc with
        (String.concat "\n"
           (List.map 
              (function 
-              | Case (c,e) ->
-                 let s = sptf "%s| %s -> "
-                           (indent_string lvl) (sprint_constant lvl c) in
+              | Case (c,args,e) ->
+                 let s = sptf "%s| %s%s -> "
+                           (indent_string lvl) (sprint_constant lvl c)
+                           (match args with 
+                            | [] -> ""
+                            | _ -> "(" ^ String.concat ", " args ^")")  in
                  let lvl' = get_indent_level s 0 in
                  s ^ (sprint_exp lvl' e)
               | Otherwise (e) ->

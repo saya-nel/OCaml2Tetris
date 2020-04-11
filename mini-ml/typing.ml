@@ -108,7 +108,19 @@ match exp_desc with
   | Match (e1,ms) ->
       let t1 = w_exp env e1 in
       let aux t = function 
-      | Case(c,e) -> unify t (w_constant env exp_loc c); w_exp env e
+      | Case(c,args,e) -> let tc = (w_constant env exp_loc c) in
+                          let tret, tyargs, arity = let rec aux acc accn = function
+                                             | Tarrow (ty,t) -> aux (ty::acc) (accn+1) t
+                                             | r -> (r,List.rev acc, accn) in aux [] 0 tc in
+                          let len = List.length args in
+                          if arity != len then
+                          (Printf.printf "Error : The constructor A expects %d argument(s),\n\
+                                          \ but is applied here to %d argument(s)\n\n%s. exit." arity len (Parseutils.string_of_position exp_loc);
+                           exit 0);
+                          let env = List.fold_right2 
+                                      (fun x ty env -> add false x ty env) args tyargs env in
+                       (* unify t (w_constant env exp_loc c); *)
+                       w_exp env e
       | Otherwise e -> w_exp env e in
       (match ms with 
        | [] -> assert false

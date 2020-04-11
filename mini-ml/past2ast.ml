@@ -1,3 +1,11 @@
+let gensym = 
+  let c = ref 0 in 
+  (fun ~prefix ->
+    incr c;
+    Printf.sprintf "__%s%d" prefix !c)
+
+
+
 let rec visit_tmodule Past.{mod_name;decls} = 
   let decls = let rec aux acc = function (* map filter *)
               | [] -> List.rev acc  
@@ -35,9 +43,20 @@ and visit_exp Past.{exp_desc;exp_loc} =
   | Past.Seq(e1,e2) -> Ast.Seq(visit_exp e1,visit_exp e2)
   | Past.While(e1,e2) -> Ast.While(visit_exp e1,visit_exp e2)
   | Past.For(name,e0,e1,e2) -> Ast.For(name,visit_exp e0,visit_exp e1,visit_exp e2)
-  | Past.Match (e,ms) -> Ast.Match (visit_exp e,List.map (function Past.Case(c,e) -> Ast.Case(visit_cst c,visit_exp e) | Past.Otherwise e -> Ast.Otherwise(visit_exp e)) ms) 
+  | Past.Match (e,ms) -> visit_match e ms
   | Past.Assert(e,pos) -> Ast.Assert(visit_exp e,pos) 
   | Past.Magic(e) -> visit_exp e
+and visit_match ec ms =
+  (* possiblité d'éviter un let dans le cas (match x with ...) où x est un ident *)
+  let name = gensym ~prefix:"match" in  (* !!!!!!!! *)
+  Ast.Let (name,visit_exp ec,
+  Ast.Match (Ast.Ident(name),
+  List.map (function Past.Case(c,args,e) -> 
+    let e = visit_exp e in
+    let e' = List.fold_right2 (fun arg v e -> Ast.Let (arg,v,e)) 
+    args (List.mapi (fun i _ -> Ast.Array_access(Ast.Ident(name),Ast.Constant(Ast.Int(i)))) args) e in
+    (* TODO *)
+    Ast.Case(visit_cst c,e') | Past.Otherwise e -> Ast.Otherwise(visit_exp e)) ms))
 and visit_cst = function
 | Past.Unit -> Ast.Unit
 | Past.Bool b -> Ast.Bool b

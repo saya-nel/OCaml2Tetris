@@ -1,0 +1,119 @@
+// val "Array.make"
+function ML_Array.make 0
+    push argument 0
+    push argument 1
+    call ML_Internal.array_make 2
+    return
+// val "Array.create_uninitialized"
+function ML_Array.create_uninitialized 0
+    push argument 0
+    call ML_Internal.array_create_uninitialized 1
+    return
+// val "Array.get"
+function ML_Array.get 0
+    push argument 0
+    push argument 1
+    call ML_Internal.array_get 2
+    return
+// val "Array.set"
+function ML_Array.set 0
+    push argument 0
+    push argument 1
+    push argument 2
+    call ML_Internal.array_set 3
+    return
+// val "Array.length"
+function ML_Array.length 0
+    push argument 0
+    call ML_Internal.array_length 1
+    return
+// val "Array.iter"
+function ML_Array.iter 3
+    push constant 0
+    call ML_Pervasives.ref 1
+    pop local 0
+    push argument 1
+    call ML_Internal.array_length 1
+    push constant 1
+    sub
+    pop local 1
+label WhileBegin3
+    push local 0
+    call ML_Pervasives.ref_contents 1
+    push local 1
+    gt
+    not
+    not
+    if-goto WhileEnd4
+    push local 0
+    call ML_Pervasives.ref_contents 1
+    pop local 2
+    push argument 1
+    push local 2
+    call ML_Internal.array_get 2
+    push argument 0
+    call ML_Apply.apply 2
+    pop temp 0
+    push local 0
+    call ML_Pervasives.incr 1
+    goto WhileBegin3
+label WhileEnd4
+    return
+// val "Array.map"
+function ML_Array.map 6
+    push argument 1
+    call ML_Internal.array_length 1
+    pop local 0
+    push local 0
+    push constant 0
+    eq
+    not
+    if-goto IfFalse7
+    push constant 0
+    goto IfEnd8
+label IfFalse7
+    push argument 1
+    push constant 0
+    call ML_Internal.array_get 2
+    pop local 1
+    push local 0
+    push local 1
+    call ML_Internal.array_make 2
+    pop local 1
+    push constant 0
+    call ML_Pervasives.ref 1
+    pop local 2
+    push local 0
+    push constant 1
+    sub
+    pop local 3
+label WhileBegin5
+    push local 2
+    call ML_Pervasives.ref_contents 1
+    push local 3
+    gt
+    not
+    not
+    if-goto WhileEnd6
+    push local 2
+    call ML_Pervasives.ref_contents 1
+    pop local 4
+    push local 1
+    push local 4
+    call ML_Internal.array_get 2
+    push argument 0
+    call ML_Apply.apply 2
+    pop local 5
+    push local 1
+    push local 4
+    push local 5
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 2
+    call ML_Pervasives.incr 1
+    goto WhileBegin5
+label WhileEnd6
+    pop temp 0
+    push local 1
+label IfEnd8
+    return

@@ -1,13 +1,30 @@
+type t = A
+       | B of int
+       | C of (int * t * int)
 
+let _ = B 4
+let c = C 5
+
+type option = None | Some of int
+
+
+let f x = match x with 
+          | None -> print_string "none !"
+          | Some(n) -> print_int n
+
+let _ = f None
+
+(*
 type t = A
        | B of int
        | C of int => t => int
-
+*)
+(*
 let c = C 5
 
 let _ = print_int (c A 5)
 
-
+*)
 (*
 let g = (fun x -> print_int x)
 let h = (fun x -> print_int (x*2))

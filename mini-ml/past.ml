@@ -53,7 +53,7 @@ and constant =
   | List_empty
   | Array_empty
 and match_case =
-  | Case of (constant * exp)
+  | Case of (constant * name list * exp)  (* eg. [A(x,y,z) -> e] *)
   | Otherwise of (exp)
 and binop =
   | Add
