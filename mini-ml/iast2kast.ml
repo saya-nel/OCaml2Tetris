@@ -43,6 +43,12 @@ let env_extends_constructors genv cstrs =
     cstrs;
   { genv with constrs=(!r) @ genv.constrs }
 
+let get_constructor_num genv name = 
+               (match List.assoc_opt (genv.mod_name ^ "." ^ name) genv.constrs with 
+              | None -> (match List.assoc_opt name genv.constrs with Some (x,_) -> x | None -> failwith "iast2kast : Iast.Constr")
+              | Some (c,_) -> c)
+
+
 type lenv = {
     arguments : (Iast.name * int) list ;
     locals : (Iast.name * int) list ;
@@ -281,7 +287,14 @@ and rw_exp lenv genv = function
                            (acc,Some e)
                         | h::t ->
                            aux (h::acc) t in aux [] ms in
-     let sms = List.map (function Iast.Case(c,e) -> (c,e)
+     let sms = List.map (function 
+                                | Iast.Case(Iast.Constr name,e) -> 
+                                  (* NB : on va trier les constantes : mais avant celà, *)
+                                  (* il faut absolument renommer les constructeurs par leur entier associé, *)
+                                  (* sinon, la liste ne sera pas triée correctement et cela produira des bug *)
+                                  (* dans la génération de code *)
+                                  (Iast.Int(get_constructor_num genv name),e)
+                                | Iast.Case(c,e) -> (c,e)
                                 | _ -> assert false) ms'
      in
      let smst = List.sort (fun (c1,_) (c2,_) -> compare c1 c2) sms in
@@ -298,13 +311,13 @@ and rw_exp lenv genv = function
                  | [(_,h)] -> h
                  | ms -> let (md,e') = List.nth ms (List.length ms / 2) in
                          let l1,l2 = List.partition (fun (c,_) -> c < md) ms in
-                         let l2 = List.tl l2 in 
+                         let l2' = List.tl l2 in (* je vire celui qui est égal *)
                          Iast.If(Iast.BinOp(Ast.Lt,
                                           Iast.Ident(var),
                                           Iast.Constant(md)),
                                 aux l1,Iast.If(Iast.BinOp(Ast.Eq,
                                                         Iast.Ident(var),
-                                                        Iast.Constant(md)),e',aux l2)) in
+                                                        Iast.Constant(md)),e',aux l2')) in
                aux smst) 
   | Iast.Assert(e,pos) ->
      rw_exp lenv genv @@ 
@@ -314,7 +327,7 @@ and rw_exp lenv genv = function
                 Iast.App(Iast.Ident("Pervasives.print_string"),
                   [Iast.Constant
                     (Iast.String 
-                      (Printf.sprintf "assertion fail [%s]"    "" (* (Print_ast.sprint_exp 0 e)))]) *)))]),
+                      (Printf.sprintf "assertion fail [%s]"    "" (* (Print_ast.sprint_exp 0 e)))]) *)))]),  (* à revoir, je n'ai plus accès à l'AST *)
                 Iast.Seq(Iast.App(Iast.Ident("Pervasives.print_newline"),[ Iast.Constant(Iast.Unit)]),
                 Iast.Seq(Iast.App(Iast.Ident("Pervasives.print_string"),
                   [Iast.Constant
@@ -336,9 +349,7 @@ and rw_constant lenv genv c = match c with
   | Iast.Char c ->
      Kast.Int (int_of_char c)
   | Iast.Constr name -> 
-    Kast.Int (match List.assoc_opt (genv.mod_name ^ "." ^ name) genv.constrs with 
-              | None -> (match List.assoc_opt name genv.constrs with Some (x,_) -> x | None -> failwith "iast2kast : Iast.Constr")
-              | Some (c,_) -> c)
+    Kast.Int (get_constructor_num genv name)
      
      (*  *)
   | Iast.Bool b ->

@@ -16,7 +16,7 @@ type typ =
   | Tref of typ
   | Tconstr of (typid * typ list)
   | Tident of typid
-
+  | Trec of typid
 and tvar =
   { id : int;
     mutable def : typ option }
@@ -40,7 +40,7 @@ let rec head = function
 
 (* forme canonique d'un type = on applique head récursivement *)
 let rec canon t = match head t with
-  | Tvar _ | Tident _ | Tint | Tbool | Tunit | Tchar | Tstring as t -> t
+  | Tvar _ | Tident _ | Trec _ | Tint | Tbool | Tunit | Tchar | Tstring as t -> t
   | Tarrow (t1, t2) -> Tarrow (canon t1, canon t2)
   | Tproduct (t1, t2) -> Tproduct (canon t1, canon t2)
   | Tlist t -> Tlist (canon t)
@@ -59,9 +59,10 @@ let rec occur v t = match head t with
   | Tarrow (t1, t2) | Tproduct (t1, t2) -> occur v t1 || occur v t2
   | Tlist t1 | Tarray t1 | Tref t1 -> occur v t1
   | Tconstr (_,ts) -> List.for_all (occur v) ts
-  | Tident _ | Tunit | Tint | Tbool | Tchar | Tstring -> false
+  | Tident _ | Tunit | Tint | Tbool | Tchar | Tstring | Trec _ -> false
 
 let rec unify t1 t2 loc = match head t1, head t2 with
+  | Trec _, Trec _ -> ()
   | Tunit, Tunit -> ()
   | Tint, Tint -> ()
   | Tbool, Tbool -> ()
@@ -100,7 +101,7 @@ type schema = { vars : Vset.t; typ : typ }
 (* variables libres *)
 
 let rec fvars t = match head t with
-  | Tunit | Tint | Tbool | Tchar | Tstring | Tident _ -> Vset.empty
+  | Tunit | Tint | Tbool | Tchar | Tstring | Tident _ | Trec _  -> Vset.empty
   | Tarrow (t1, t2) | Tproduct (t1, t2) -> Vset.union (fvars t1) (fvars t2)
   | Tlist t | Tarray t | Tref t -> (fvars t)
   | Tconstr (c,ts) ->  List.fold_left (fun acc t -> Vset.union acc (fvars t)) Vset.empty ts
@@ -158,5 +159,6 @@ let find x loc env =
     | Tarray t -> Tarray (subst t)
     | Tref t -> Tref (subst t)
     | Tconstr (c,ts) -> Tconstr (c,List.map subst ts)
+    | Trec s -> Trec s
   in
   subst tx.typ

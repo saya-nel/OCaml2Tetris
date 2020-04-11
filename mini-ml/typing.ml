@@ -44,9 +44,10 @@ match decl_desc with
   (Types.alias := (name,ty) :: !Types.alias); (* A REVOIR, c'EST OK *)
   []
   | Type (name,Sum cs) -> 
-    (Types.alias := (name,Tvar (V.create ())) :: !Types.alias);   (* ATTENTION ERREUR, type compatible avec tout *)
+    (Types.alias := (name,Trec name) :: !Types.alias);   (* ATTENTION ERREUR, type compatible avec tout *)
     List.map (fun (c,tys) -> 
-                (c,List.fold_right (fun ty tn -> Tarrow(ty,tn)) tys (Tident name))) cs
+                (c,List.fold_right (fun ty tn -> Tarrow(ty,tn)) tys (* (Tident name) *)
+                                                               (Trec name))) cs
 and w_defun env (f,args,tyropt,e) decl_loc = 
   let env' = List.fold_left 
                (fun env (xi,tyopt) -> 
@@ -114,7 +115,7 @@ match exp_desc with
                                              | r -> (r,List.rev acc, accn) in aux [] 0 tc in
                           let len = List.length args in
                           if arity != len then
-                          (Printf.printf "Error : The constructor A expects %d argument(s),\n\
+                          (Printf.printf "Error : This constructor expects %d argument(s),\n\
                                           \ but is applied here to %d argument(s)\n\n%s. exit." arity len (Parseutils.string_of_position exp_loc);
                            exit 0);
                           let env = List.fold_right2 

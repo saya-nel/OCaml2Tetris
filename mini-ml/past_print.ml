@@ -212,6 +212,7 @@ and sprint_ty lvl ty =
       | None -> Printf.sprintf "'a%d" v.id
       | Some ty -> sprint_ty lvl ty)
   | Tconstr (name,args) -> sptf "((%s) %s)" (mapcat " " (sprint_ty lvl) args) name (* à revoir *)
+  | Trec s -> s
 and sprint_var lvl (p,opt) = 
   match opt with 
   | None -> p

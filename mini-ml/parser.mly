@@ -118,11 +118,14 @@ sum_ty_cc:
 ;
 
 ty_cst_parameters:
-| LPAREN ty_cst_parameters RPAREN { $2 }
 | exp_ty_cstrparam                       { [$1] }
-| exp_ty_cstrparam TIMES ty_cst_parameters  { $1::$3 }
+| LPAREN ty_cstp_aux RPAREN              { $2 }
+| ty_cstp_aux { error_exit (pos()) "bien penser à parenthéser les motif ( . * . * . * .)"  }
 ;
-
+ty_cstp_aux:
+| exp_ty_cstrparam                    { [$1] }
+| exp_ty_cstrparam TIMES ty_cstp_aux  { $1::$3 }
+;
 constructor :
 | IDENT_CAPITALIZE                { $1 }
 | IDENT_CAPITALIZE DOT constructor { $1 ^ "." ^ $3}

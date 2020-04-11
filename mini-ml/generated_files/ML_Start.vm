@@ -1,8 +1,0 @@
-// val "Start.main"
-function ML_Start.main 0
-    call ML_M1.__init__x 0
-    call ML_M1.__init__y 0
-    call ML_M1.__init__z 0
-    call ML_M1.__init____voidExpr9 0
-    push constant 0
-    return

@@ -1,4 +1,6 @@
-type t = Q | T of int * int * int 
+
+
+type t = Q | T of (int * int * int) 
 
 let print x = 
   match x with 
@@ -9,7 +11,22 @@ let x = T 10
 let y = x 6
 let z = y 1
 
-let _ = print z
+let _ = print (T 10 6 1)
+
+
+
+type liste = Nil | Cons of (int * liste)
+
+let l0 = Cons 42 (Cons 17 Nil)
+
+let rec iter f l = 
+  match l with 
+  | Nil -> ()
+  | Cons (x,r) -> f x; iter f r
+
+let _ = iter (fun x -> print_int x) l0 
+
+
 
 
 (* type t = A

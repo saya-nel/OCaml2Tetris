@@ -113,18 +113,20 @@ and fold_exp = function
                                | Ast.Constant(Ast.Int(n)),Ast.Constant(Ast.Int(m)) 
                                     when n = m -> Ast.Constant(Ast.Unit)
                                | _ -> Ast.For(name,e0',e1',fold_exp e2)) 
-  | Ast.Match(e,ms) ->  let rec aux acc = function
+  | Ast.Match(e,ms) ->  
+                          (* let rec aux acc = function
                           | Ast.Case(c,e)::t -> aux (Ast.Case(c,fold_exp e)::acc) t
                           | Ast.Otherwise(e)::_ -> List.rev (Ast.Otherwise(fold_exp e)::acc)
                           | [] -> Printf.printf "Warning 8: this pattern-matching is not exhaustive.\n"; 
                                   List.rev ((Ast.Otherwise(Ast.App(Ast.Ident("Pervasives.failwith"),
                                                                    [Ast.Constant(Ast.String("Match_failure, exit."))]))) :: acc) in
-                        let ms' = aux [] ms in
-                        (match fold_exp e with 
-                         | Ast.Constant c -> (match List.find (function Ast.Case(c',_) -> c' = c | Ast.Otherwise _ -> true) ms' with
+                        let ms = aux [] ms in *)
+                        (* (match fold_exp e with 
+                         | Ast.Constant c -> (match List.find (function Ast.Case(c',_) -> c' = c | Ast.Otherwise _ -> true) ms with
                                               | Ast.Case(_,e) -> e
                                               | Ast.Otherwise e -> e)
-                         | e' -> Ast.Match(e',ms'))
+                         | e' -> Ast.Match(e',ms)) *)
+    Ast.Match(e,ms)
   | Ast.Assert(e,pos) -> 
      if !compile_assertions 
      then Ast.Assert(fold_exp e,pos) 
