@@ -9,17 +9,8 @@ let rec depth e = match e with
   | Ast.If(e1,e2,e3) -> 1 + max (depth e1) (max (depth e2) (depth e3))
   | Ast.BinOp(op,e1,e2) -> 1 + max (depth e1) (depth e2)
   | Ast.UnOp(op,e1) -> 1 + depth e1 
-  | Ast.Ref_access(e1) -> 1 + depth e1 
-  | Ast.Ref_assign(e1,e2) -> 1 + max (depth e1) (depth e2)
-  | Ast.Ref(e) -> 1 + depth e
-  | Ast.Array_access(e1,e2) -> 1 + max (depth e1) (depth e2)
-  | Ast.Array_assign(e1,e2,e3) -> 1 + max (depth e1) (max (depth e2) (depth e3))
-  | Ast.Pair(e1,e2) -> 1 + max (depth e1) (depth e2)
-  | Ast.Cons(e1,e2) -> 1 + max (depth e1) (depth e2)
-  | Ast.Array_create(xs) -> 1 + depth_list xs
   | Ast.Seq(e1,e2) -> 1 + max (depth e1) (depth e2)
   | Ast.While(e1,e2) -> 1 + max (depth e1) (depth e2)
-  | Ast.For(name,e1,e2,e3) -> 1 + max (depth e1) (max (depth e2) (depth e3))
   | Ast.Match(e,ms) -> 1 + max (depth e) (depth_list (List.map (function Ast.Case(_,e) -> e | Ast.Otherwise e -> e) ms))
   | Ast.Assert(e,pos) -> if !compile_assertions then 1 + depth e else 0
   | Ast.Ident name -> 0
@@ -63,17 +54,9 @@ and visit_exp env e =
   | Ast.If(e1,e2,e3) -> Ast.If(visit_exp env e1,visit_exp env e2,visit_exp env e3) 
   | Ast.BinOp(op,e1,e2) -> Ast.BinOp(op,visit_exp env e1,visit_exp env e2) 
   | Ast.UnOp(op,e1) -> Ast.UnOp(op,visit_exp env e1) 
-  | Ast.Ref_access(e1) -> Ast.Ref_access(visit_exp env e1)
-  | Ast.Ref_assign(e1,e2) -> Ast.Ref_assign(visit_exp env e1,visit_exp env e2)
-  | Ast.Ref(e) -> Ast.Ref(visit_exp env e)
-  | Ast.Array_access(e1,e2) -> Ast.Array_access(visit_exp env e1,visit_exp env e2) 
-  | Ast.Array_assign(e1,e2,e3) -> Ast.Array_assign(visit_exp env e1,visit_exp env e2,visit_exp env e3)
-  | Ast.Pair(e1,e2) -> Ast.Pair(visit_exp env e1,visit_exp env e2) 
-  | Ast.Cons(e1,e2) -> Ast.Cons(visit_exp env e1,visit_exp env e2)
-  | Ast.Array_create(xs) -> Ast.Array_create(List.map (visit_exp env) xs)
+  | Ast.Block(xs) -> Ast.Block(List.map (visit_exp env) xs)
   | Ast.Seq(e1,e2) -> Ast.Seq(visit_exp env e1,visit_exp env e2)
   | Ast.While(e1,e2) -> Ast.While(visit_exp env e1,visit_exp env e2) 
-  | Ast.For(name,e1,e2,e3) -> Ast.For(name,visit_exp env e1,visit_exp env e2,visit_exp env e3)
   | Ast.Match(e,ms) -> 
      let ms = List.map (function Ast.Case(c,e) -> Ast.Case(c,visit_exp env e) | Ast.Otherwise e -> Ast.Otherwise (visit_exp env e)) ms in
      Ast.Match(visit_exp env e,ms) 

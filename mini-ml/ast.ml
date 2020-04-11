@@ -15,23 +15,17 @@ and exp =
   | Ident of (name)
   | Let of (name * exp * exp)
   | Fun of (name * exp)
+  | Closure of ((int * exp) * string * exp) 
   | App of (exp * exp list)
   | If of (exp * exp * exp)
   | Match of (exp * match_case list)
   | BinOp of (binop * exp * exp)
   | UnOp of (unop * exp)
-  | Pair of (exp * exp)
-  | Cons of (exp * exp)
-  | Array_create of (exp list)
-  | Array_assign of (exp * exp * exp)
-  | Array_access of (exp * exp)
-  | Ref of (exp)
-  | Ref_access of (exp)
-  | Ref_assign of (exp * exp)
+  | Block of (exp list)
   | Seq of (exp * exp)
   | While of (exp * exp)
-  | For of (name * exp * exp * exp)
   | Assert of (exp * pos)
+  | Ext of ext
 and constant = 
   | Unit
   | Bool of bool
@@ -64,3 +58,10 @@ and binop =
 and unop =
   | UMinus
   | Not
+
+and ext = 
+  | Array_alloc of (exp) 
+  | SetGlobal of (exp * int)
+  | ReadGlobal of (int)
+  | Goto of (string * exp list)
+  | Label of (string * exp)

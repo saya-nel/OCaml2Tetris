@@ -11,17 +11,8 @@ let rec occ (v : string) e = match e with
   | Ast.If(e1,e2,e3) -> occ v e1 + occ v e2 + occ v e3
   | Ast.BinOp(op,e1,e2) -> occ v e1 + occ v e2
   | Ast.UnOp(op,e1) -> occ v e1 
-  | Ast.Ref_access(e1) -> occ v e1 
-  | Ast.Ref_assign(e1,e2) -> occ v e1 + occ v e2
-  | Ast.Ref(e) -> occ v e
-  | Ast.Array_access(e1,e2) -> occ v e1 + occ v e2
-  | Ast.Array_assign(e1,e2,e3)  -> occ v e1 + occ v e2 + occ v e3
-  | Ast.Pair(e1,e2) -> occ v e1 + occ v e2
-  | Ast.Cons(e1,e2) -> occ v e1 + occ v e2
-  | Ast.Array_create(xs) -> occ_list v xs
   | Ast.Seq(e1,e2) -> occ v e1 + occ v e2
   | Ast.While(e1,e2) -> occ v e1 + occ v e2
-  | Ast.For(name,e0,e1,e2) -> if v = name then 0 else occ v e0 + occ v e1 + occ v e2
   | Ast.Match(e,ms) -> occ v e + occ_list v (List.map (function Ast.Case(_,e) -> e | Ast.Otherwise e -> e) ms)
   | Ast.Assert(e,pos) -> if !compile_assertions then occ v e else 0
   | Ast.Ident name -> if name = v then 1 else 0
@@ -42,17 +33,8 @@ let replace v x e =
     | Ast.If(e1,e2,e3) -> Ast.If(replace e1,replace e2,replace e3)
     | Ast.BinOp(op,e1,e2) -> Ast.BinOp(op,replace e1,replace e2)
     | Ast.UnOp(op,e1) -> Ast.UnOp(op,replace e1)
-    | Ast.Ref_access(e1) -> Ast.Ref_access(replace e1)
-    | Ast.Ref_assign(e1,e2) -> Ast.Ref_assign(replace e1,replace e2)
-    | Ast.Ref(e) -> Ast.Ref(replace e)
-    | Ast.Array_access(e1,e2) -> Ast.Array_access(replace e1,replace e2) 
-    | Ast.Array_assign(e1,e2,e3)  -> Ast.Array_assign(replace e1,replace e2,replace e3)
-    | Ast.Pair(e1,e2) -> Ast.Pair(replace e1,replace e2) 
-    | Ast.Cons(e1,e2) -> Ast.Cons(replace e1,replace e2)
-    | Ast.Array_create(xs) -> Ast.Array_create(List.map replace xs)
     | Ast.Seq(e1,e2) -> Ast.Seq(replace e1,replace e2)
     | Ast.While(e1,e2) -> Ast.While(replace e1,replace e2)
-    | Ast.For(name,e0,e1,e2) -> Ast.For(name,replace e0,replace e1,replace e2)
     | Ast.Match(e,ms) -> Ast.Match (replace e,List.map (function Ast.Case(c,e) -> Ast.Case(c,replace e) | Ast.Otherwise e -> Ast.Otherwise(replace e)) ms) 
     | Ast.Assert(e,pos) -> Ast.Constant(Ast.Unit)
     | e -> e in replace e
@@ -79,8 +61,8 @@ and fold_exp = function
      let e1 = fold_exp e1 in
      let e2 = fold_exp e2 in
      (match e1 with 
-      | Ast.Assert _ | Ast.For _ | Ast.While _ 
-        | Ast.Array_assign _ | Ast.Ref_assign _ -> Ast.Seq (e1,fold_exp @@ replace v (Ast.Constant(Ast.Unit)) e2)
+      | Ast.Assert _ | Ast.While _ 
+        -> Ast.Seq (e1,fold_exp @@ replace v (Ast.Constant(Ast.Unit)) e2)
       | _ ->
          (match e1,occ v e2 with
           | Ast.Ident (x),_ -> (replace v (Ast.Ident (x)) e2)  (* let y = x in e(x,y) ~> e(x) *)
@@ -96,24 +78,11 @@ and fold_exp = function
                        (match x with 
                         | Ast.Constant _ -> eval_unop (op,x)
                         | _ -> Ast.UnOp(op,x))
-  | Ast.Ref_access(e1) -> Ast.Ref_access(fold_exp e1)
-  | Ast.Ref_assign(e1,e2) -> Ast.Ref_assign(fold_exp e1,fold_exp e2)
-  | Ast.Ref(e) -> Ast.Ref(fold_exp e)
-  | Ast.Array_access(e1,e2) -> Ast.Array_access(fold_exp e1,fold_exp e2) 
-  | Ast.Array_assign(e1,e2,e3)  -> Ast.Array_assign(fold_exp e1,fold_exp e2,fold_exp e3)
-  | Ast.Pair(e1,e2) -> Ast.Pair(fold_exp e1,fold_exp e2) 
-  | Ast.Cons(e1,e2) -> Ast.Cons(fold_exp e1,fold_exp e2)
-  | Ast.Array_create(xs) -> Ast.Array_create(List.map fold_exp xs)
+  | Ast.Block(xs) -> Ast.Block(List.map fold_exp xs)
   | Ast.Seq(e1,e2) -> Ast.Seq(fold_exp e1,fold_exp e2)
   | Ast.While(e1,e2) -> (match fold_exp e1 with 
                          | Ast.Constant(Ast.Bool(false)) -> Ast.Constant(Ast.Unit)
                          | e -> Ast.While(e,fold_exp e2))
-  | Ast.For(name,e0,e1,e2) -> let e0' = fold_exp e0 in
-                              let e1' = fold_exp e1 in
-                              (match e0',e1' with 
-                               | Ast.Constant(Ast.Int(n)),Ast.Constant(Ast.Int(m)) 
-                                    when n = m -> Ast.Constant(Ast.Unit)
-                               | _ -> Ast.For(name,e0',e1',fold_exp e2)) 
   | Ast.Match(e,ms) ->  
                           (* let rec aux acc = function
                           | Ast.Case(c,e)::t -> aux (Ast.Case(c,fold_exp e)::acc) t
@@ -152,6 +121,5 @@ and eval_unop = function
   | (Ast.Not,Ast.Constant(Ast.Bool(b))) -> Ast.Constant(Ast.Bool(not b))
   | (Ast.UMinus,Ast.Constant(Ast.Int(n))) -> Ast.Constant(Ast.Int(- n))
   | (op,e) -> Ast.UnOp(op,e)
-
 
 

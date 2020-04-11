@@ -64,11 +64,11 @@ let parse_modules fs =
 let compile genv (mdl : Ast.tmodule) = 
   try 
     if !print_ast then print_string @@ Ast_print.sprint_module 0 mdl;
-    let mdl = Ast2iast.rewrite mdl in
-    let mdl = Iast_closure.rewrite mdl in
-    let mdl = Iast_tailrec.rewrite mdl in
-    let genv0 = Iast2kast.{genv with mod_name=(match mdl with Iast.Module(mod_name,_) -> mod_name); init=[]} in
-    let genv',kast = Iast2kast.rewrite genv0 mdl in
+    (* let mdl = Ast2iast.rewrite mdl in *)
+    let mdl = Ast_closure.rewrite mdl in
+    let mdl = Ast_tailrec.rewrite mdl in
+    let genv0 = Ast2kast.{genv with mod_name=(match mdl with Ast.Module(mod_name,_) -> mod_name); init=[]} in
+    let genv',kast = Ast2kast.rewrite genv0 mdl in
     let bc_mdl = Kast2bc.bc_of_tmodule genv' kast in
     let bc_mdl = Bc_fold.rewrite bc_mdl in
     (genv',bc_mdl)
@@ -78,10 +78,10 @@ let compile genv (mdl : Ast.tmodule) =
 
 (* compile le programme formés des modules mdls *)
 let compile_all mdls =
-  let genv = Iast2kast.empty_genv Runtime.primitives "" in
+  let genv = Ast2kast.empty_genv Runtime.primitives "" in
   if !print_past then List.iter (fun mdl -> print_string @@ Past_print.sprint_module 0 mdl) mdls;
-  if !type_check then (let env = ref (Iast2kast.(genv.typed_decls)) in
-                       List.iter (fun mdl -> env := Typing.type_check mdl Iast2kast.(!env)) mdls);
+  if !type_check then (let env = ref (Ast2kast.(genv.typed_decls)) in
+                       List.iter (fun mdl -> env := Typing.type_check mdl Ast2kast.(!env)) mdls);
   let mdls = List.map Past2ast.visit_tmodule mdls in
 
   (* lambda lifting *)

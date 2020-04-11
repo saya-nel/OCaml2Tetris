@@ -79,27 +79,8 @@ and sprint_exp lvl = function
        (sprint_exp lvl e1)
        (indent_string lvl) (sprint_exp lvl e2)
        (indent_string lvl) (sprint_exp lvl e3)
-  | Ref(e) ->
-     sptf "(ref %s)" (sprint_exp 0 e)
-  | Ref_access(e1) ->
-     sptf "(! %s)" (sprint_exp 0 e1)
-  | Ref_assign(e1,e2) ->
-     sptf "(%s := %s)" (sprint_exp 0 e1) (sprint_exp 0 e2)
-  | Pair(e1,e2) ->
-     sptf "(%s, %s)" (sprint_exp 0 e1) (sprint_exp 0 e2) 
-  | Cons(e1,e2) ->
-     sptf "(%s :: %s)" (sprint_exp 0 e1) (sprint_exp 0 e2) 
-  | Array_create(es) ->
+  | Block(es) ->
      "[|" ^ mapcat "; " (sprint_exp 0) es ^ "|]"
-  | Array_assign(e1,e2,e3) ->
-     sptf "((%s).(%s) <- %s)" 
-       (sprint_exp lvl e1)
-       (sprint_exp (next lvl) e2)
-       (sprint_exp (next lvl) e3)
-  | Array_access(e1,e2) ->
-     sptf "%s.(%s)"
-       (sprint_exp 0 e1)
-       (sprint_exp 0 e2)
   | Seq(e1,e2) ->
      sptf "(%s;\n%s%s)"
        (sprint_exp lvl e1)
@@ -109,13 +90,6 @@ and sprint_exp lvl = function
      sptf "while %s do\n%s\n%sdone"
        (sprint_exp lvl e1)
        (sprint_exp (lvl+1) e2)
-       (indent_string lvl)
-  | For(x,e1,e2,e3) ->
-     sptf "for %s = %s to %s do\n%s\n%sdone"
-       x
-       (sprint_exp 0 e1)
-       (sprint_exp lvl e2)
-       (sprint_exp (next lvl) e3) 
        (indent_string lvl)
   | Assert(e,_) ->
      let s = sptf "(assert " in
@@ -139,6 +113,8 @@ and sprint_exp lvl = function
                  let lvl' = get_indent_level s lvl in
                  s ^ (sprint_exp lvl' e))
              cases)) ^ ")"
+  | Closure ((addr,e1),name,e2) -> sptf "(%s {scode(%d): %s | %s})" name addr (sprint_exp 0 e1) (sprint_exp 0 e2)
+  | Ext _ -> "..."
 and sprint_constant lvl = function
   | Unit -> sptf "()"
   | Bool b -> sptf "%b" b

@@ -33,39 +33,14 @@ and collect_exp coll env lenv = function
     collect_exp coll env lenv e1;
     collect_exp coll env lenv e2;
     collect_exp coll env lenv e3
-  | Ast.Ref(e) ->
-    collect_exp coll env lenv e
-  | Ast.Ref_access(e) ->
-    collect_exp coll env lenv e
-  | Ast.Ref_assign(e1,e2) ->
-    collect_exp coll env lenv e1;
-    collect_exp coll env lenv e2
-  | Ast.Pair(e1,e2) ->
-    collect_exp coll env lenv e1;
-    collect_exp coll env lenv e2
-  | Ast.Cons(e1,e2) ->
-    collect_exp coll env lenv e1;
-    collect_exp coll env lenv e2
-  | Ast.Array_create(es) ->
+  | Ast.Block(es) ->
      List.iter (collect_exp coll env lenv) es
-  | Ast.Array_assign(e1,e2,e3) ->
-    collect_exp coll env lenv e1;
-    collect_exp coll env lenv e2;
-    collect_exp coll env lenv e3
-  | Ast.Array_access(e1,e2) ->
-    collect_exp coll env lenv e1;
-    collect_exp coll env lenv e2
   | Ast.Seq(e1,e2) ->
     collect_exp coll env lenv e1;
     collect_exp coll env lenv e2
   | Ast.While(e1,e2) ->
     collect_exp coll env lenv e1;
     collect_exp coll env lenv e2
-  | Ast.For(x,e1,e2,e3) ->
-    let lenv' = x :: lenv in 
-    collect_exp coll env lenv' e1;
-    collect_exp coll env lenv' e2;
-    collect_exp coll env lenv' e3  
   | Ast.Assert(e,_) ->
      collect_exp coll env lenv e
   | Ast.Match(e,cases) ->
@@ -73,3 +48,4 @@ and collect_exp coll env lenv = function
     (List.iter 
       (function Ast.Case (_,e) | Ast.Otherwise (e) -> collect_exp coll env lenv e)
      cases)
+  | _ -> ()

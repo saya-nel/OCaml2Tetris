@@ -88,7 +88,7 @@ let rec bc_of_prog bc_mdls =
    apply_file :: main :: files
 and bc_of_tmodule genv Kast.{mod_name;decls} = 
   let bc_body = bc_of_decls mod_name decls in
-  {mod_name;bc_body;init=Iast2kast.(genv.init)}
+  {mod_name;bc_body;init=Ast2kast.(genv.init)}
 and bc_of_decls mod_name ds = 
   mapcat (bc_of_decl mod_name) ds
 and bc_of_decl mod_name = function 
