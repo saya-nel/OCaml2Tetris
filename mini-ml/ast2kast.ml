@@ -5,6 +5,11 @@ let gensym =
     incr c;
     Printf.sprintf "__%s%d" prefix !c)
 
+let associate n l =
+  let rec aux acc n = function
+  | [] -> acc    (* inverse l'ordre, pas génant *)
+  | h::t -> aux ((h,n)::acc) (n+1) t in aux [] n l
+
 type genv = {
     mod_name : Ast.name;
     globals : (Ast.name * int) list;
@@ -152,47 +157,23 @@ and rw_exp lenv genv = function
       | Some i -> Kast.Variable(Kast.Local i))
   | Ast.Let(name,e1,e2) ->
      let i,lenv' = lenv_extend_tail name lenv in (* optimisation : recyclage des variables masquées, 
-                                                   attention, dans, let x = e1(x) in e2, e1 doit bien utiliser l'ancienne valeur de x *)
+                                                   contrainte pour la génération de code : dans, C[let x = e1(x) in e2] C[e1] doit bien manipuler le nouveau [x] et [e1] l'ancien *)
      Kast.Let(i,rw_exp lenv genv e1, rw_exp lenv' genv e2)
-  | Ast.Fun(name,e) ->
-     (* après lambda-lifting *)
+ 
+ | Ast.Fun _ -> assert false (* déjà transformer en fermeture *)
 
-
-     let lenv' = {lenv with 
-                   free=[];
-                   arguments=[(name,0)];
-                   locals=[]} in
-     let ke = rw_exp lenv' genv @@ e in
-     Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments) 
-  | Ast.Closure((id,c),name,v) ->
-     let lenv_code = {lenv with 
-                       free = lenv.locals @
-                                (let n = List.length lenv.locals in 
-                                 List.map (fun (c,i) -> (c,i+n)) lenv.arguments);
-                       arguments=[(name,0)];
+ | Ast.Closure((id,c),name,v) ->
+      (* après lambda-lifting *)
+     let lenv_code = { lenv with 
+                       free = (associate 1 (match v with 
+                              | Ast.Block(addr::l) -> List.map (function (Ast.Ident(sym)) -> sym | _ -> assert false) l
+                              | _ -> assert false));
+                       arguments=[(name,1)];
                        locals=[]} in
      let i,lenv_v = lenv_extend name lenv in
      let kc = rw_exp lenv_code genv c in
-     let kv = rw_exp lenv_v genv v in
+     let kv = rw_exp lenv_v genv v in (* lenv_v *)
      Kast.Closure((id,kc),kv)
-
-  (* let ke = rw_exp lenv' genv @@ e in
-     rw_exp e Array.create (env*)
-
-  (* Kast.Closure(ke,Array.Array_create(name))  *)
-
-  (* | Ast.App(Ast.Constant(Ast.Constr name),args) ->
-    let num,arity = (match List.assoc_opt (genv.mod_name ^ "." ^ name) genv.constrs with 
-              | None -> (match List.assoc_opt name genv.constrs with Some (num,arit) -> num,arit | None -> failwith "iast2kast 206")
-              | Some (num,arit) -> num,arit) in
-    let n = arity - List.length args in 
-    let rec aux extra = function
-    | 0 -> Ast.Block(Ast.Constant(Ast.Int num) :: args @ extra)
-    | n -> assert (n > 0);
-           let name = Printf.sprintf "__cstparam%d" n in
-           Ast.Fun (name,aux (Ast.Ident(name)::extra) (n-1)) in 
-    rw_exp lenv genv @@ Ast_closure.rw_exp [] @@ aux [] n *)
-
   | Ast.App(e,args) ->
      Kast.App(rw_exp lenv genv e, List.map (rw_exp lenv genv) args)
   | Ast.If(e1,e2,e3) ->
@@ -275,18 +256,13 @@ and rw_exp lenv genv = function
                                                         Ast.Constant(md)),e',aux l2')) in
                aux smst) 
 and rw_constant lenv genv c = match c with 
-  | Ast.String(s) ->
-     let rev_xs = ref [] in
-     String.iter (fun c -> rev_xs := (c :: !rev_xs)) s;
-     rw_exp lenv genv @@
-       Ast.Block(List.rev_map (fun c -> Ast.Constant(Ast.Char(c))) !rev_xs) 
-  | _ -> Kast.Constant(match c with 
-                       | Ast.Unit -> Kast.Unit
-                       | Ast.Int n -> Kast.Int n
-                       | Ast.Char c -> Kast.Int (int_of_char c)
-                                     
-                       (*  *)
-                       | Ast.Bool b -> Kast.Bool b 
-                       | Ast.Array_empty -> Kast.Array_empty
-                       | Ast.String _ ->
-                          assert false) (* déjà traité *)
+ | Ast.Unit -> Kast.Constant(Kast.Unit)
+ | Ast.Int n -> Kast.Constant(Kast.Int n)
+ | Ast.Char c -> Kast.Constant(Kast.Int (int_of_char c))
+ | Ast.Bool b -> Kast.Constant(Kast.Bool b)
+ | Ast.Array_empty -> Kast.Constant(Kast.Array_empty)
+ | Ast.String(s) ->
+   let rev_xs = ref [] in
+   String.iter (fun c -> rev_xs := (c :: !rev_xs)) s;
+   rw_exp lenv genv @@
+     Ast.Block(List.rev_map (fun c -> Ast.Constant(Ast.Char(c))) !rev_xs) 

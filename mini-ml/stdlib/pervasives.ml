@@ -21,7 +21,7 @@ let incr r =
 	ref_set_contents r (ref_contents r + 1)
 
 let decr r = 
-	ref_set_contents r (ref_contents r - 1)
+	ref_set_contents r (ref_contents r + 1)
 
 let fst (p : 'a * 'b) : 'a = 
 	Internal.fst p

@@ -57,18 +57,14 @@ let parse_modules fs =
   List.map parse fs
 
 let compile genv (mdl : Ast.tmodule) = 
-  try 
-    if !print_ast then print_string @@ Ast_print.sprint_module 0 mdl;
-    (* let mdl = Ast2iast.rewrite mdl in *)
     let mdl = Ast_closure.rewrite mdl in
     let mdl = Ast_tailrec.rewrite mdl in
+    if !print_ast then print_string @@ Ast_print.sprint_module 0 mdl;
     let genv0 = Ast2kast.{genv with mod_name=(match mdl with Ast.Module(mod_name,_) -> mod_name); init=[]} in
     let genv',kast = Ast2kast.rewrite genv0 mdl in
     let bc_mdl = Kast2bc.bc_of_tmodule genv' kast in
     let bc_mdl = Bc_fold.rewrite bc_mdl in
     (genv',bc_mdl)
-  with Kast2bc.Cannot_generate_bytecode msg -> 
-    (Printf.printf "cannot generate bytecode.\n%s\n" msg; exit 1)
 
 
 (* compile le programme formés des modules mdls *)

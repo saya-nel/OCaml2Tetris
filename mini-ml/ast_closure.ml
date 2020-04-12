@@ -20,10 +20,9 @@ and rw_exp env = function
   | Ast.Ident name -> Ast.Ident name
   | Ast.Fun (name,e) -> 
      (match env with 
-      | [] -> Ast.Fun (name,rw_exp [name] e)
-      | _ -> let env = name :: env in
-             let addr = gen_closure_id () in
-             let code = rw_exp env e in
+      (* | [] -> Ast.Fun (name,rw_exp [name] e) *)
+      | _ -> let addr = gen_closure_id () in
+             let code = rw_exp (name :: env) e in
              let closure_env = List.map (fun name -> Ast.Ident(name)) env in
              let closure = Ast.Constant(Ast.Int addr)::closure_env in
              Ast.Closure((addr,code),name,Ast.Block(closure)))

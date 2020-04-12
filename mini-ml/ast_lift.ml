@@ -14,9 +14,11 @@ let create () = ref []
 
 let rec rewrite ?(depth_max=5) m =
   match m with Ast.Module(mod_name,decls) ->
-    let collect = create () in
-    let decls = List.map (rw_decl collect) decls in
-    let decls = !collect @ decls in
+    
+    let decls = List.concat @@
+                List.map (fun d -> let collect = create () in 
+                                   let d = rw_decl collect d in
+                                   List.rev_append (!collect) [d]) decls in(* rev important *)
     Ast.Module(mod_name,decls)
 
 
@@ -34,11 +36,12 @@ and rw_exp cl env lenv = function
                         let sym = gensym () in
                         let vars = Freevr.collect env lenv e in
                         (match vars with 
-                         |[] ->  Ast.Fun (name,e) 
+                         |[] -> Ast.Fun (name,e) 
                          (* let d = Ast.DefFun([(sym,[name],e)]) in
                                 cl := d :: !cl;
                                 Ast.Ident (sym) *)
-                         | _ ->  let d = Ast.DefVar(sym,List.fold_right (fun x e -> Ast.Fun (x,e)) (vars @ [name]) e) in
+                         | _ ->  (* let d = Ast.DefFun([(sym,vars @ [name], e)]) in  (y aurait il moyen d'en faire de vraies fonctions globales ...? *)
+                                 let d = Ast.DefVar(sym,List.fold_right (fun x e -> Ast.Fun (x,e)) (vars @ [name]) e) in
                                  cl := d :: !cl;
                                  Ast.App(Ast.Ident (sym),List.map (fun v -> Ast.Ident(v)) vars))
   (* cl := Ast.DefFun([(sym,name::vars,e')]) :: !cl;*)       

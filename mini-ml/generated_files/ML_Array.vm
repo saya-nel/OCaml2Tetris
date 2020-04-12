@@ -48,10 +48,10 @@ label WhileBegin3
     push local 0
     call ML_Pervasives.ref_contents 1
     pop local 2
+    push argument 0
     push argument 1
     push local 2
     call ML_Internal.array_get 2
-    push argument 0
     call ML_Apply.apply 2
     pop temp 0
     push local 0
@@ -98,10 +98,10 @@ label WhileBegin5
     push local 2
     call ML_Pervasives.ref_contents 1
     pop local 4
+    push argument 0
     push local 1
     push local 4
     call ML_Internal.array_get 2
-    push argument 0
     call ML_Apply.apply 2
     pop local 5
     push local 1

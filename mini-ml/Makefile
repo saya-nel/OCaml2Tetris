@@ -36,5 +36,7 @@ all:
 	ast_closure.cmo ast_tailrec.cmo typing.cmo  kast.cmo ast2kast.cmo \
 	bc.cmo kast2bc.cmo bc_print.cmo bc_fold.cmo parser.cmo main.cmo
 
+test:	test/assert.ml	
+	./compile -assert -typecheck -printast stdlib/pervasives.ml stdlib/array.ml test/assert.ml
 clean:
 	rm -f $(EXE) *.cmo *.cmi compile *.vm *.tst *.out 
