@@ -8,7 +8,6 @@ let gensym =
 type genv = {
     mod_name : Ast.name;
     globals : (Ast.name * int) list;
-    constrs : (Ast.name * (int * arity)) list;
     global_funs : string list;
     primitives : (Ast.name * Ast.name) list;
     typed_decls : Types.env;
@@ -18,7 +17,6 @@ let empty_genv prims mod_name =
   {
     mod_name;
     globals=[];
-    constrs=[];
     global_funs=[];
     primitives=List.map (fun (x,c,ty) -> (x,c)) prims; (* ignore type *)
     typed_decls=Typing.initial_env (Runtime.primitives);
@@ -34,19 +32,6 @@ let genv_extend genv x =
        let j = i + 1 in
        (j,((x,j)::genv.globals)) in
   (i,{genv with globals=globals'})
-
-let env_extends_constructors genv cstrs =
-  let r = ref genv.constrs in
-  List.iteri
-    (fun i (c,l) ->
-      r := ((genv.mod_name ^ "." ^ c),(i,List.length l)) :: !r)                      (* genv.mod_name ^ "." ^  *)
-    cstrs;
-  { genv with constrs=(!r) @ genv.constrs }
-
-let get_constructor_num genv name = 
-               (match List.assoc_opt (genv.mod_name ^ "." ^ name) genv.constrs with 
-              | None -> (match List.assoc_opt name genv.constrs with Some (x,_) -> x | None -> failwith "iast2kast : Ast.Constr")
-              | Some (c,_) -> c)
 
 
 type lenv = {
@@ -80,19 +65,19 @@ let lenv_extend_tail x lenv = (* réutilse les variables de même nom déjà dé
     | [] -> 
        (0,[(x,0)])
     | ((_,i)::_) as l -> 
-      let i2 = (match List.assoc_opt x l with 
-                | None -> i + 1
-                | Some i -> i) in
-      (i2,((x,i2)::lenv.locals)) in
-    (i2,{lenv with locals=locals'})
+       let i2 = (match List.assoc_opt x l with 
+                 | None -> i + 1
+                 | Some i -> i) in
+       (i2,((x,i2)::lenv.locals)) in
+  (i2,{lenv with locals=locals'})
 
 
 
 (* convertit l'IAST du module m en KAST *)
 let rec rewrite genv m =
   match m with Ast.Module(mod_name,decls) ->
-  let (genv',kds) = rw_decls mod_name genv decls in
-  (genv',Kast.{mod_name;decls=kds;init=(List.map fst genv'.globals)})
+    let (genv',kds) = rw_decls mod_name genv decls in
+    (genv',Kast.{mod_name;decls=kds;init=(List.map fst genv'.globals)})
 and rw_decls mod_name genv ds = 
   let genv,kds =
     List.fold_left 
@@ -105,9 +90,9 @@ and rw_decls mod_name genv ds =
   (genv,List.rev kds)
 and rw_decl mod_name genv = function
   | Ast.DefVar ("_",e) -> 
-    rw_decl mod_name genv @@
-      let name = gensym ~prefix:"voidExpr" in
-      Ast.DefVar (name,e)
+     rw_decl mod_name genv @@
+       let name = gensym ~prefix:"voidExpr" in
+       Ast.DefVar (name,e)
   | Ast.DefVar (name,e) ->
      let name_init = "__init__" ^ name in
      let i,genv' = genv_extend genv name in
@@ -119,9 +104,6 @@ and rw_decl mod_name genv = function
      (genv2,(d1 @ d2))
   | Ast.DefFun l -> rw_defun mod_name genv l
   | Ast.DefFunRec l -> rw_defun mod_name genv ~recflag:true l
-  | Ast.Type(s,_,Past.Sum l) ->
-    let genv' = env_extends_constructors genv l in
-    (genv',[])
   | _ -> (genv,[])
 and rw_defun mod_name genv ?(recflag=false) dfs =
   let gnames = List.map (fun (name,args,e) -> mod_name ^ "." ^ name)  dfs in
@@ -146,26 +128,26 @@ and rw_exp lenv genv = function
          (match List.assoc_opt name lenv.arguments with
           | None ->
              (match List.assoc_opt name lenv.free with
-             | None ->
-             (match List.assoc_opt name genv.globals with
-              | None -> let full_name =
-                          if (match String.index_opt name '.' with
-                              | None -> false
-                              | _ -> true)
-                          then name
-                          else (genv.mod_name ^ "." ^ name)
-                        in                
-                        (if List.mem full_name genv.global_funs
-                         then Kast.GFun(full_name)
-                         else let f =
-                                try
-                                  List.assoc name genv.primitives
-                                with Not_found -> failwith ("cannot find " ^ name)
-                              in
-                              Kast.GFun(f))
-              | Some i -> Kast.Variable(Kast.Global (genv.mod_name ^ "." ^ name))) (* Kast.App (Kast.GFun(genv.mod_name ^ "." ^ name),[])) *)
-            | Some i -> (* Kast.Variable(Kast.Argument (0)); *)
-                        Kast.Variable(Kast.Free (i)) ) 
+              | None ->
+                 (match List.assoc_opt name genv.globals with
+                  | None -> let full_name =
+                              if (match String.index_opt name '.' with
+                                  | None -> false
+                                  | _ -> true)
+                              then name
+                              else (genv.mod_name ^ "." ^ name)
+                            in                
+                            (if List.mem full_name genv.global_funs
+                             then Kast.GFun(full_name)
+                             else let f =
+                                    try
+                                      List.assoc name genv.primitives
+                                    with Not_found -> failwith ("cannot find " ^ name)
+                                  in
+                                  Kast.GFun(f))
+                  | Some i -> Kast.Variable(Kast.Global (genv.mod_name ^ "." ^ name))) (* Kast.App (Kast.GFun(genv.mod_name ^ "." ^ name),[])) *)
+              | Some i -> (* Kast.Variable(Kast.Argument (0)); *)
+                 Kast.Variable(Kast.Free (i)) ) 
           | Some i -> Kast.Variable(Kast.Argument (i)))
       | Some i -> Kast.Variable(Kast.Local i))
   | Ast.Let(name,e1,e2) ->
@@ -173,33 +155,33 @@ and rw_exp lenv genv = function
                                                    attention, dans, let x = e1(x) in e2, e1 doit bien utiliser l'ancienne valeur de x *)
      Kast.Let(i,rw_exp lenv genv e1, rw_exp lenv' genv e2)
   | Ast.Fun(name,e) ->
-  (* après lambda-lifting *)
+     (* après lambda-lifting *)
 
 
      let lenv' = {lenv with 
-                 free=[];
-            arguments=[(name,0)];
-            locals=[]} in
-    let ke = rw_exp lenv' genv @@ e in
-    Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments) 
+                   free=[];
+                   arguments=[(name,0)];
+                   locals=[]} in
+     let ke = rw_exp lenv' genv @@ e in
+     Kast.Fun(ke,List.length lenv.locals,List.length lenv.arguments) 
   | Ast.Closure((id,c),name,v) ->
-    let lenv_code = {lenv with 
-             free = lenv.locals @
-              (let n = List.length lenv.locals in 
-               List.map (fun (c,i) -> (c,i+n)) lenv.arguments);
-        arguments=[(name,0)];
-        locals=[]} in
-    let i,lenv_v = lenv_extend name lenv in
-    let kc = rw_exp lenv_code genv c in
-    let kv = rw_exp lenv_v genv v in
-    Kast.Closure((id,kc),kv)
+     let lenv_code = {lenv with 
+                       free = lenv.locals @
+                                (let n = List.length lenv.locals in 
+                                 List.map (fun (c,i) -> (c,i+n)) lenv.arguments);
+                       arguments=[(name,0)];
+                       locals=[]} in
+     let i,lenv_v = lenv_extend name lenv in
+     let kc = rw_exp lenv_code genv c in
+     let kv = rw_exp lenv_v genv v in
+     Kast.Closure((id,kc),kv)
 
-     (* let ke = rw_exp lenv' genv @@ e in
+  (* let ke = rw_exp lenv' genv @@ e in
      rw_exp e Array.create (env*)
 
-(* Kast.Closure(ke,Array.Array_create(name))  *)
+  (* Kast.Closure(ke,Array.Array_create(name))  *)
 
-  | Ast.App(Ast.Constant(Ast.Constr name),args) ->
+  (* | Ast.App(Ast.Constant(Ast.Constr name),args) ->
     let num,arity = (match List.assoc_opt (genv.mod_name ^ "." ^ name) genv.constrs with 
               | None -> (match List.assoc_opt name genv.constrs with Some (num,arit) -> num,arit | None -> failwith "iast2kast 206")
               | Some (num,arit) -> num,arit) in
@@ -209,7 +191,8 @@ and rw_exp lenv genv = function
     | n -> assert (n > 0);
            let name = Printf.sprintf "__cstparam%d" n in
            Ast.Fun (name,aux (Ast.Ident(name)::extra) (n-1)) in 
-    rw_exp lenv genv @@ Ast_closure.rw_exp [] @@ aux [] n
+    rw_exp lenv genv @@ Ast_closure.rw_exp [] @@ aux [] n *)
+
   | Ast.App(e,args) ->
      Kast.App(rw_exp lenv genv e, List.map (rw_exp lenv genv) args)
   | Ast.If(e1,e2,e3) ->
@@ -220,17 +203,17 @@ and rw_exp lenv genv = function
      Kast.BinOp(op,rw_exp lenv genv e1,rw_exp lenv genv e2)
   | Ast.UnOp(op,e1) -> Kast.UnOp(op,rw_exp lenv genv e1)
   | Ast.Ext(ext) ->
-    (match ext with 
-     | Ast.Array_alloc(e) ->
-        rw_exp lenv genv @@
-          Ast.App(Ast.(Ident("Array.create_uninitialized"),[e])) 
-     | Ast.SetGlobal(e,i) ->
+     (match ext with 
+      | Ast.Array_alloc(e) ->
+         rw_exp lenv genv @@
+           Ast.App(Ast.(Ident("Array.create_uninitialized"),[e])) 
+      | Ast.SetGlobal(e,i) ->
          Kast.Ext(Kast.SetGlobal (rw_exp lenv genv e,i))
-     | Ast.ReadGlobal(i) ->
+      | Ast.ReadGlobal(i) ->
          Kast.Ext(Kast.ReadGlobal(i))
-     | Ast.Label(s,e) -> 
+      | Ast.Label(s,e) -> 
          Kast.Ext(Kast.Label(s,rw_exp lenv genv e))
-     | Ast.Goto(s,xs) -> 
+      | Ast.Goto(s,xs) -> 
          Kast.Ext(Kast.Goto(s,List.map (rw_exp lenv genv) xs)))
   | Ast.Block(xs) ->
      rw_exp lenv genv @@
@@ -242,27 +225,15 @@ and rw_exp lenv genv = function
                     Ast.Ident(a)
                  | e::es ->
                     Ast.Seq(Ast.App (Ast.Ident("Internal.array_set"),
-                                    [  Ast.Ident(a);
-                                       Ast.Constant(Ast.Int(i));
-                                       e]),
+                                     [  Ast.Ident(a);
+                                        Ast.Constant(Ast.Int(i));
+                                        e]),
                             aux (i+1) es) in aux 0 xs)                        
   | Ast.Seq(e1,e2) ->
      Kast.Seq(rw_exp lenv genv e1, rw_exp lenv genv e2)
   | Ast.While(e1,e2) ->
      Kast.While(rw_exp lenv genv e1, rw_exp lenv genv e2)
- (* | Ast.For(name,e0,e1,e2) -> 
-     rw_exp lenv genv @@
-       let name_zz = gensym ~prefix:name in
-       let len_zz = gensym ~prefix:"L" in
-       let open Iast in
-       Let(name_zz, 
-        App(Ast.Ident("Pervasives.ref"),[e0]),
-           Let(len_zz,e1,
-               While(BinOp (Ast.Le,
-                App(Ast.Ident("Pervasives.ref_contents"),[Ident(name_zz)]),
-                Ident(len_zz)),
-                     Let(name, App(Ast.Ident("Pervasives.ref_contents"),[Ident(name_zz)]),
-                         Seq(e2,App(Ast.Ident("Pervasives.incr"),[Ident(name_zz)])))))) *)
+
   | Ast.Match (e,ms) -> 
      let ms',otherw = let rec aux acc = function
                         | [] ->
@@ -272,14 +243,14 @@ and rw_exp lenv genv = function
                         | h::t ->
                            aux (h::acc) t in aux [] ms in
      let sms = List.map (function 
-                                | Ast.Case(Ast.Constr name,e) -> 
-                                  (* NB : on va trier les constantes : mais avant celà, *)
-                                  (* il faut absolument renommer les constructeurs par leur entier associé, *)
-                                  (* sinon, la liste ne sera pas triée correctement et cela produira des bug *)
-                                  (* dans la génération de code *)
-                                  (Ast.Int(get_constructor_num genv name),e)
-                                | Ast.Case(c,e) -> (c,e)
-                                | _ -> assert false) ms'
+                   | Ast.Case(Ast.Int(n),e) -> 
+                      (* NB : on va trier les constantes : mais avant celà, *)
+                      (* il faut absolument renommer les constructeurs par leur entier associé, *)
+                      (* sinon, la liste ne sera pas triée correctement et cela produira des bug *)
+                      (* dans la génération de code *)
+                      (Ast.Int(n),e)
+                   | Ast.Case(c,e) -> (c,e)
+                   | _ -> assert false) ms'
      in
      let smst = List.sort (fun (c1,_) (c2,_) -> compare c1 c2) sms in
      let var = gensym ~prefix:"L" in
@@ -303,37 +274,19 @@ and rw_exp lenv genv = function
                                                         Ast.Ident(var),
                                                         Ast.Constant(md)),e',aux l2')) in
                aux smst) 
-  | Ast.Assert(e,pos) ->
-     rw_exp lenv genv @@ 
-       Ast.If(e,
-              Ast.Constant(Ast.Unit),
-              Ast.Seq(
-                Ast.App(Ast.Ident("Pervasives.print_string"),
-                  [Ast.Constant
-                    (Ast.String 
-                      (Printf.sprintf "assertion fail [%s]"    "" (* (Print_ast.sprint_exp 0 e)))]) *)))]),  (* à revoir, je n'ai plus accès à l'AST *)
-                Ast.Seq(Ast.App(Ast.Ident("Pervasives.print_newline"),[ Ast.Constant(Ast.Unit)]),
-                Ast.Seq(Ast.App(Ast.Ident("Pervasives.print_string"),
-                  [Ast.Constant
-                    (Ast.String 
-                      (Printf.sprintf "at %s : %s. exit." (genv.mod_name) (Parseutils.string_of_position pos)))]),
-                Ast.App(Ast.Ident("Pervasives.exit"),
-                       [Ast.Constant (Ast.Int(0))])))))
 and rw_constant lenv genv c = match c with 
-| Ast.String(s) ->
+  | Ast.String(s) ->
      let rev_xs = ref [] in
      String.iter (fun c -> rev_xs := (c :: !rev_xs)) s;
      rw_exp lenv genv @@
        Ast.Block(List.rev_map (fun c -> Ast.Constant(Ast.Char(c))) !rev_xs) 
-| _ -> Kast.Constant(match c with 
-  | Ast.Unit -> Kast.Unit
-  | Ast.Int n -> Kast.Int n
-  | Ast.Char c -> Kast.Int (int_of_char c)
-  | Ast.Constr name -> Kast.Int (get_constructor_num genv name)
-     
-     (*  *)
-  | Ast.Bool b -> Kast.Bool b 
-  | Ast.Array_empty -> Kast.Array_empty
-  | Ast.List_empty -> Kast.List_empty
-  | Ast.String _ ->
-     assert false) (* déjà traité *)
+  | _ -> Kast.Constant(match c with 
+                       | Ast.Unit -> Kast.Unit
+                       | Ast.Int n -> Kast.Int n
+                       | Ast.Char c -> Kast.Int (int_of_char c)
+                                     
+                       (*  *)
+                       | Ast.Bool b -> Kast.Bool b 
+                       | Ast.Array_empty -> Kast.Array_empty
+                       | Ast.String _ ->
+                          assert false) (* déjà traité *)

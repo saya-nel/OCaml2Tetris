@@ -18,12 +18,12 @@ let rec sprint_prog ms =
   List.map (sprint_module 0) ms
 and sprint_module lvl m = 
   match m with 
-  Module(mod_name,decls) ->
-  sptf "%smodule %s = struct\n%s ;;\n%send\n\n"
-    (indent_string lvl)
-    mod_name 
-    (mapcat " ;;\n\n" (sprint_decl (next lvl)) decls)
-    (indent_string lvl) 
+    Module(mod_name,decls) ->
+    sptf "%smodule %s = struct\n%s ;;\n%send\n\n"
+      (indent_string lvl)
+      mod_name 
+      (mapcat " ;;\n\n" (sprint_decl (next lvl)) decls)
+      (indent_string lvl) 
 and sprint_decl lvl = function
   | DefVar (name,e) ->
      let w = sptf "let %s = " name in
@@ -91,10 +91,6 @@ and sprint_exp lvl = function
        (sprint_exp lvl e1)
        (sprint_exp (lvl+1) e2)
        (indent_string lvl)
-  | Assert(e,_) ->
-     let s = sptf "(assert " in
-     let lvl' = get_indent_level s lvl in 
-     s ^ (sprint_exp lvl' e) ^ ")"
   | Match(e1,cases) ->
      let lvl = lvl + 1 in (* pour la parenthèse ouvrante *)
      sptf "(match %s with\n%s"
@@ -121,8 +117,6 @@ and sprint_constant lvl = function
   | Int n -> sptf (if n >= 0 then "%d" else "(%d)") n
   | Char c -> sptf "%c" c
   | String s -> sptf "\"%s\"" s
-  | Constr name -> name
-  | List_empty -> "[]"
   | Array_empty -> "[||]"
 and sprint_binop lvl = function
   | Add -> "+"

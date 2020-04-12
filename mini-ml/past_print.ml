@@ -162,7 +162,8 @@ and sprint_constant lvl = function
   | Char c -> sptf "%c" c
   | String s -> sptf "\"%s\"" s
   | Constr name -> name
-  | List_empty -> "[]"
+  | List_empty -> "([])"
+  | List_cons -> "(::)"
   | Array_empty -> "[||]"
 and sprint_binop lvl = function
   | Add -> "+"

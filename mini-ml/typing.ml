@@ -202,6 +202,7 @@ and w_constant env exp_loc = function
 | Char _ -> Tchar
 | String _ -> Tstring
 | List_empty -> let v = Tvar (V.create ()) in Tlist v
+| List_cons -> let v = Tvar (V.create ()) in Tarrow(v,Tlist v)
 | Array_empty -> let v = Tvar (V.create ()) in Tarray v
 | Constr s -> find s exp_loc env
 

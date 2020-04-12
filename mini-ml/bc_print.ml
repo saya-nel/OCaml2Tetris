@@ -30,7 +30,7 @@ and string_of_instr = function
   | BinOp s -> string_of_binop s
   | UnOp s -> string_of_unop s
   | True ->
-    sptf "%spush constant 0\n%snot" indent indent
+     sptf "%spush constant 0\n%snot" indent indent
   | False -> indent ^ "push constant 0"
 and string_of_segment = function
   | Anywhere ->
@@ -74,7 +74,7 @@ and string_of_unop = function
   | Access -> "call Memory.peek 1"
   | Alloc -> "call Memory.alloc 1"
 
-  (*
+               (*
      string_of_instrs [Call ("Math.multiply",2)]
   | Div ->
      string_of_instrs [Call ("Math.divide",2)]

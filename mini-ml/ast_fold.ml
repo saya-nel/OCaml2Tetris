@@ -1,8 +1,5 @@
 (* constant folding *)
 
-let compile_assertions = ref false
-
-
 (* rend le nombre d'occurence de la variable v dans l'expression e *)
 let rec occ (v : string) e = match e with
   | Ast.Constant c -> 0
@@ -14,7 +11,6 @@ let rec occ (v : string) e = match e with
   | Ast.Seq(e1,e2) -> occ v e1 + occ v e2
   | Ast.While(e1,e2) -> occ v e1 + occ v e2
   | Ast.Match(e,ms) -> occ v e + occ_list v (List.map (function Ast.Case(_,e) -> e | Ast.Otherwise e -> e) ms)
-  | Ast.Assert(e,pos) -> if !compile_assertions then occ v e else 0
   | Ast.Ident name -> if name = v then 1 else 0
   | e -> 0
 and occ_list v l = 
@@ -36,13 +32,12 @@ let replace v x e =
     | Ast.Seq(e1,e2) -> Ast.Seq(replace e1,replace e2)
     | Ast.While(e1,e2) -> Ast.While(replace e1,replace e2)
     | Ast.Match(e,ms) -> Ast.Match (replace e,List.map (function Ast.Case(c,e) -> Ast.Case(c,replace e) | Ast.Otherwise e -> Ast.Otherwise(replace e)) ms) 
-    | Ast.Assert(e,pos) -> Ast.Constant(Ast.Unit)
     | e -> e in replace e
 
 
 (* applique la propagation des constantes dans le modules *)
 let rec rewrite m =
-    match m with Ast.Module(mod_name,decls) ->
+  match m with Ast.Module(mod_name,decls) ->
     let decls = List.map fold_decl decls in
     Ast.Module(mod_name,decls)
 
@@ -61,7 +56,7 @@ and fold_exp = function
      let e1 = fold_exp e1 in
      let e2 = fold_exp e2 in
      (match e1 with 
-      | Ast.Assert _ | Ast.While _ 
+      | Ast.While _ 
         -> Ast.Seq (e1,fold_exp @@ replace v (Ast.Constant(Ast.Unit)) e2)
       | _ ->
          (match e1,occ v e2 with
@@ -84,23 +79,19 @@ and fold_exp = function
                          | Ast.Constant(Ast.Bool(false)) -> Ast.Constant(Ast.Unit)
                          | e -> Ast.While(e,fold_exp e2))
   | Ast.Match(e,ms) ->  
-                          (* let rec aux acc = function
+     (* let rec aux acc = function
                           | Ast.Case(c,e)::t -> aux (Ast.Case(c,fold_exp e)::acc) t
                           | Ast.Otherwise(e)::_ -> List.rev (Ast.Otherwise(fold_exp e)::acc)
                           | [] -> Printf.printf "Warning 8: this pattern-matching is not exhaustive.\n"; 
                                   List.rev ((Ast.Otherwise(Ast.App(Ast.Ident("Pervasives.failwith"),
                                                                    [Ast.Constant(Ast.String("Match_failure, exit."))]))) :: acc) in
                         let ms = aux [] ms in *)
-                        (* (match fold_exp e with 
+     (* (match fold_exp e with 
                          | Ast.Constant c -> (match List.find (function Ast.Case(c',_) -> c' = c | Ast.Otherwise _ -> true) ms with
                                               | Ast.Case(_,e) -> e
                                               | Ast.Otherwise e -> e)
                          | e' -> Ast.Match(e',ms)) *)
-    Ast.Match(e,ms)
-  | Ast.Assert(e,pos) -> 
-     if !compile_assertions 
-     then Ast.Assert(fold_exp e,pos) 
-     else Ast.Constant(Ast.Unit)
+     Ast.Match(e,ms)
   | e -> e
 and eval_binop = function
   | (Ast.Add,Ast.Constant(Ast.Int(n)),Ast.Constant(Ast.Int(m))) -> Ast.Constant(Ast.Int((n+m) land 0xFFFF))

@@ -321,6 +321,7 @@ constant:
  | STRING                                { String($1) }
  | constructor                           { Constr($1) }
  | LBRACKET RBRACKET                     { List_empty }
+ | LPAREN CONS RPAREN                    { List_cons }
  | ARRAY_OPEN ARRAY_CLOSE                { Array_empty }
  ;
 

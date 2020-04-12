@@ -1,5 +1,4 @@
 let inputs = ref []
-let action = ref (`Compile : [ `Compile | `PrintAst])
 let stdlib = ref "stdlib"
 
 let type_check = ref false
@@ -9,8 +8,6 @@ let print_past = ref false
 let globalize = ref true
 let lifting = ref true
 and folding = ref true
-
-let set_action a () = action := a
 
 let add_file f = inputs := !inputs @ [f] 
 let source_dir = ref ""
@@ -30,15 +27,13 @@ let () =
        " : désactive la globalisation des valeurs immutables allouées.");
       ("-nofolding", Arg.Clear folding,
        " : désactive la propagation des constantes");
-      ("-compile", Arg.Unit (set_action `Compile), 
-       " : compile vers le langage de la VM Nand2Tetris");
       ("-src", Arg.Set_string source_dir,
        " : spécifie où chercher les fichiers sources à compiler");
       ("-dst", Arg.Set_string destination_dir, 
        " : spécifie le dossier où seront placés les fichiers compilés");
       ("-stdlib",Arg.Set_string stdlib, 
        "chemin vers la bibliothèque d'execution de mini-ml");
-      ("-assert", Arg.Set Ast_fold.compile_assertions,
+      ("-assert", Arg.Set Past2ast.compile_assertions,
        " : embarque les assertions dans le code.")
     ] add_file "Usage:\n  ./compile [options] <filenames ..>"	
 

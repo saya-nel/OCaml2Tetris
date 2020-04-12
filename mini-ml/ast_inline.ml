@@ -1,6 +1,3 @@
-(* constant folding *)
-
-let compile_assertions = ref false
 
 let rec depth e = match e with 
   | Ast.Constant c -> 0
@@ -12,7 +9,6 @@ let rec depth e = match e with
   | Ast.Seq(e1,e2) -> 1 + max (depth e1) (depth e2)
   | Ast.While(e1,e2) -> 1 + max (depth e1) (depth e2)
   | Ast.Match(e,ms) -> 1 + max (depth e) (depth_list (List.map (function Ast.Case(_,e) -> e | Ast.Otherwise e -> e) ms))
-  | Ast.Assert(e,pos) -> if !compile_assertions then 1 + depth e else 0
   | Ast.Ident name -> 0
   | e -> 0
 and depth_list l = 
@@ -22,8 +18,8 @@ and depth_list l =
 let rec visit_tmodule ?(depth_max=5) m =
   if depth_max <= 0 then m else 
     match m with Ast.Module(mod_name,decls) ->
-    let _,decls = visit_decls ~depth_max [] [] decls in
-    Ast.Module(mod_name,decls)
+      let _,decls = visit_decls ~depth_max [] [] decls in
+      Ast.Module(mod_name,decls)
 
 and visit_decls ?(depth_max=10) env acc = function
   | [] -> (env,List.rev acc)
@@ -60,14 +56,14 @@ and visit_exp env e =
   | Ast.Match(e,ms) -> 
      let ms = List.map (function Ast.Case(c,e) -> Ast.Case(c,visit_exp env e) | Ast.Otherwise e -> Ast.Otherwise (visit_exp env e)) ms in
      Ast.Match(visit_exp env e,ms) 
-  | Ast.Assert(e,pos) -> Ast.Assert(e,pos) 
   | e -> e
 
-           (*
-let rec visit_modules mdls = 
+(* idéalement, on aimerait pouvoir intégrer des fonctions d'autres modules,
+              mais pour cela, il faudrait gérer les identificateurs de modules ... *)
+(* let rec visit_modules mdls = 
   let _,rmdls =
-  List.fold_left (fun (env,mdls) Ast.{mod_name;decls} -> 
-                   let env,decls = visit_decls env [] decls in 
-                   let env = List.map (fun (name,c) -> (mod_name ^ "." ^ name, c)) env in
-                   (env,(Ast.{mod_name;decls}::mdls))) ([],[]) mdls in
+    List.fold_left (fun (env,mdls) Ast.{mod_name;decls} -> 
+        let env,decls = visit_decls env [] decls in 
+        let env = List.map (fun (name,c) -> (mod_name ^ "." ^ name, c)) env in
+        (env,(Ast.{mod_name;decls}::mdls))) ([],[]) mdls in
   List.rev rmdls *)

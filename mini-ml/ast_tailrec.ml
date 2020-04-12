@@ -1,16 +1,16 @@
 exception Abort
 
 let rec rewrite m =
-    match m with Ast.Module(mod_name,decls) ->
-  let decls = List.map rw_decl decls in
-  Ast.Module(mod_name,decls)
+  match m with Ast.Module(mod_name,decls) ->
+    let decls = List.map rw_decl decls in
+    Ast.Module(mod_name,decls)
 
 and rw_decl d = match d with
   | Ast.DefFunRec l -> 
      Ast.DefFunRec (List.map (fun ((name,args,e) as f) -> 
-                         (try let f' = rw_defun f in 
-                              (name,args,f')
-                          with Abort -> f)) l )
+                        (try let f' = rw_defun f in 
+                             (name,args,f')
+                         with Abort -> f)) l )
   | d -> d
 and rw_defun (name,args,e) =
   Ast.Ext(Ast.Label(name,rw_exp name args e))
@@ -24,7 +24,7 @@ and rw_exp f args exp =
        if name = f 
        then (Ast.Ext(Ast.Goto(name,argv))) else exp
     | Ast.If(e1,e2,e3) ->
-      Ast.If(e1,rw_exp e2,rw_exp e3)
+       Ast.If(e1,rw_exp e2,rw_exp e3)
     | Ast.Seq(e1,e2) -> Ast.Seq(e1,rw_exp e2)
     | Ast.Match (e,ms) ->
        let ms = List.map

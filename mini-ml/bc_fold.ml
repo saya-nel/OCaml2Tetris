@@ -3,35 +3,35 @@
 open Bc
 
 let bc_int n = let k = (n + 0xFFFF) mod 0xFFFF in
-   if k < 0x8000 (* if positif *)
-   then [Push (Constant(k))]
-   else [Push (Constant(k land 0x7FFF)); BinOp(Sub)]
+               if k < 0x8000 (* if positif *)
+               then [Push (Constant(k))]
+               else [Push (Constant(k land 0x7FFF)); BinOp(Sub)]
 
 let rec rewrite bcm = 
   {bcm with bc_body=rw (bcm.bc_body)}
 and rw = function
-| [] -> []
-| Push(Constant n) :: Push(Constant m) :: BinOp(Add) :: bc -> 
-  rw @@ (bc_int ((n + m) mod 0xFFFF)) @ bc
-| Push(Constant n) :: Push(Constant m) :: BinOp(Sub) :: bc -> 
-  rw @@ (bc_int ((n - m) mod 0xFFFF)) @ bc
-| Push(Constant n) :: Push(Constant m) :: BinOp(Mult) :: bc -> 
-  rw @@ (bc_int ((n * m) mod 0xFFFF)) @ bc
-| Push(Constant n) :: Push(Constant m) :: BinOp(Div) :: bc -> 
-  rw @@ (bc_int ((n / m) mod 0xFFFF)) @ bc
-| Push(Constant n) :: Push(Constant m) :: BinOp(Eq) :: bc -> 
-  rw @@ (if n = m then True else False) :: bc
-| Push(Constant n) :: Push(Constant m) :: BinOp(Gt) :: bc -> 
-  rw @@ (if n > m then True else False) :: bc
-| Push(Constant n) :: Push(Constant m) :: BinOp(Lt) :: bc -> 
-  rw @@ (if n < m then True else False) :: bc
-| False :: False :: BinOp(And) :: bc
-| False :: True :: BinOp(And) :: bc
-| True :: False :: BinOp(And) :: bc -> rw (False :: bc)
-| True :: True :: BinOp(And) :: bc -> rw (True :: bc)
-| False :: False :: BinOp(Or) :: bc -> rw (False :: bc)
-| False :: True :: BinOp(Or) :: bc
-| True :: False :: BinOp(Or) :: bc 
-| True :: True :: BinOp(Or) :: bc -> rw (True :: bc)
-| s::bc -> s::(rw bc)
-(* | Goto l1 :: Goto l2 :: bc ->  *)
+  | [] -> []
+  | Push(Constant n) :: Push(Constant m) :: BinOp(Add) :: bc -> 
+     rw @@ (bc_int ((n + m) mod 0xFFFF)) @ bc
+  | Push(Constant n) :: Push(Constant m) :: BinOp(Sub) :: bc -> 
+     rw @@ (bc_int ((n - m) mod 0xFFFF)) @ bc
+  | Push(Constant n) :: Push(Constant m) :: BinOp(Mult) :: bc -> 
+     rw @@ (bc_int ((n * m) mod 0xFFFF)) @ bc
+  | Push(Constant n) :: Push(Constant m) :: BinOp(Div) :: bc -> 
+     rw @@ (bc_int ((n / m) mod 0xFFFF)) @ bc
+  | Push(Constant n) :: Push(Constant m) :: BinOp(Eq) :: bc -> 
+     rw @@ (if n = m then True else False) :: bc
+  | Push(Constant n) :: Push(Constant m) :: BinOp(Gt) :: bc -> 
+     rw @@ (if n > m then True else False) :: bc
+  | Push(Constant n) :: Push(Constant m) :: BinOp(Lt) :: bc -> 
+     rw @@ (if n < m then True else False) :: bc
+  | False :: False :: BinOp(And) :: bc
+    | False :: True :: BinOp(And) :: bc
+    | True :: False :: BinOp(And) :: bc -> rw (False :: bc)
+  | True :: True :: BinOp(And) :: bc -> rw (True :: bc)
+  | False :: False :: BinOp(Or) :: bc -> rw (False :: bc)
+  | False :: True :: BinOp(Or) :: bc
+    | True :: False :: BinOp(Or) :: bc 
+    | True :: True :: BinOp(Or) :: bc -> rw (True :: bc)
+  | s::bc -> s::(rw bc)
+                  (* | Goto l1 :: Goto l2 :: bc ->  *)

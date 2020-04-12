@@ -1,7 +1,6 @@
 
-type t = int and v = A
-(*
-type t = Q | T of (int * int * int) 
+
+type t = Q | T of (int * int * int)
 
 let print x = 
   match x with
@@ -11,9 +10,10 @@ let print x =
 let x = T 10
 let y = x 6
 let z = y 1
-let g = (1,2)
 let u = T (10,6) ;;
-*)
+
+let _ = print (T(1,2,3))
+
 (* type 'a list = Nil | Cons of ('a * 'a list)
 
 let x = Cons (42,Nil)

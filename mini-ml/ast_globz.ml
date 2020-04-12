@@ -13,9 +13,9 @@ let collect = ref []
 
 let rec rewrite ?(depth_max=5) m =
   match m with Ast.Module(mod_name,decls) ->
-  collect := [];
-  let decls = !collect @ List.map rw_decl decls in
-  Ast.Module(mod_name,decls)
+    collect := [];
+    let decls = !collect @ List.map rw_decl decls in
+    Ast.Module(mod_name,decls)
 
 
 and rw_decl = function
@@ -37,7 +37,6 @@ and rw_exp = function
   | Ast.Seq(e1,e2) -> Ast.Seq(rw_exp e1,rw_exp e2)
   | Ast.While(e1,e2) -> Ast.While(rw_exp e1,rw_exp e2)
   | Ast.Match(e,ms) -> Ast.Match (rw_exp e,List.map (function Ast.Case(c,e) -> Ast.Case(c,rw_exp e) | Ast.Otherwise e -> Ast.Otherwise(rw_exp e)) ms) 
-  | Ast.Assert(e,pos) -> Ast.Constant(Ast.Unit)
   | e -> e
 and rw_constant = function
   | (Ast.String _) as s -> 

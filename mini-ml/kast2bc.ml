@@ -10,11 +10,11 @@ let _TRACE = { status = Off }
 let mapcat f l = List.concat (List.map f l)
 
 let nb_local bc =
-       List.fold_left
-         (function n ->
-                    function
-                    | Pop(Local i) -> max (i+1) n
-                    | _ -> n) 0 bc
+  List.fold_left
+    (function n ->
+               function
+               | Pop(Local i) -> max (i+1) n
+               | _ -> n) 0 bc
 
 let gensym = 
   let c = ref 0 in 
@@ -29,40 +29,40 @@ let apply_code = ref [Label "EndApply";Return]
 
 let next_closure bc_e addr = 
   let l = ("A" ^ string_of_int addr) in
-     let f = ("Apply.closure" ^ string_of_int addr) in
-     lambda_code := ([Function (f,nb_local bc_e)] @ bc_e @ [Return]) @ !lambda_code;
-     apply_code := [Push(Argument(1));
-                    Push(Constant(0));
-                    Call("Array.get",2);
-                    Push(Constant(addr));
-                    BinOp(Eq);
-                    UnOp(Not);
-                    IfGoto l;
-                    Push(Argument(0));
-                    Push(Argument(1));
-                    Call(f,2);
-                    Goto "EndApply";
-                  Label l] @ !apply_code
+  let f = ("Apply.closure" ^ string_of_int addr) in
+  lambda_code := ([Function (f,nb_local bc_e)] @ bc_e @ [Return]) @ !lambda_code;
+  apply_code := [Push(Argument(1));
+                 Push(Constant(0));
+                 Call("Array.get",2);
+                 Push(Constant(addr));
+                 BinOp(Eq);
+                 UnOp(Not);
+                 IfGoto l;
+                 Push(Argument(0));
+                 Push(Argument(1));
+                 Call(f,2);
+                 Goto "EndApply";
+                 Label l] @ !apply_code
 
 let next_lambda = 
   let c = ref (-1) in
   let aux bc_e k = 
-  let l = ("A" ^ string_of_int k) in
-     let f = ("Apply.lambda" ^ string_of_int k) in
-     lambda_code := ([Function (f,nb_local bc_e)] @ bc_e @ [Return]) @ !lambda_code;
-     apply_code := [Push(Argument(1));
-                    Push(Constant(k));
-                    BinOp(Eq);
-                    UnOp(Not);
-                    IfGoto l;
-                    Push(Argument(0));
-                    Call(f,1);
-                    Goto "EndApply";
-                  Label l] @ !apply_code in
+    let l = ("A" ^ string_of_int k) in
+    let f = ("Apply.lambda" ^ string_of_int k) in
+    lambda_code := ([Function (f,nb_local bc_e)] @ bc_e @ [Return]) @ !lambda_code;
+    apply_code := [Push(Argument(1));
+                   Push(Constant(k));
+                   BinOp(Eq);
+                   UnOp(Not);
+                   IfGoto l;
+                   Push(Argument(0));
+                   Call(f,1);
+                   Goto "EndApply";
+                   Label l] @ !apply_code in
   (fun bc_e -> 
-     incr c;
-     let k = !c in
-     aux bc_e k; k)
+    incr c;
+    let k = !c in
+    aux bc_e k; k)
 
 let indent_string = Past_print.indent_string
 
@@ -82,10 +82,10 @@ let rec bc_of_prog bc_mdls =
                 (mod_name,bc_body)) bc_mdls in
   let init_globals = List.rev (mapcat (fun g -> [Call (g,0)]) !accgb) in
   let main = ("Start",([Function ("Start.main",0)] @ init_globals @ 
-                        [Push(Constant(0));Return])) in
+                         [Push(Constant(0));Return])) in
   let apply_file = ("Apply",(Function ("Apply.apply",0) :: !apply_code) @ !lambda_code) in
   (* let lambda_lifting_file = ("Lambda",*)
-   apply_file :: main :: files
+  apply_file :: main :: files
 and bc_of_tmodule genv Kast.{mod_name;decls} = 
   let bc_body = bc_of_decls mod_name decls in
   {mod_name;bc_body;init=Ast2kast.(genv.init)}
@@ -121,17 +121,17 @@ and bc_of_exp lvl = function
          [Label lbl_begin] @ bc_e1 @ [UnOp Not; IfGoto lbl_end] @
            bc_e2 @ [Goto lbl_begin; Label lbl_end])
   | Kast.Fun(e,ka,kl) -> 
-      let n = next_lambda (bc_of_exp lvl e) in
-      (match ka,kl with 
+     let n = next_lambda (bc_of_exp lvl e) in
+     (match ka,kl with 
       | 0,0 -> [Push (Constant n)]
       | _ -> failwith "fonction close uniquement")
   (* une valeur fonctionnelle close est l'entier
      associé au code de la fonction dans Apply.apply *)
   | Kast.Closure ((addr,ke),closure_env) ->
-    (* let n = next_lambda (bc_of_exp lvl e) *)
-    next_closure (bc_of_exp lvl ke) addr;
-    bc_of_exp lvl closure_env (* la fermeture est un tableau (module Array)) dont le premier élément est l'id (~+/- l'adresse) de la closure, et les élément suivant sont l'environnement *)
-    (* [Push (Constant addr)] *)
+     (* let n = next_lambda (bc_of_exp lvl e) *)
+     next_closure (bc_of_exp lvl ke) addr;
+     bc_of_exp lvl closure_env (* la fermeture est un tableau (module Array)) dont le premier élément est l'id (~+/- l'adresse) de la closure, et les élément suivant sont l'environnement *)
+  (* [Push (Constant addr)] *)
   | Kast.Let(n,e1,e2) ->
      comment "<let>" lvl (
          let bc_e1 = bc_of_exp (lvl+1) e1
@@ -149,8 +149,8 @@ and bc_of_exp lvl = function
            (match f with
             | Kast.GFun (name) -> [Call(name,arity)]
             | _ -> (bc_of_exp (lvl+1) f) @
-                   List.map (fun _ -> Call("Apply.apply",2)) args))
-          (*  raise (Cannot_generate_bc "limite d'implantation : seules les fonctions globales peuvent être appliquées"))) *)
+                     List.map (fun _ -> Call("Apply.apply",2)) args))
+  (*  raise (Cannot_generate_bc "limite d'implantation : seules les fonctions globales peuvent être appliquées"))) *)
   | Kast.BinOp(op,e1,e2) ->
      comment "<binop>" lvl (
          let bc_e1 = bc_of_exp (lvl+1) e1 
@@ -163,20 +163,20 @@ and bc_of_exp lvl = function
   | Kast.GFun (name) ->
      [Call (name,0)] (* !!!!! variables globales, bof *)
   | Kast.Ext(ext) -> 
-    (match ext with 
-     | Kast.SetGlobal (e1,i) ->
-       let bc_e1 = bc_of_exp (lvl+1) e1 in
-        bc_e1 @ [Pop (Static(i))] @ [Push (Static(i));Pop (Temp(7))]
-     | Kast.ReadGlobal (i) -> 
-        [Push (Static(i))]
-     | Kast.SetLocal(n,e) -> 
-       (bc_of_exp (lvl+1) e) @ [Pop (Local n)]
-     | Kast.Label (s,e) -> 
-        [Label s] @ (bc_of_exp (lvl+1) e)
-     | Kast.Goto (s,args) -> 
-          let xs = mapcat (bc_of_exp (lvl+1)) (List.rev args) in
-          let m = List.mapi (fun i _ -> Pop(Argument(i))) args in
-          xs @ m @ [Goto s])
+     (match ext with 
+      | Kast.SetGlobal (e1,i) ->
+         let bc_e1 = bc_of_exp (lvl+1) e1 in
+         bc_e1 @ [Pop (Static(i))] @ [Push (Static(i));Pop (Temp(7))]
+      | Kast.ReadGlobal (i) -> 
+         [Push (Static(i))]
+      | Kast.SetLocal(n,e) -> 
+         (bc_of_exp (lvl+1) e) @ [Pop (Local n)]
+      | Kast.Label (s,e) -> 
+         [Label s] @ (bc_of_exp (lvl+1) e)
+      | Kast.Goto (s,args) -> 
+         let xs = mapcat (bc_of_exp (lvl+1)) (List.rev args) in
+         let m = List.mapi (fun i _ -> Pop(Argument(i))) args in
+         xs @ m @ [Goto s])
 and bc_of_constant = function
   | Kast.Unit ->
      [Push (Constant 0)]
@@ -184,8 +184,6 @@ and bc_of_constant = function
      if n >= 0
      then [Push (Constant n)]
      else [Push (Constant 0); Push (Constant (- n)); BinOp(Sub)]
-  | Kast.List_empty ->
-     [Push (Constant 0)]
   | Kast.Array_empty ->
      [Push (Constant 0)]
   | Kast.Bool b ->

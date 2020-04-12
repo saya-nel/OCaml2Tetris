@@ -51,6 +51,7 @@ and constant =
   | String of string
   | Constr of string
   | List_empty
+  | List_cons
   | Array_empty
 and match_case =
   | Case of (constant * name list * exp)  (* eg. [A(x,y,z) -> e] *)

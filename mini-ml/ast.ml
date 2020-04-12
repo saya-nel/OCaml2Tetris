@@ -15,7 +15,7 @@ and exp =
   | Ident of (name)
   | Let of (name * exp * exp)
   | Fun of (name * exp)
-  | Closure of ((int * exp) * string * exp) 
+  | Closure of ((int * exp) * string * exp)  (* introduit plus tard *)
   | App of (exp * exp list)
   | If of (exp * exp * exp)
   | Match of (exp * match_case list)
@@ -24,7 +24,6 @@ and exp =
   | Block of (exp list)
   | Seq of (exp * exp)
   | While of (exp * exp)
-  | Assert of (exp * pos)
   | Ext of ext
 and constant = 
   | Unit
@@ -32,8 +31,6 @@ and constant =
   | Int of int
   | Char of char
   | String of string
-  | Constr of string
-  | List_empty
   | Array_empty
 and match_case =
   | Case of (constant * exp)

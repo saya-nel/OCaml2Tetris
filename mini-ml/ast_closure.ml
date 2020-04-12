@@ -5,9 +5,9 @@ let gen_closure_id =
 
 
 let rec rewrite m =
-    match m with Ast.Module(mod_name,decls) ->
-  let decls = List.map rw_decl decls in
-  Ast.Module(mod_name,decls)
+  match m with Ast.Module(mod_name,decls) ->
+    let decls = List.map rw_decl decls in
+    Ast.Module(mod_name,decls)
 
 and rw_decl = function
   | Ast.DefVar(v,e) -> Ast.DefVar(v,rw_exp [] e)
@@ -19,15 +19,15 @@ and rw_fundecs l =
 and rw_exp env = function
   | Ast.Ident name -> Ast.Ident name
   | Ast.Fun (name,e) -> 
-    (match env with 
-     | [] -> Ast.Fun (name,rw_exp [name] e)
-     | _ -> let env = name :: env in
-            let addr = gen_closure_id () in
-            let code = rw_exp env e in
-            let closure_env = List.map (fun name -> Ast.Ident(name)) env in
-            let closure = Ast.Constant(Ast.Int addr)::closure_env in
-            Ast.Closure((addr,code),name,Ast.Block(closure)))
-    (* Ast.Fun (name,rw_exp env e) *)
+     (match env with 
+      | [] -> Ast.Fun (name,rw_exp [name] e)
+      | _ -> let env = name :: env in
+             let addr = gen_closure_id () in
+             let code = rw_exp env e in
+             let closure_env = List.map (fun name -> Ast.Ident(name)) env in
+             let closure = Ast.Constant(Ast.Int addr)::closure_env in
+             Ast.Closure((addr,code),name,Ast.Block(closure)))
+  (* Ast.Fun (name,rw_exp env e) *)
   | Ast.Constant c -> Ast.Constant (c)
   | Ast.Let(v,e1,e2) -> Ast.Let(v,rw_exp env e1,rw_exp env e2)
   | Ast.App(e,args) -> Ast.App(rw_exp env e,List.map (rw_exp env) args) 
@@ -39,7 +39,6 @@ and rw_exp env = function
   | Ast.While(e1,e2) -> Ast.While(rw_exp env e1,rw_exp env e2)
   | Ast.Match(e,ms) -> 
      Ast.Match (rw_exp env e, 
-                 List.map (function Ast.Case(c,e) -> Ast.Case(c,rw_exp env e)
-                                  | Ast.Otherwise e -> Ast.Otherwise(rw_exp env e)) ms) 
-  | Ast.Assert(e,pos) -> Ast.Constant(Ast.Unit)
+                List.map (function Ast.Case(c,e) -> Ast.Case(c,rw_exp env e)
+                                 | Ast.Otherwise e -> Ast.Otherwise(rw_exp env e)) ms) 
   | e -> e (* supposer ne pas contenir de valeur fonctionnelle à transformer. (à vérifier) *)

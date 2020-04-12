@@ -14,10 +14,10 @@ let create () = ref []
 
 let rec rewrite ?(depth_max=5) m =
   match m with Ast.Module(mod_name,decls) ->
-  let collect = create () in
-  let decls = List.map (rw_decl collect) decls in
-  let decls = !collect @ decls in
-  Ast.Module(mod_name,decls)
+    let collect = create () in
+    let decls = List.map (rw_decl collect) decls in
+    let decls = !collect @ decls in
+    Ast.Module(mod_name,decls)
 
 
 and rw_decl cl = function
@@ -34,14 +34,14 @@ and rw_exp cl env lenv = function
                         let sym = gensym () in
                         let vars = Freevr.collect env lenv e in
                         (match vars with 
-                        |[] ->  Ast.Fun (name,e) 
-                        (* let d = Ast.DefFun([(sym,[name],e)]) in
+                         |[] ->  Ast.Fun (name,e) 
+                         (* let d = Ast.DefFun([(sym,[name],e)]) in
                                 cl := d :: !cl;
                                 Ast.Ident (sym) *)
-                        | _ ->  let d = Ast.DefVar(sym,List.fold_right (fun x e -> Ast.Fun (x,e)) (vars @ [name]) e) in
-                                cl := d :: !cl;
-                                Ast.App(Ast.Ident (sym),List.map (fun v -> Ast.Ident(v)) vars))
-                        (* cl := Ast.DefFun([(sym,name::vars,e')]) :: !cl;*)       
+                         | _ ->  let d = Ast.DefVar(sym,List.fold_right (fun x e -> Ast.Fun (x,e)) (vars @ [name]) e) in
+                                 cl := d :: !cl;
+                                 Ast.App(Ast.Ident (sym),List.map (fun v -> Ast.Ident(v)) vars))
+  (* cl := Ast.DefFun([(sym,name::vars,e')]) :: !cl;*)       
   | Ast.Let(name,e1,e2) -> let lenv = name :: lenv in
                            Ast.Let(name,rw_exp cl env lenv e1,rw_exp cl env lenv e2)
   | Ast.Ident name -> Ast.Ident name
@@ -55,5 +55,4 @@ and rw_exp cl env lenv = function
   | Ast.Seq(e1,e2) -> Ast.Seq(rw_exp cl env lenv e1,rw_exp cl env lenv e2)
   | Ast.While(e1,e2) -> Ast.While(rw_exp cl env lenv e1,rw_exp cl env lenv e2)
   | Ast.Match(e,ms) -> Ast.Match (rw_exp cl env lenv e,List.map (function Ast.Case(c,e) -> Ast.Case(c,rw_exp cl env lenv e) | Ast.Otherwise e -> Ast.Otherwise(rw_exp cl env lenv e)) ms) 
-  (* | Ast.Assert(e,pos) -> Ast.Constant(Ast.Unit) *)
   | e -> e
