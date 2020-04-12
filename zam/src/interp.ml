@@ -310,10 +310,9 @@ let interp code =
 
     (* 78 SETFLOATFIELD *)
 
-    | 79 (* VECTLENGTH *) -> acc := Mlvalues.val_long (Mlvalues.size (!acc))
+    | 79 (* VECTLENGTH *) -> acc := Mlvalues.val_long (Mlvalues.size (Mlvalues.ptr_val (!acc)))
 
-    | 80 (* GETVECTITEM *) -> assert (!sp > 0);
-                              let n = Mlvalues.long_val (pop_stack ()) in
+    | 80 (* GETVECTITEM *) -> let n = Mlvalues.long_val (pop_stack ()) in
                               acc := Mlvalues.get_field (!acc) n
     | 81 (* SETVECTITEM *) -> assert (!sp > 1);
                               let n = pop_stack () in
@@ -339,7 +338,7 @@ let interp code =
                               assert (n < Array.length code);
                               pc := if Mlvalues.long_val (!acc) = 0 then (!pc) + n else (!pc) + 1
     
-    (* 87 SWITCH *)
+    (* SWITCH *)
 
     | 88 (* BOOLNOT *) -> acc := Prims.bnot (!acc)
 

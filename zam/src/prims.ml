@@ -1,7 +1,6 @@
 
 let negint (v : value) : value = 
-  Mlvalues.val_long
-  (- Mlvalues.long_val v)
+  Mlvalues.val_long (- Mlvalues.long_val v)
 
 let sign_extension n =
 	if n > 0x3FFF (* ie. n entier 15 bits négatif *)

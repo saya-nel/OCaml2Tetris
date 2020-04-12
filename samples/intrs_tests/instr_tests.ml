@@ -251,3 +251,175 @@ let code = [|103;1;9;103;45;9;103;44;9;103;43;9;103;42;62;4;1;57;0;53;0;76;53;0|
 let code = [|103;1;9;103;42;62;1;1;57;0;53;0;77;0;53;0|]
 
 (* 78 SETFLOATFIELD *)
+
+(* 79 VECTLENGTH *)
+(* Resultat attendu : acc = 1 *)
+let code = [|103;42;63;0;79|]
+
+(* 80 GETVECTITEM *)
+(* Resultat attendu : acc = 42 *)
+let code = [|103;0;9;103;42;63;0;80|]
+
+(* 81 SETVECTITEM *)
+(* Resultat attendu : acc = <42> *)
+let code = [|103;42;9;103;0;9;103;0;63;0;57;0;53;0;81;53;0|]
+
+(* 82 GETSTRINGCHAR *)
+
+(* 83 SETSTRINGCHAR *)
+
+(* 84 BRANCH *)
+(* Resultat attendu : pc = 7 *)
+let code = [|84;5|]
+
+(* 85 BRANCHIF *)
+(* Resultat attendu : pc = 7 *)
+let code = [|103;1;85;3|]
+
+(* 86 BRANCHIFNOT *)
+(* Resultat attendu : pc = 7 *)
+let code = [|103;0;86;3|]
+
+(* 87 SWITCH *)
+
+(* 88 BOOLNOT *)
+(* Resultat attendu : acc = 1 *)
+let code = [|88|]
+
+(* 89 PUSHTRAP *)
+
+(* 90 POPTRAP *)
+
+(* 91 RAISE *)
+
+(* 92 CHECK-SIGNALS *)
+
+(* 93 C-CALL1 *)
+
+(* 94 C-CALL2 *)
+
+(* 95 C-CALL3 *)
+
+(* 96 C-CALL4 *)
+
+(* 97 C-CALL5 *)
+
+(* 98 C-CALLN *)
+
+(* 99 CONST0 *)
+(* Resultat attendu : acc = 0 *)
+let code = [|103;1;99|]
+
+(* 100 CONST1 *)
+(* Resultat attendu : acc = 1 *)
+let code = [|100|]
+
+(* 101 CONST2 *)
+(* Resultat attendu : acc = 2 *)
+let code = [|101|]
+
+(* 102 CONST3 *)
+(* Resultat attendu : acc = 3 *)
+let code = [|102|]
+
+(* 103 CONSTINT *)
+(* Resultat attendu : acc = 42 *)
+let code = [|103;42|]
+
+(* 104 PUSHCONST0 *)
+(* Resultat attendu : acc = 0, stack = 42 *)
+let code = [|103;42;104|]
+
+(* 105 PUSHCONST1 *)
+(* Resultat attendu : acc = 1, stack = 42 *)
+let code = [|103;42;105|]
+
+(* 106 PUSHCONST2 *)
+(* Resultat attendu : acc = 2, stack = 42 *)
+let code = [|103;42;106|]
+
+(* 107 PUSHCONST3 *)
+(* Resultat attendu : acc = 3, stack = 42 *)
+let code = [|103;42;107|]
+
+(* 108 PUSHCONST1 *)
+(* Resultat attendu : acc = 43, stack = 42 *)
+let code = [|103;42;108;43|]
+
+(* 109 NEGINT *)
+(* Resultat attendu : acc = 42 *)
+let code = [|103;-42;109|]
+
+(* 110 ADDINT *)
+
+(* 111 SUBINT *)
+
+(* 112 MULINT *)
+
+(* 113 DIVINT *)
+
+(* 114 MODINT *)
+
+(* 115 ANDINT *)
+
+(* 116 ORINT *)
+
+(* 117 XORINT *)
+
+(* 118 LSINT *)
+
+(* 119 LSRINT *)
+
+(* 120 ASRINT *)
+
+(* 121 EQ *)
+
+(* 122 NEQ *)
+
+(* 123 LTINT *)
+
+(* 124 LEINT *)
+
+(* 125 GTINT *)
+
+(* 126 GEINT *)
+
+(* 127 OFFSETINT *)
+
+(* 128 OFFSETREF *)
+
+(* 129 ISINT *)
+
+(* 130 GETMETHOD *)
+
+(* 131 BEQ *)
+
+(* 132 BNEQ *)
+
+(* 133 BLTINT *)
+
+(* 134 BLEINT *)
+
+(* 135 BGTINT *)
+
+(* 136 BGEINT *)
+
+(* 137 ULTINT *)
+
+(* 138 UGEINT *)
+
+(* 139 BULTINT *)
+
+(* 140 BUGEINT *)
+
+(* 141 GETPUBMET *)
+
+(* 142 GETDYNMET *)
+
+(* 143 STOP *)
+(* pas de test nécéssaire *)
+
+(* 144 EVENT *)
+
+(* 145 BREAK *)
+
