@@ -279,8 +279,8 @@ let interp code =
                              Mlvalues.set_field blk 0 (!acc);
                              Mlvalues.set_field blk 1 (pop_stack ());
                              acc := blk
-    | 65 (* MAKEBLOCK4 *) -> let tag = take_argument code in
-                             let blk = Mlvalues.make_block tag 2 in
+    | 65 (* MAKEBLOCK3 *) -> let tag = take_argument code in
+                             let blk = Mlvalues.make_block tag 3 in
                              Mlvalues.set_field blk 0 (!acc);
                              Mlvalues.set_field blk 1 (pop_stack ());
                              Mlvalues.set_field blk 2 (pop_stack ());
@@ -291,8 +291,8 @@ let interp code =
     | 67 (* GETFIELD0 *) -> acc := Mlvalues.get_field (!acc) 0
     | 68 (* GETFIELD1 *) -> acc := Mlvalues.get_field (!acc) 1
     | 69 (* GETFIELD2 *) -> acc := Mlvalues.get_field (!acc) 2 
-    | 70 (* GETFIELD3 *) -> acc := Mlvalues.get_field (!acc) 4
-    | 71 (* GETFIELD *) -> let n = code.(!pc) in 
+    | 70 (* GETFIELD3 *) -> acc := Mlvalues.get_field (!acc) 3
+    | 71 (* GETFIELD *) -> let n = take_argument code in 
                            acc := Mlvalues.get_field (!acc) n
                            
     (* GETFLOATFIELD (opInput.code: 72) *)

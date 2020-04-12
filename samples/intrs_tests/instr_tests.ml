@@ -92,6 +92,70 @@ let code = [|103;42;9;103;1;9;103;1;9;19;2|]
 (* Resultat attendu : acc = 0, stack = 42 | 1 *)
 let code = [|103;1;9;103;1;9;103;42;20;1|]
 
+(* 21 ENVACC1 *)
+
+(* 22 ENVACC2 *)
+
+(* 23 ENVACC3 *)
+
+(* 24 ENVACC4 *)
+
+(* 25 ENVACC *)
+
+(* 26 PUSHENVACC1 *)
+
+(* 27 PUSHENVACC2 *)
+
+(* 28 PUSHENVACC3 *)
+
+(* 29 PUSHENVACC4 *)
+
+(* 30 PUSHENVACC *)
+
+(* 31 PUSHRETADDR *)
+
+(* 32 APPLY *)
+
+(* 33 APPLY1 *)
+
+(* 34 APPLY2 *)
+
+(* 35 APPLY3 *)
+
+(* 36 APPTERM *)
+
+(* 37 APPTERM1 *)
+
+(* 38 APPTER2 *)
+
+(* 39 APPTERM3 *)
+
+(* 40 RETURN *)
+
+(* 41 RESTART *)
+
+(* 42 GRAB *)
+
+(* 43 CLOSURE *)
+
+(* 44 CLOSUREREC *)
+
+(* 45 OFFSETCLOSUREM2 *)
+
+(* 46 OFFSETCLOSURE0 *)
+
+(* 47 OFFSETCLOSURE2 *)
+
+(* 48 OFFSETCLOSURE *)
+
+(* 49 PUSHOFFSETCLOSUREM2 *)
+
+(* 50 PUSHOFFSETCLOSURE0 *)
+
+(* 51 PUSHOFFSETCLOSURE2 *)
+
+(* 52 PUSHOFFSETCLOSURE *)
+
 (* 53 GETGLOBAL *)
 (* Resultat attendu : acc = 42 *)
 let code = [|103;42;57;1;53;1|]
@@ -129,5 +193,39 @@ let code = [|103;42;60|]
 let code = [|103;42;61;1|]
 
 (* 62 MAKEBLOCK *)
-(* Resultat attendu : acc = <42> | <43> *)
+(* Resultat attendu : acc = (tag=1) <42> | <43> *)
 let code = [|103;43;9;103;42;62;2;1|]
+
+(* 63 MAKEBLOCK1 *)
+(* Resultat attendu : acc = (tag=1) <42> *)
+let code = [|103;42;63;1|]
+
+(* 64 MAKEBLOCK2 *)
+(* Resultat attendu : acc = (tag=1) <42> | <43> *)
+let code = [|103;43;9;103;42;64;1|]
+
+(* 65 MAKEBLOCK3 *)
+(* Resultat attendu : acc = (tag=1) <42> | <43> | <44>*)
+let code = [|103;44;9;103;43;9;103;42;65;1|]
+
+(* 67 GETFIELD0 *)
+(* Resultat attendu : acc = 42 *)
+let code = [|103;42;63;1;67|]
+
+(* 68 GETFIELD1 *)
+(* Resultat attendu : acc = 43 *)
+let code = [|103;43;9;103;42;64;1;68|]
+
+(* 69 GETFIELD2 *)
+(* Resultat attendu : acc = 44 *)
+let code = [|103;44;9;103;43;9;103;42;64;1;69|]
+
+(* 70 GETFIEL3 *)
+(* Resultat attendu : acc = 45 *)
+let code = [|103;45;9;103;44;9;103;43;9;103;42;62;4;1;70|]
+
+(* 71 GETFIELD *)
+(* Resultat attendu : acc = 42 *)
+let code = [|103;42;63;1;71;0|]
+
+(* 72 GETFLOATFIELD *)
