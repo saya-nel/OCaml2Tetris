@@ -206,7 +206,16 @@ let interp code =
                            Mlvalues.set_field closure_env 0 (Mlvalues.val_long addr);
                           for i = 1 to n - 1 do Mlvalues.set_field closure_env i (pop_stack ()) done;
                           acc := Mlvalues.make_closure addr closure_env
-
+    
+    (* CLOSUREREC *)
+    (* OFFSETCLOSUREM2 *)
+    (* OFFSETCLOSURE0 *)
+    (* OFFSETCLOSURE2 *)
+    (* OFFSETCLOSURE *)
+    (* PUSHOFFSETCLOSUREM2 *)
+    (* PUSHOFFSETCLOSURE0 *)
+    (* PUSHOFFSETCLOSURE2 *)
+    (* PUSHOFFSETCLOSURE *)
 
     | 53 (* GETGLOBAL *) -> let n = take_argument code in
                             acc := (Mlvalues.get_field (!global) n)
@@ -276,6 +285,7 @@ let interp code =
                            Mlvalues.set_field (!acc) n (pop_stack ())
 
     (* 78 SETFLOATFIELD *)
+
     | 79 (* VECTLENGTH *) -> acc := Mlvalues.val_long (Mlvalues.size (!acc))
 
     | 80 (* GETVECTITEM *) -> assert (!sp > 0);
@@ -304,15 +314,39 @@ let interp code =
     | 86 (* BRANCHIFNOT *) -> let n = take_argument code in 
                               assert (n < Array.length code);
                               pc := if Mlvalues.long_val (!acc) = 0 then (!pc) + n else (!pc) + 1
+    
     (* 87 SWITCH *)
+
     | 88 (* BOOLNOT *) -> acc := Prims.bnot (!acc)
-    (* | 92 à 98 -> interop avec C *)
+
+    (* PUSHTRAP *)
+    (* POPTRAP *)
+    (* RAISE *)
+    (* CHECK-SIGNALS *)
+    (* C-CALL1 *)
+    (* C-CALL2 *)
+    (* C-CALL3 *)
+    (* C-CALL4 *)
+    (* C-CALL5 *)
+    (* C-CALLN *)
+
     | 99  (* CONST0 *) -> acc := Mlvalues.val_long 0
     | 100 (* CONST1 *) -> acc := Mlvalues.val_long 1
     | 101 (* CONST2 *) -> acc := Mlvalues.val_long 2
     | 102 (* CONST3 *) -> acc := Mlvalues.val_long 3
     | 103 (* CONSTINT *) -> let n = take_argument code in 
                             acc := Mlvalues.val_long n
+    | 104 (* PUSHCONST0 *) -> push_stack (!acc);
+                              acc := 0
+    | 105 (* PUSHCONST1 *) -> push_stack (!acc);
+                              acc := 1
+    | 106 (* PUSHCONST2 *) -> push_stack (!acc);
+                              acc := 2
+    | 107 (* PUSHCONST3 *) -> push_stack (!acc);
+                              acc := 3
+    | 108 (* PUSHCONSTINT *) -> let n = take_argument code in
+                                push_stack (!acc);
+                                acc := n
     | 109 (* NEGINT *) -> acc := Prims.negint (!acc)
     | 110 (* ADDINT *) -> acc := Prims.addint (pop_stack ()) (!acc)
     | 111 (* SUBINT *) -> acc := Prims.subint (pop_stack ()) (!acc)
@@ -362,7 +396,17 @@ let interp code =
        if Prims.compare_imm v (!acc) >= 0 then pc := (!pc) + ofs - 1
     | 137 (* ULTINT *) -> acc := Prims.ultint (pop_stack ()) (!acc)
     | 138 (* UGEINT *) -> acc := Prims.ugeint (pop_stack ()) (!acc)
+    
+    (* BULTINT *)
+    (* BUGEINT *)
+    (* GETPUBMET *)
+    (* GETDYNMET *)
+
     | 143 (* STOP *) -> pc := Array.length code
+    
+    (* EVENT *)
+    (* BREAk *)
+    
     | _ -> assert false
   done;
   print_string "fin programme :";
