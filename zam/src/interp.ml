@@ -3,6 +3,7 @@ let stack_size = 1024
 let pc = ref 0
 
 let sp = ref 0
+let extra_args = ref 0 
 let stack = Array.make stack_size (Mlvalues.val_long 0)
 
 let acc = ref (Mlvalues.val_long 0)
@@ -11,7 +12,9 @@ let env = ref (Mlvalues.val_long 0)
 let global = ref (Mlvalues.make_block 0 20)
 
 let pop_stack () =
-  let v = stack.(!sp) in decr sp; v
+  let v = stack.(!sp - 1) in 
+  decr sp;
+  v
 
 let push_stack v =
   stack.(!sp) <- v; incr sp
@@ -21,10 +24,11 @@ let take_argument code =
   code.(!pc)
 
 let debug_print_block block =
-  print_string "block : ";
-  print_string "size : ";
+  print_string "(block, size : ";
   print_int (Mlvalues.size (Mlvalues.ptr_val block));
-  print_string ", content : ";
+  print_string ", tag : ";
+  print_int (Mlvalues.tag (Mlvalues.ptr_val block));
+  print_string ") ";
   for i = 0 to Mlvalues.size (Mlvalues.ptr_val block) - 1 do
     print_string "<";
     print_int (Mlvalues.get_field block i);
@@ -34,18 +38,35 @@ let debug_print_block block =
   print_newline ()
 
 let debug_print_state () = 
+  print_newline ();
   print_string " pc: "; 
   print_int (!pc);
+  print_newline ();
   print_string " acc: "; 
   if Mlvalues.is_ptr (!acc) then 
     debug_print_block (!acc)
   else 
     print_int (Mlvalues.long_val (!acc));
+  print_newline ();
+  print_string " env: ";
+  if Mlvalues.is_ptr (!env) then
+    debug_print_block (!env)
+  else 
+    print_int (Mlvalues.long_val (!env));
+  print_newline ();
+  print_string " global: ";
+  if Mlvalues.is_ptr (!global) then
+    debug_print_block (!global);
+  print_newline ();
   print_string " sp: "; 
   print_int (!sp);
+  print_newline ();
+  print_string " extra args: ";
+  print_int (!extra_args);
   print_newline ()
 
 let debug_print_stack () =
+  print_newline ();
   print_string "stack :";
   print_newline ();
   for i = 0 to !sp - 1 do  
@@ -56,7 +77,6 @@ let debug_print_stack () =
 
 
 let interp code =
-  let extra_args = ref 0 in
   let trap_sp = ref 0 in
 
   (* env := make_empty_env (); *)
@@ -64,7 +84,7 @@ let interp code =
   print_int (!acc);
   while !pc < Array.length code do
     incr pc where () = 
-      debug_print_state ();
+      (* debug_print_state (); *)
     match code.(!pc) with
     | 0 (* ACC0 *) -> acc := stack.((!sp)-1)
     | 1 (* ACC1 *) -> acc := stack.((!sp)-2)
@@ -242,8 +262,8 @@ let interp code =
     | 61 (* PUSHATOM *) -> push_stack (!acc);
                            let tag = take_argument code in
                            acc := Mlvalues.make_block tag 0
-    | 62 (* MAKEBLOCK *) -> let tag = take_argument code in
-                            let sz = take_argument code in (* attention à l'ordre des arguments (tag et pc) dans le code *)
+    | 62 (* MAKEBLOCK *) -> let sz = take_argument code in
+                            let tag = take_argument code in (* attention à l'ordre des arguments (tag et pc) dans le code *)
                             let blk = Mlvalues.make_block tag sz in
                             Mlvalues.set_field blk 0 (!acc);
                             for i = 1 to sz - 1 do 
@@ -406,9 +426,10 @@ let interp code =
     
     (* EVENT *)
     (* BREAk *)
-    
+
     | _ -> assert false
   done;
+  print_newline ();
   print_string "fin programme :";
   print_newline ();
   debug_print_state ();

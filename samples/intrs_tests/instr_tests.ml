@@ -92,6 +92,42 @@ let code = [|103;42;9;103;1;9;103;1;9;19;2|]
 (* Resultat attendu : acc = 0, stack = 42 | 1 *)
 let code = [|103;1;9;103;1;9;103;42;20;1|]
 
+(* 53 GETGLOBAL *)
+(* Resultat attendu : acc = 42 *)
+let code = [|103;42;57;1;53;1|]
+
+(* 54 PUSHGETGLOBAL *)
+(* Resultat attendu : stack = 1 , acc = 42 *)
+let code = [|103;42;57;1;103;1;54;1|]
+
+(* 55 GETGLOBALFIELD *)
+(* Resultat attendu : acc = 43 *)
+let code = [|103;43;9;103;42;62;2;1;57;1;55;1;1|]
+
+(* 56 PUSHGETGLOBALFIELD *)
+(* Resultat attendu : acc = 43, stack = 1 *)
+let code = [|103;43;9;103;42;62;2;1;57;1;103;1;56;1;1|]
+
+(* 57 SETGLOBAL *)
+(* Resultat attendu : acc = 0, global = 0 | 42 | 0 | 0 ... *)
+let code = [|103;42;57;1|]
+
+(* 58 ATOM0 *)
+(* Resultat attendu : acc = (block size=0, tag=0) *)
+let code = [|58|]
+
+(* 59 ATOM *)
+(* Resultat attendu : acc = (block size=0, tag=1) *)
+let code = [|59;1|]
+
+(* 60 PUSHATOM0 *)
+(* Resultat attendu : acc = (block size=0, tag=0), stack : 42 *)
+let code = [|103;42;60|]
+
+(* 61 PUSHATOM *)
+(* Resultat attendu : acc = (block size=0, tag=1), stack : 42 *)
+let code = [|103;42;61;1|]
+
 (* 62 MAKEBLOCK *)
-(* Resultat attendu : acc =  *)
+(* Resultat attendu : acc = <42> | <43> *)
 let code = [|103;43;9;103;42;62;2;1|]

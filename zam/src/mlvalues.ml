@@ -29,7 +29,11 @@ let ptr_val (n : value) : ptr =
 let is_ptr (n : value) : bool = 
   n < 0
 
-let size (b : ptr) = Array.length (# b) - 2 
+let size (b : ptr) = 
+  Array.length (# b) - 2 
+
+let tag (b : ptr) = 
+  (# b).(0)
 
 let unit = 0
 
