@@ -23,7 +23,7 @@ let take_argument code =
   incr pc;
   code.(!pc)
 
-let debug_print_block block =
+let rec debug_print_block block =
   print_string "(block, size : ";
   print_int (Mlvalues.size (Mlvalues.ptr_val block));
   print_string ", tag : ";
@@ -31,7 +31,10 @@ let debug_print_block block =
   print_string ") ";
   for i = 0 to Mlvalues.size (Mlvalues.ptr_val block) - 1 do
     print_string "<";
-    print_int (Mlvalues.get_field block i);
+    if Mlvalues.is_ptr (Mlvalues.get_field block i) then
+      debug_print_block (Mlvalues.get_field block i)
+    else
+      print_int (Mlvalues.get_field block i);
     print_string ">";
     print_string " | "
   done;
@@ -297,12 +300,13 @@ let interp code =
                            
     (* GETFLOATFIELD (opInput.code: 72) *)
                            
-    | 73 (* SETFIELD0 *) -> Mlvalues.set_field (!acc) 0 (pop_stack ()) 
-    | 74 (* SETFIELD1 *) -> Mlvalues.set_field (!acc) 1 (pop_stack ()) 
-    | 75 (* SETFIELD2 *) -> Mlvalues.set_field (!acc) 2 (pop_stack ())    
-    | 76 (* SETFIELD3 *) -> Mlvalues.set_field (!acc) 3 (pop_stack ())
+    | 73 (* SETFIELD0 *) -> Mlvalues.set_field (!acc) 0 (pop_stack ()); acc := Mlvalues.unit 
+    | 74 (* SETFIELD1 *) -> Mlvalues.set_field (!acc) 1 (pop_stack ()); acc := Mlvalues.unit 
+    | 75 (* SETFIELD2 *) -> Mlvalues.set_field (!acc) 2 (pop_stack ()); acc := Mlvalues.unit  
+    | 76 (* SETFIELD3 *) -> Mlvalues.set_field (!acc) 3 (pop_stack ()); acc := Mlvalues.unit 
     | 77 (* SETFIELD *) -> let n = take_argument code in 
-                           Mlvalues.set_field (!acc) n (pop_stack ())
+                           Mlvalues.set_field (!acc) n (pop_stack ());
+                           acc := Mlvalues.unit 
 
     (* 78 SETFLOATFIELD *)
 
