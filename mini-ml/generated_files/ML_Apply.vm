@@ -1,35 +1,380 @@
 // val "Apply.apply"
 function ML_Apply.apply 0
-    push argument 1
-    push constant 2
-    eq
-    not
-    if-goto A2
     push argument 0
-    call ML_Apply.lambda2 1
-    goto EndApply
-label A2
-    push argument 1
-    push constant 1
-    eq
-    not
-    if-goto A1
-    push argument 0
-    call ML_Apply.lambda1 1
-    goto EndApply
-label A1
-    push argument 1
     push constant 0
+    call ML_Internal.array_get 2
+    push constant 10032
     eq
     not
-    if-goto A0
+    if-goto A10032
     push argument 0
-    call ML_Apply.lambda0 1
-    goto EndApply
-label A0
     push argument 1
+    call ML_Apply.closure10032 2
+    goto EndApply
+label A10032
+    push argument 0
     push constant 0
-    call ML_Array.get 2
+    call ML_Internal.array_get 2
+    push constant 10033
+    eq
+    not
+    if-goto A10033
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10033 2
+    goto EndApply
+label A10033
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10031
+    eq
+    not
+    if-goto A10031
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10031 2
+    goto EndApply
+label A10031
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10030
+    eq
+    not
+    if-goto A10030
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10030 2
+    goto EndApply
+label A10030
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10028
+    eq
+    not
+    if-goto A10028
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10028 2
+    goto EndApply
+label A10028
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10029
+    eq
+    not
+    if-goto A10029
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10029 2
+    goto EndApply
+label A10029
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10026
+    eq
+    not
+    if-goto A10026
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10026 2
+    goto EndApply
+label A10026
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10027
+    eq
+    not
+    if-goto A10027
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10027 2
+    goto EndApply
+label A10027
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10023
+    eq
+    not
+    if-goto A10023
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10023 2
+    goto EndApply
+label A10023
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10024
+    eq
+    not
+    if-goto A10024
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10024 2
+    goto EndApply
+label A10024
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10025
+    eq
+    not
+    if-goto A10025
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10025 2
+    goto EndApply
+label A10025
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10021
+    eq
+    not
+    if-goto A10021
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10021 2
+    goto EndApply
+label A10021
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10022
+    eq
+    not
+    if-goto A10022
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10022 2
+    goto EndApply
+label A10022
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10017
+    eq
+    not
+    if-goto A10017
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10017 2
+    goto EndApply
+label A10017
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10018
+    eq
+    not
+    if-goto A10018
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10018 2
+    goto EndApply
+label A10018
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10019
+    eq
+    not
+    if-goto A10019
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10019 2
+    goto EndApply
+label A10019
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10020
+    eq
+    not
+    if-goto A10020
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10020 2
+    goto EndApply
+label A10020
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10013
+    eq
+    not
+    if-goto A10013
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10013 2
+    goto EndApply
+label A10013
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10014
+    eq
+    not
+    if-goto A10014
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10014 2
+    goto EndApply
+label A10014
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10015
+    eq
+    not
+    if-goto A10015
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10015 2
+    goto EndApply
+label A10015
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10016
+    eq
+    not
+    if-goto A10016
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10016 2
+    goto EndApply
+label A10016
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10010
+    eq
+    not
+    if-goto A10010
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10010 2
+    goto EndApply
+label A10010
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10011
+    eq
+    not
+    if-goto A10011
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10011 2
+    goto EndApply
+label A10011
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10012
+    eq
+    not
+    if-goto A10012
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10012 2
+    goto EndApply
+label A10012
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10007
+    eq
+    not
+    if-goto A10007
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10007 2
+    goto EndApply
+label A10007
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10008
+    eq
+    not
+    if-goto A10008
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10008 2
+    goto EndApply
+label A10008
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10009
+    eq
+    not
+    if-goto A10009
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10009 2
+    goto EndApply
+label A10009
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10004
+    eq
+    not
+    if-goto A10004
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10004 2
+    goto EndApply
+label A10004
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10005
+    eq
+    not
+    if-goto A10005
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10005 2
+    goto EndApply
+label A10005
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10006
+    eq
+    not
+    if-goto A10006
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10006 2
+    goto EndApply
+label A10006
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10003
+    eq
+    not
+    if-goto A10003
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10003 2
+    goto EndApply
+label A10003
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
     push constant 10001
     eq
     not
@@ -39,89 +384,540 @@ label A0
     call ML_Apply.closure10001 2
     goto EndApply
 label A10001
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    push constant 10002
+    eq
+    not
+    if-goto A10002
+    push argument 0
+    push argument 1
+    call ML_Apply.closure10002 2
+    goto EndApply
+label A10002
 label EndApply
     return
-// val "Apply.lambda2"
-function ML_Apply.lambda2 1
-    push constant 4
-    call ML_Array.create_uninitialized 1
-    pop local 0
-    push local 0
-    push constant 0
-    push constant 1
-    call ML_Internal.array_set 3
-    pop temp 0
-    push local 0
-    push constant 1
-    push constant 10
-    call ML_Internal.array_set 3
-    pop temp 0
-    push local 0
+// val "Apply.closure10032"
+function ML_Apply.closure10032 2
     push constant 2
-    push constant 6
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10033
     call ML_Internal.array_set 3
     pop temp 0
-    push local 0
-    push constant 3
-    push argument 0
+    push local 1
+    push constant 1
+    push argument 1
     call ML_Internal.array_set 3
     pop temp 0
-    push local 0
+    push local 1
     return
-// val "Apply.lambda1"
-function ML_Apply.lambda1 0
+// val "Apply.closure10033"
+function ML_Apply.closure10033 0
+    push argument 1
     push argument 0
-    call ML_M1.__lambda1 0
+    push constant 1
+    call ML_Array.get 2
+    add
+    return
+// val "Apply.closure10031"
+function ML_Apply.closure10031 0
+    call ML_Assert.__lambda11 0
+    push argument 1
     call ML_Apply.apply 2
     return
-// val "Apply.lambda0"
-function ML_Apply.lambda0 2
+// val "Apply.closure10030"
+function ML_Apply.closure10030 0
+    call ML_Assert.__lambda11 0
+    push argument 1
+    call ML_Apply.apply 2
+    return
+// val "Apply.closure10028"
+function ML_Apply.closure10028 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10029
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    return
+// val "Apply.closure10029"
+function ML_Apply.closure10029 0
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    push argument 1
+    add
+    return
+// val "Apply.closure10026"
+function ML_Apply.closure10026 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10027
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    return
+// val "Apply.closure10027"
+function ML_Apply.closure10027 0
+    call ML_Assert.__lambda9 0
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    call ML_Apply.apply 2
+    push argument 1
+    call ML_Apply.apply 2
+    return
+// val "Apply.closure10023"
+function ML_Apply.closure10023 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10024
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    return
+// val "Apply.closure10024"
+function ML_Apply.closure10024 2
     push constant 3
     call ML_Array.create_uninitialized 1
     pop local 1
     push local 1
     push constant 0
-    push constant 10001
+    push constant 10025
     call ML_Internal.array_set 3
     pop temp 0
     push local 1
     push constant 1
-    push local 0
+    push argument 1
     call ML_Internal.array_set 3
     pop temp 0
     push local 1
     push constant 2
     push argument 0
+    push constant 1
+    call ML_Array.get 2
     call ML_Internal.array_set 3
     pop temp 0
     push local 1
     return
-// val "Apply.closure10001"
-function ML_Apply.closure10001 1
-    push constant 4
+// val "Apply.closure10025"
+function ML_Apply.closure10025 0
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    push argument 1
+    add
+    push argument 0
+    push constant 2
+    call ML_Array.get 2
+    add
+    return
+// val "Apply.closure10021"
+function ML_Apply.closure10021 2
+    push constant 2
     call ML_Array.create_uninitialized 1
-    pop local 0
-    push local 0
+    pop local 1
+    push local 1
     push constant 0
-    push constant 1
+    push constant 10022
     call ML_Internal.array_set 3
     pop temp 0
-    push local 0
+    push local 1
     push constant 1
-    push constant 10
+    push argument 1
     call ML_Internal.array_set 3
     pop temp 0
-    push local 0
+    push local 1
+    return
+// val "Apply.closure10022"
+function ML_Apply.closure10022 0
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    return
+// val "Apply.closure10017"
+function ML_Apply.closure10017 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10018
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    return
+// val "Apply.closure10018"
+function ML_Apply.closure10018 2
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10019
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
     push constant 2
     push argument 0
+    push constant 1
+    call ML_Array.get 2
     call ML_Internal.array_set 3
     pop temp 0
-    push local 0
-    push constant 3
+    push local 1
+    return
+// val "Apply.closure10019"
+function ML_Apply.closure10019 2
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10020
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
     push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 2
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 3
+    push argument 0
     push constant 2
     call ML_Array.get 2
     call ML_Internal.array_set 3
     pop temp 0
-    push local 0
+    push local 1
+    return
+// val "Apply.closure10020"
+function ML_Apply.closure10020 0
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    push argument 0
+    push constant 2
+    call ML_Array.get 2
+    add
+    push argument 0
+    push constant 3
+    call ML_Array.get 2
+    add
+    return
+// val "Apply.closure10013"
+function ML_Apply.closure10013 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10014
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    return
+// val "Apply.closure10014"
+function ML_Apply.closure10014 2
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10015
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 2
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    return
+// val "Apply.closure10015"
+function ML_Apply.closure10015 2
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10016
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 2
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 3
+    push argument 0
+    push constant 2
+    call ML_Array.get 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    return
+// val "Apply.closure10016"
+function ML_Apply.closure10016 0
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    push argument 0
+    push constant 2
+    call ML_Array.get 2
+    add
+    push argument 0
+    push constant 3
+    call ML_Array.get 2
+    add
+    push argument 1
+    add
+    return
+// val "Apply.closure10010"
+function ML_Apply.closure10010 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10011
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    return
+// val "Apply.closure10011"
+function ML_Apply.closure10011 2
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10012
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 2
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    return
+// val "Apply.closure10012"
+function ML_Apply.closure10012 0
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    push argument 0
+    push constant 2
+    call ML_Array.get 2
+    add
+    return
+// val "Apply.closure10007"
+function ML_Apply.closure10007 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10008
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    return
+// val "Apply.closure10008"
+function ML_Apply.closure10008 2
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10009
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 2
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    return
+// val "Apply.closure10009"
+function ML_Apply.closure10009 0
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    push argument 0
+    push constant 2
+    call ML_Array.get 2
+    add
+    return
+// val "Apply.closure10004"
+function ML_Apply.closure10004 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10005
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    return
+// val "Apply.closure10005"
+function ML_Apply.closure10005 2
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10006
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 2
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    return
+// val "Apply.closure10006"
+function ML_Apply.closure10006 0
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    push argument 0
+    push constant 2
+    call ML_Array.get 2
+    add
+    return
+// val "Apply.closure10003"
+function ML_Apply.closure10003 0
+    call ML_Assert.__lambda1 0
+    push argument 1
+    call ML_Apply.apply 2
+    return
+// val "Apply.closure10001"
+function ML_Apply.closure10001 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10002
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    return
+// val "Apply.closure10002"
+function ML_Apply.closure10002 0
+    push argument 0
+    push constant 1
+    call ML_Array.get 2
+    push argument 1
+    add
     return

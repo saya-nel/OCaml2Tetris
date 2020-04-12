@@ -15,8 +15,7 @@ and exp =
   | Constant of constant
   | Variable of var
   | GFun of (Ast.name)
-  | Fun of (exp * int * int)
-  | Closure of ((int * exp) * exp) (* [code,env] *)
+  | Closure of ((int * exp) * exp) (* [code,env]  avec code = {adr | e } *)
   | Let of (int * exp * exp)
   | App of (exp * exp list)
   | If of (exp * exp * exp)

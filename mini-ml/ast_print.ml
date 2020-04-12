@@ -109,7 +109,7 @@ and sprint_exp lvl = function
                  let lvl' = get_indent_level s lvl in
                  s ^ (sprint_exp lvl' e))
              cases)) ^ ")"
-  | Closure ((addr,e1),name,e2) -> sptf "(%s {scode(%d): %s | %s})" name addr (sprint_exp 0 e1) (sprint_exp 0 e2)
+  | Closure ((addr,e1),name,e2) -> sptf "#({%s}{%s})" (sprint_exp lvl e1) (sprint_exp lvl e2) (* "(%s {scode(%d): %s | %s})" name addr (sprint_exp 0 e1) (sprint_exp 0 e2) *)
   | Ext _ -> "..."
 and sprint_constant lvl = function
   | Unit -> sptf "()"
