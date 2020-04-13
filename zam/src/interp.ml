@@ -134,14 +134,14 @@ let interp code =
                                push_stack (!extra_args);
                                push_stack (!env);
                                push_stack ofs
-    | 32 (* APPLY *) -> let args = take_argument code in (* correct ? *)
+    | 32 (* APPLY *) -> let args = take_argument code in 
                         extra_args := args - 1;
-                        pc := Mlvalues.addr_closure (!acc) - 1; 
+                        pc := Mlvalues.addr_closure (!acc) - 1; (* -1 pour enlever incrémentation d'apres *)
                         env := Mlvalues.env_closure (!acc)
     | 33 (* APPLY1 *) -> let arg = pop_stack () in
                          push_stack (!extra_args);
                          push_stack (!env);
-                         push_stack (!pc + 1);   (* +1 ?? *)
+                         push_stack (!pc);   (* +1 ?? *)
                          push_stack arg;
                          pc := Mlvalues.addr_closure (!acc) - 1;  (* -1 ?? *)
                          env := Mlvalues.env_closure (!acc);
@@ -150,7 +150,7 @@ let interp code =
                          let arg2 = pop_stack () in
                          push_stack (!extra_args);
                          push_stack (!env);
-                         push_stack (!pc + 1);   (* +1 ?? *)
+                         push_stack (!pc);   (* +1 ?? *)
                          push_stack arg2;
                          push_stack arg1;
                          pc := Mlvalues.addr_closure (!acc) - 1;   (* -1 ?? *)
@@ -161,7 +161,7 @@ let interp code =
                          let arg3 = pop_stack () in
                          push_stack (!extra_args);
                          push_stack (!env);
-                         push_stack (!pc + 1);   (* +1 ?? *)
+                         push_stack (!pc);   (* +1 ?? *)
                          push_stack arg3;
                          push_stack arg2;
                          push_stack arg1;
@@ -225,10 +225,10 @@ let interp code =
      | 43 (* CLOSURE *) -> let n = take_argument code in
                            let addr = take_argument code in
                            if n > 0 then push_stack (!acc);
-                           let closure_env = Mlvalues.make_env (n+1) in
-                           Mlvalues.set_field closure_env 0 (Mlvalues.val_long addr);
-                          for i = 1 to n - 1 do Mlvalues.set_field closure_env i (pop_stack ()) done;
-                          acc := Mlvalues.make_closure addr closure_env
+                           let closure_env = Mlvalues.make_env (n + 1) in
+                           Mlvalues.set_field closure_env 0 (Mlvalues.val_long (!pc + addr)); (* addr ou pc + addr, a verifier *)
+                           for i = 1 to n - 1 do Mlvalues.set_field closure_env i (pop_stack ()) done;
+                           acc := Mlvalues.make_closure (!pc + addr) closure_env (* addr ou pc + addr, a verifier *)
     
     (* CLOSUREREC *)
     (* OFFSETCLOSUREM2 *)

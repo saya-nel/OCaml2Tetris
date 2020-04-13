@@ -58,16 +58,17 @@ let set_bytes (v : value) (i : int) (x : value) =  (* à revoir. cf get_bytes. *
   (#(ptr_val v)).(i+2) <- x
 
 
-let closure_tag = 1 (* ??? *)
+let closure_tag = 1
 let env_tag = 2
-let make_closure pc env = 
-  val_ptr (# [|val_long closure_tag;val_long pc;env|])   (* ? *)
+
+let make_closure addr env = 
+  val_ptr (# [|val_long closure_tag;val_long addr;env|])
 
 let make_env sz =
   make_block env_tag sz
 
-let addr_closure (c : value) = long_val (get_field c 1)
-let env_closure (c : value) = get_field c 2
+let addr_closure (c : value) = long_val (get_field c 0)
+let env_closure (c : value) = get_field c 1
 
 let _ = 
   assert (long_val (val_long 42) = 42);
