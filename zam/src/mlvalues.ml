@@ -7,25 +7,21 @@ type ptr = int
 (* ************************************* *)
 
 (* transforme un entier en mlvalue *)
-let val_long (n : long) : value = 
-  (* assert (n >= 0); *)
-  (- n)
-    
+let val_long (n : long) : value = n
+
 (* transforme un mlvalue en entier *)
-let long_val (n : value) : long = 
-  (* assert (n >= 0); *)
-  (- n)
+let long_val (v : value) : long = v
 
 (* transforme un pointeur en mlvalue *)
 let val_ptr (n : ptr) : value =
-  #n + 16384
+  (- (n - 16384))
 
 (* transforme un mlvalue en pointeur *)
-let ptr_val (n : value) : ptr =
-  #n - 16384
+let ptr_val (v : value) : ptr =
+  (- (v - 16384))
 
-let is_ptr (n : value) : bool = 
-  n < (- 16384)
+let is_ptr (v : value) : bool = 
+  v < (- 16384)
 
 let size (b : ptr) = 
   Array.length (# b) - 2 
@@ -66,5 +62,3 @@ let make_env sz =
 
 let addr_closure (c : value) = get_field c 0
 let env_closure (c : value) = get_field c 1
-
-(* ********************************************** *)
