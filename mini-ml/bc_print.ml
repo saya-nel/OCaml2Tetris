@@ -35,10 +35,10 @@ and string_of_instr = function
 and string_of_segment = function
   | Anywhere ->
      string_of_segment (Temp 0)
-  | Argument n ->
-     sptf "argument %d" n
-  | Constant n ->
-     sptf "constant %d" n
+  | Argument n -> 
+    sptf "argument %d" n
+  | Constant n -> (if n < 0 then sptf (* push *) "constant 0\n    push constant %d\n    sub" (- n) else
+     sptf "constant %d" n)
   | Static n ->
      sptf "static %d" n
   | Local n ->

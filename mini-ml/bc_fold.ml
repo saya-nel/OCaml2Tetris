@@ -2,10 +2,7 @@
 
 open Bc
 
-let bc_int n = let k = (n + 0xFFFF) mod 0xFFFF in
-               if k < 0x8000 (* if positif *)
-               then [Push (Constant(k))]
-               else [Push (Constant(k land 0x7FFF)); BinOp(Sub)]
+let bc_int n = [Push (Constant(n))]
 
 let rec rewrite bcm = 
   {bcm with bc_body=rw (bcm.bc_body)}

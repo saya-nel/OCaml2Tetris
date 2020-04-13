@@ -8,26 +8,24 @@ type ptr = int
 
 (* transforme un entier en mlvalue *)
 let val_long (n : long) : value = 
-  assert (n >= 0);
-  #n
+  (* assert (n >= 0); *)
+  (- n)
     
 (* transforme un mlvalue en entier *)
 let long_val (n : value) : long = 
-  assert (n >= 0);
-  #n
+  (* assert (n >= 0); *)
+  (- n)
 
 (* transforme un pointeur en mlvalue *)
 let val_ptr (n : ptr) : value =
-  assert (n > 0); (* addresse 0 réservée *)
-  (- n)
+  #n + 16384
 
 (* transforme un mlvalue en pointeur *)
 let ptr_val (n : value) : ptr =
-  assert (n < 0);
-  (- n)
+  #n - 16384
 
 let is_ptr (n : value) : bool = 
-  n < 0
+  n < (- 16384)
 
 let size (b : ptr) = 
   Array.length (# b) - 2 
@@ -38,7 +36,7 @@ let tag (b : ptr) =
 let unit = 0
 
 let make_block (tag : long) (sz : long) =
-  assert (tag >= 0 && sz >= 0);
+  (* assert (tag >= 0 && sz >= 0); *)
   let a = Array.make (sz + 2) 0 in
   a.(0) <- val_long tag;
   a.(1) <- val_long 0; (* color *)
@@ -58,21 +56,15 @@ let set_bytes (v : value) (i : int) (x : value) =  (* à revoir. cf get_bytes. *
   (#(ptr_val v)).(i+2) <- x
 
 
-let closure_tag = 1
+let closure_tag = 1 (* ??? *)
 let env_tag = 2
-
-let make_closure addr env = 
-  val_ptr (# [|val_long closure_tag;val_long addr;env|])
+let make_closure pc env = 
+  val_ptr (# [|val_long closure_tag;val_long pc;env|])   (* ? *)
 
 let make_env sz =
   make_block env_tag sz
 
-let addr_closure (c : value) = long_val (get_field c 0)
+let addr_closure (c : value) = get_field c 0
 let env_closure (c : value) = get_field c 1
 
-let _ = 
-  assert (long_val (val_long 42) = 42);
-  assert (ptr_val (val_ptr 42) = 42);
-  assert (not (is_ptr (val_long 42)));
-  assert (is_ptr (val_ptr 42));
-  assert (not (is_ptr (val_long 0)))
+(* ********************************************** *)

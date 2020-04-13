@@ -160,7 +160,7 @@ and bc_of_constant = function
   | Kast.Int n ->
      if n >= 0
      then [Push (Constant n)]
-     else [Push (Constant 0); Push (Constant (- n)); BinOp(Sub)]
+     else [Push (Constant 0); Push (Constant (-n)); BinOp(Sub)]
   | Kast.Array_empty ->
      [Push (Constant 0)]
   | Kast.Bool b ->
@@ -194,5 +194,5 @@ and bc_of_binop = function
 and bc_of_unop = function
   | Ast.Not ->
      [UnOp Not]
-  | Ast.UMinus ->
+  | Ast.UMinus -> 
      [Pop (Temp(0));Push(Constant(0));Push(Temp(0));BinOp Sub]
