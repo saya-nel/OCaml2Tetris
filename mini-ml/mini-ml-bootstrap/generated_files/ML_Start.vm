@@ -1,0 +1,10 @@
+function ML_Start.main 0
+    call ML_Ast_lift.__init__gen 0
+    call ML_Ast_lift.__init___lambda3 0
+    call ML_Ast_globz.__init__gen 0
+    call ML_Ast_globz.__init__collect 0
+    call ML_Ast_closure.__init__gen 0
+    call ML_Bc_print.__init__prefix 0
+    call ML_Bc_print.__init__indent 0
+    push constant 0
+    return

@@ -135,7 +135,7 @@ and bc_of_exp = function
   | Kast.UnOp(op,e1) ->
          let bc_e1 = bc_of_exp e1  in
          bc_e1 @ bc_of_unop op
-  | Kast.GFun (name) -> [Call (name,0)] (* assert false  *)
+  | Kast.GFun (name) -> [Call (name,0)] (* assert false *) 
   (* Comme il n'y a pas d'adresse en Nand2Tetris, une fonction globale n'a pas de  *)
   (* valeur (même pas un pointeur). *)
 

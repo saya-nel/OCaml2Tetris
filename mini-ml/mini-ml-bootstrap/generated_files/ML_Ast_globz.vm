@@ -1,0 +1,923 @@
+function ML_Ast_globz.gen 0
+    push static 2
+    return
+function ML_Ast_globz.__init__gen 0
+    push constant 0
+    call ML_Gensym.create 1
+    pop static 2
+    push static 2
+    pop temp 7
+    return
+function ML_Ast_globz.collect 0
+    push static 3
+    return
+function ML_Ast_globz.__init__collect 0
+    push constant 0
+    call ML_Pervasives.ref 1
+    pop static 3
+    push static 3
+    pop temp 7
+    return
+function ML_Ast_globz.rw_constant 6
+    push argument 0
+    pop local 0
+    push local 0
+    push constant 256
+    gt
+    not
+    not
+    if-goto IfFalse227
+    push local 0
+    goto IfEnd228
+label IfFalse227
+    push local 0
+    push constant 0
+    call ML_Array.get 2
+label IfEnd228
+    pop local 1
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push constant 8
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 95
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push constant 95
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    push constant 115
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 3
+    push constant 116
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 4
+    push constant 97
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 5
+    push constant 116
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 6
+    push constant 105
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 7
+    push constant 99
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    call ML_Ast_globz.gen 0
+    call ML_Gensym.next 2
+    pop local 3
+    call ML_Ast_globz.collect 0
+    push constant 0
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 3
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 5
+    push local 5
+    push constant 0
+    push constant 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 1
+    push argument 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    call ML_Ast_globz.collect 0
+    push constant 0
+    call ML_Internal.array_get 2
+    call ML_Internal.make_pair 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 3
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    return
+function ML_Ast_globz.rw_exp 9
+label rw_exp
+    push argument 0
+    pop local 0
+    push local 0
+    push constant 256
+    gt
+    not
+    not
+    if-goto IfFalse229
+    push local 0
+    goto IfEnd230
+label IfFalse229
+    push local 0
+    push constant 0
+    call ML_Array.get 2
+label IfEnd230
+    pop local 1
+    push local 1
+    push constant 8
+    lt
+    not
+    if-goto IfFalse265
+    push local 1
+    push constant 5
+    lt
+    not
+    if-goto IfFalse249
+    push local 1
+    push constant 2
+    lt
+    not
+    if-goto IfFalse235
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 2
+    pop local 2
+    push local 2
+    pop local 3
+    push local 3
+    push constant 256
+    gt
+    not
+    not
+    if-goto IfFalse231
+    push local 3
+    goto IfEnd232
+label IfFalse231
+    push local 3
+    push constant 0
+    call ML_Array.get 2
+label IfEnd232
+    pop local 4
+    push local 3
+    push constant 1
+    call ML_Array.get 2
+    pop local 5
+    push constant 8
+    call ML_Array.create_uninitialized 1
+    pop local 7
+    push local 7
+    push constant 0
+    push constant 95
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 7
+    push constant 1
+    push constant 95
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 7
+    push constant 2
+    push constant 115
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 7
+    push constant 3
+    push constant 116
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 7
+    push constant 4
+    push constant 97
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 7
+    push constant 5
+    push constant 116
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 7
+    push constant 6
+    push constant 105
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 7
+    push constant 7
+    push constant 99
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 7
+    call ML_Ast_globz.gen 0
+    call ML_Gensym.next 2
+    pop local 6
+    call ML_Ast_globz.collect 0
+    push constant 0
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 7
+    push local 7
+    push constant 0
+    push constant 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 7
+    push constant 1
+    push local 6
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 7
+    push constant 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 8
+    push local 8
+    push constant 0
+    push constant 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 8
+    push constant 1
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 8
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 7
+    call ML_Ast_globz.collect 0
+    push constant 0
+    call ML_Internal.array_get 2
+    call ML_Internal.make_pair 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 7
+    push local 7
+    push constant 0
+    push constant 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 7
+    push constant 1
+    push local 6
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 7
+    goto IfEnd236
+label IfFalse235
+    push local 1
+    push constant 2
+    eq
+    not
+    if-goto IfFalse233
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push local 0
+    push constant 3
+    call ML_Array.get 2
+    pop local 4
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 5
+    push local 5
+    push constant 0
+    push constant 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 1
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 2
+    push local 3
+    call ML_Ast_globz.rw_exp 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 3
+    push local 4
+    call ML_Ast_globz.rw_exp 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    goto IfEnd234
+label IfFalse233
+    push argument 0
+label IfEnd234
+label IfEnd236
+    goto IfEnd250
+label IfFalse249
+    push local 1
+    push constant 5
+    eq
+    not
+    if-goto IfFalse247
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 5
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 2
+    call ML_Ast_globz.rw_exp 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    call ML_Ast_globz.rw_exp 0
+    push local 3
+    call ML_List.map 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    goto IfEnd248
+label IfFalse247
+    push local 1
+    push constant 7
+    lt
+    not
+    if-goto IfFalse245
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push local 0
+    push constant 3
+    call ML_Array.get 2
+    pop local 4
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 5
+    push local 5
+    push constant 0
+    push constant 6
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 1
+    push local 2
+    call ML_Ast_globz.rw_exp 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 2
+    push local 3
+    call ML_Ast_globz.rw_exp 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 3
+    push local 4
+    call ML_Ast_globz.rw_exp 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    goto IfEnd246
+label IfFalse245
+    push local 1
+    push constant 7
+    eq
+    not
+    if-goto IfFalse243
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 5
+    push local 5
+    push constant 0
+    push constant 10009
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 1
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push local 3
+    call ML_List.map 2
+    pop local 3
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 7
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 2
+    call ML_Ast_globz.rw_exp 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    push local 3
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    goto IfEnd244
+label IfFalse243
+    push argument 0
+label IfEnd244
+label IfEnd246
+label IfEnd248
+label IfEnd250
+    goto IfEnd266
+label IfFalse265
+    push local 1
+    push constant 8
+    eq
+    not
+    if-goto IfFalse263
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push local 0
+    push constant 3
+    call ML_Array.get 2
+    pop local 4
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 5
+    push local 5
+    push constant 0
+    push constant 8
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 1
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 2
+    push local 3
+    call ML_Ast_globz.rw_exp 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 3
+    push local 4
+    call ML_Ast_globz.rw_exp 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    goto IfEnd264
+label IfFalse263
+    push local 1
+    push constant 11
+    lt
+    not
+    if-goto IfFalse261
+    push local 1
+    push constant 10
+    lt
+    not
+    if-goto IfFalse253
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 9
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    push local 3
+    call ML_Ast_globz.rw_exp 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    goto IfEnd254
+label IfFalse253
+    push local 1
+    push constant 10
+    eq
+    not
+    if-goto IfFalse251
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 3
+    push local 3
+    push constant 0
+    push constant 10
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+    push constant 1
+    call ML_Ast_globz.rw_exp 0
+    push local 2
+    call ML_List.map 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+    goto IfEnd252
+label IfFalse251
+    push argument 0
+label IfEnd252
+label IfEnd254
+    goto IfEnd262
+label IfFalse261
+    push local 1
+    push constant 11
+    eq
+    not
+    if-goto IfFalse259
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push local 2
+    pop local 4
+    push local 4
+    push constant 256
+    gt
+    not
+    not
+    if-goto IfFalse255
+    push local 4
+    goto IfEnd256
+label IfFalse255
+    push local 4
+    push constant 0
+    call ML_Array.get 2
+label IfEnd256
+    pop local 5
+    push local 4
+    push constant 1
+    call ML_Array.get 2
+    pop local 6
+    push local 6
+    push constant 0
+    eq
+    not
+    if-goto IfFalse257
+    push local 3
+    pop argument 0
+    goto rw_exp
+    goto IfEnd258
+label IfFalse257
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 11
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 2
+    call ML_Ast_globz.rw_exp 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    push local 3
+    call ML_Ast_globz.rw_exp 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+label IfEnd258
+    goto IfEnd260
+label IfFalse259
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 12
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 2
+    call ML_Ast_globz.rw_exp 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    push local 3
+    call ML_Ast_globz.rw_exp 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+label IfEnd260
+label IfEnd262
+label IfEnd264
+label IfEnd266
+    return
+function ML_Ast_globz.rw_fundecs 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10010
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push argument 0
+    call ML_List.map 2
+    return
+function ML_Ast_globz.rw_decl 5
+    push argument 0
+    pop local 0
+    push local 0
+    push constant 256
+    gt
+    not
+    not
+    if-goto IfFalse269
+    push local 0
+    goto IfEnd270
+label IfFalse269
+    push local 0
+    push constant 0
+    call ML_Array.get 2
+label IfEnd270
+    pop local 1
+    push local 1
+    push constant 1
+    lt
+    not
+    if-goto IfFalse277
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    push local 3
+    call ML_Ast_globz.rw_exp 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    goto IfEnd278
+label IfFalse277
+    push local 1
+    push constant 1
+    eq
+    not
+    if-goto IfFalse275
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 3
+    push local 3
+    push constant 0
+    push constant 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+    push constant 1
+    push local 2
+    pop local 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 10011
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 3
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push local 2
+    call ML_List.map 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+    goto IfEnd276
+label IfFalse275
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 3
+    push local 3
+    push constant 0
+    push constant 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+    push constant 1
+    push local 2
+    pop local 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 10012
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 3
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push local 2
+    call ML_List.map 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+label IfEnd276
+label IfEnd278
+    return
+function ML_Ast_globz.rewrite 5
+    push argument 0
+    pop local 0
+    push local 0
+    push constant 256
+    gt
+    not
+    not
+    if-goto IfFalse279
+    push local 0
+    goto IfEnd280
+label IfFalse279
+    push local 0
+    push constant 0
+    call ML_Array.get 2
+label IfEnd280
+    pop local 1
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    call ML_Ast_globz.collect 0
+    push constant 0
+    push constant 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    call ML_Ast_globz.collect 0
+    push constant 0
+    call ML_Internal.array_get 2
+    call ML_Ast_globz.rw_decl 0
+    push local 3
+    call ML_List.map 2
+    call ML_List.append 2
+    pop local 3
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    push local 3
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    return

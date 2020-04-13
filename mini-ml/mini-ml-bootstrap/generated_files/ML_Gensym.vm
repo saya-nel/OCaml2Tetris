@@ -1,0 +1,23 @@
+function ML_Gensym.create 0
+    push argument 0
+    call ML_Pervasives.ref 1
+    return
+function ML_Gensym.next 0
+    push argument 1
+    call ML_Pervasives.incr 1
+    pop temp 0
+    push argument 0
+    push argument 1
+    push constant 0
+    call ML_Internal.array_get 2
+    call ML_Pervasives.string_of_int 1
+    call ML_Pervasives.(^) 2
+    return
+function ML_Gensym.next_int 0
+    push argument 0
+    call ML_Pervasives.incr 1
+    pop temp 0
+    push argument 0
+    push constant 0
+    call ML_Internal.array_get 2
+    return

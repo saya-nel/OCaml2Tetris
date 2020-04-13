@@ -1,0 +1,819 @@
+function ML_Ast_closure.gen 0
+    push static 4
+    return
+function ML_Ast_closure.__init__gen 0
+    push constant 10000
+    call ML_Gensym.create 1
+    pop static 4
+    push static 4
+    pop temp 7
+    return
+function ML_Ast_closure.rw_exp 12
+label rw_exp
+    push argument 1
+    pop local 0
+    push local 0
+    push constant 256
+    gt
+    not
+    not
+    if-goto IfFalse281
+    push local 0
+    goto IfEnd282
+label IfFalse281
+    push local 0
+    push constant 0
+    call ML_Array.get 2
+label IfEnd282
+    pop local 1
+    push local 1
+    push constant 7
+    lt
+    not
+    if-goto IfFalse317
+    push local 1
+    push constant 3
+    lt
+    not
+    if-goto IfFalse295
+    push local 1
+    push constant 1
+    lt
+    not
+    if-goto IfFalse285
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 3
+    push local 3
+    push constant 0
+    push constant 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+    push constant 1
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+    goto IfEnd286
+label IfFalse285
+    push local 1
+    push constant 1
+    eq
+    not
+    if-goto IfFalse283
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 3
+    push local 3
+    push constant 0
+    push constant 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+    push constant 1
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+    goto IfEnd284
+label IfFalse283
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push local 0
+    push constant 3
+    call ML_Array.get 2
+    pop local 4
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 5
+    push local 5
+    push constant 0
+    push constant 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 1
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 2
+    push argument 0
+    push local 3
+    call ML_Ast_closure.rw_exp 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 3
+    push argument 0
+    push local 4
+    call ML_Ast_closure.rw_exp 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+label IfEnd284
+label IfEnd286
+    goto IfEnd296
+label IfFalse295
+    push local 1
+    push constant 3
+    eq
+    not
+    if-goto IfFalse293
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push argument 0
+    pop local 4
+    push local 4
+    push constant 256
+    gt
+    not
+    not
+    if-goto IfFalse287
+    push local 4
+    goto IfEnd288
+label IfFalse287
+    push local 4
+    push constant 0
+    call ML_Array.get 2
+label IfEnd288
+    pop local 5
+    call ML_Ast_closure.gen 0
+    call ML_Gensym.next_int 1
+    pop local 6
+    push local 2
+    push argument 0
+    call ML_Internal.make_pair 2
+    push local 3
+    call ML_Ast_closure.rw_exp 2
+    pop local 7
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 10
+    push local 10
+    push constant 0
+    push constant 10013
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 10
+    push constant 1
+    push argument 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 10
+    push constant 2
+    push local 3
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 10
+    push argument 0
+    call ML_List.map 2
+    pop local 8
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 10
+    push local 10
+    push constant 0
+    push constant 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 10
+    push constant 1
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 11
+    push local 11
+    push constant 0
+    push constant 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 11
+    push constant 1
+    push local 6
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 11
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 10
+    push local 8
+    call ML_Internal.make_pair 2
+    pop local 9
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 10
+    push local 10
+    push constant 0
+    push constant 4
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 10
+    push constant 1
+    push local 6
+    push local 7
+    call ML_Internal.make_pair 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 10
+    push constant 2
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 10
+    push constant 3
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 11
+    push local 11
+    push constant 0
+    push constant 10
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 11
+    push constant 1
+    push local 9
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 11
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 10
+    goto IfEnd294
+label IfFalse293
+    push local 1
+    push constant 6
+    lt
+    not
+    if-goto IfFalse291
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 5
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push argument 0
+    push local 2
+    call ML_Ast_closure.rw_exp 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    push argument 0
+    call ML_Ast_closure.rw_exp 1
+    push local 3
+    call ML_List.map 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    goto IfEnd292
+label IfFalse291
+    push local 1
+    push constant 6
+    eq
+    not
+    if-goto IfFalse289
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push local 0
+    push constant 3
+    call ML_Array.get 2
+    pop local 4
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 5
+    push local 5
+    push constant 0
+    push constant 6
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 1
+    push argument 0
+    push local 2
+    call ML_Ast_closure.rw_exp 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 2
+    push argument 0
+    push local 3
+    call ML_Ast_closure.rw_exp 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 3
+    push argument 0
+    push local 4
+    call ML_Ast_closure.rw_exp 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    goto IfEnd290
+label IfFalse289
+    push argument 1
+label IfEnd290
+label IfEnd292
+label IfEnd294
+label IfEnd296
+    goto IfEnd318
+label IfFalse317
+    push local 1
+    push constant 7
+    eq
+    not
+    if-goto IfFalse315
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 7
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push argument 0
+    push local 2
+    call ML_Ast_closure.rw_exp 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 6
+    push local 6
+    push constant 0
+    push constant 10014
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 6
+    push constant 1
+    push argument 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 6
+    push constant 2
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 6
+    push local 3
+    call ML_List.map 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    goto IfEnd316
+label IfFalse315
+    push local 1
+    push constant 10
+    lt
+    not
+    if-goto IfFalse313
+    push local 1
+    push constant 9
+    lt
+    not
+    if-goto IfFalse305
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push local 0
+    push constant 3
+    call ML_Array.get 2
+    pop local 4
+    push constant 4
+    call ML_Array.create_uninitialized 1
+    pop local 5
+    push local 5
+    push constant 0
+    push constant 8
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 1
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 2
+    push argument 0
+    push local 3
+    call ML_Ast_closure.rw_exp 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    push constant 3
+    push argument 0
+    push local 4
+    call ML_Ast_closure.rw_exp 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 5
+    goto IfEnd306
+label IfFalse305
+    push local 1
+    push constant 9
+    eq
+    not
+    if-goto IfFalse303
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 9
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    push argument 0
+    push local 3
+    call ML_Ast_closure.rw_exp 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    goto IfEnd304
+label IfFalse303
+    push argument 1
+label IfEnd304
+label IfEnd306
+    goto IfEnd314
+label IfFalse313
+    push local 1
+    push constant 10
+    eq
+    not
+    if-goto IfFalse311
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 3
+    push local 3
+    push constant 0
+    push constant 10
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+    push constant 1
+    push argument 0
+    call ML_Ast_closure.rw_exp 1
+    push local 2
+    call ML_List.map 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+    goto IfEnd312
+label IfFalse311
+    push local 1
+    push constant 12
+    lt
+    not
+    if-goto IfFalse309
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 11
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push argument 0
+    push local 2
+    call ML_Ast_closure.rw_exp 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    push argument 0
+    push local 3
+    call ML_Ast_closure.rw_exp 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    goto IfEnd310
+label IfFalse309
+    push local 1
+    push constant 12
+    eq
+    not
+    if-goto IfFalse307
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 12
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push argument 0
+    push local 2
+    call ML_Ast_closure.rw_exp 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    push argument 0
+    push local 3
+    call ML_Ast_closure.rw_exp 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    goto IfEnd308
+label IfFalse307
+    push argument 1
+label IfEnd308
+label IfEnd310
+label IfEnd312
+label IfEnd314
+label IfEnd316
+label IfEnd318
+    return
+function ML_Ast_closure.rw_fundecs 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 1
+    push local 1
+    push constant 0
+    push constant 10015
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push constant 1
+    push argument 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 1
+    push argument 0
+    call ML_List.map 2
+    return
+function ML_Ast_closure.rw_decl 5
+    push argument 0
+    pop local 0
+    push local 0
+    push constant 256
+    gt
+    not
+    not
+    if-goto IfFalse321
+    push local 0
+    goto IfEnd322
+label IfFalse321
+    push local 0
+    push constant 0
+    call ML_Array.get 2
+label IfEnd322
+    pop local 1
+    push local 1
+    push constant 1
+    lt
+    not
+    if-goto IfFalse329
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    push constant 0
+    push local 3
+    call ML_Ast_closure.rw_exp 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    goto IfEnd330
+label IfFalse329
+    push local 1
+    push constant 1
+    eq
+    not
+    if-goto IfFalse327
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 3
+    push local 3
+    push constant 0
+    push constant 1
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+    push constant 1
+    push local 2
+    pop local 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 10016
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 3
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push local 2
+    call ML_List.map 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+    goto IfEnd328
+label IfFalse327
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 3
+    push local 3
+    push constant 0
+    push constant 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+    push constant 1
+    push local 2
+    pop local 2
+    push constant 2
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 10017
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 3
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push local 2
+    call ML_List.map 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 3
+label IfEnd328
+label IfEnd330
+    return
+function ML_Ast_closure.rewrite 5
+    push argument 0
+    pop local 0
+    push local 0
+    push constant 256
+    gt
+    not
+    not
+    if-goto IfFalse331
+    push local 0
+    goto IfEnd332
+label IfFalse331
+    push local 0
+    push constant 0
+    call ML_Array.get 2
+label IfEnd332
+    pop local 1
+    push local 0
+    push constant 1
+    call ML_Array.get 2
+    pop local 2
+    push local 0
+    push constant 2
+    call ML_Array.get 2
+    pop local 3
+    call ML_Ast_closure.rw_decl 0
+    push local 3
+    call ML_List.map 2
+    pop local 3
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 4
+    push local 4
+    push constant 0
+    push constant 0
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 1
+    push local 2
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    push constant 2
+    push local 3
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 4
+    return

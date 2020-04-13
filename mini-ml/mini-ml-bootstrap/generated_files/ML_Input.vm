@@ -1,0 +1,28 @@
+function ML_Input.code 0
+    push static 0
+    return
+function ML_Input.__init__code 1
+    push constant 3
+    call ML_Array.create_uninitialized 1
+    pop local 0
+    push local 0
+    push constant 0
+    push constant 103
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 0
+    push constant 1
+    push constant 42
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 0
+    push constant 2
+    push constant 32766
+    sub
+    call ML_Internal.array_set 3
+    pop temp 0
+    push local 0
+    pop static 0
+    push static 0
+    pop temp 7
+    return
