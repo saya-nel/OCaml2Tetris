@@ -16,7 +16,7 @@ ZAM_INPUT=zam/input.ml
 # chemins relatifs depuis mini-ml
 ROOT=../
 STDLIB=stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml
-ZAM_SRC=../zam/src/check.ml ../zam/src/mlvalues.ml ../zam/src/prims.ml ../zam/src/interp.ml ../zam/src/main.ml
+ZAM_SRC=../zam/src/mlvalues.ml ../zam/src/prims.ml ../zam/src/interp.ml ../zam/src/main.ml
 
 
 all: simul
