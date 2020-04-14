@@ -23,7 +23,7 @@
 ```
 $ cd mini-ml
 $ make
-$ ./compile -src=exemple/src -dst=exemple/bin   m1.ml m2.ml
+$ ./compile m1.ml m2.ml      # les fichiers générés sont dans "generated_files/"
 $ VMEmulator.sh
 ~> click File->Load Script->exemple/bin/Main.tst
 {click "animate" : No Animation}
@@ -31,28 +31,43 @@ $ VMEmulator.sh
 ~> click Run->Run-> (Yes)
 ```
 
-Par defaut, -src="", dst="generated_files"
-
 ```
 <prog> := <decl> <prog> 
         | <decl> ;; <prog>
 
-<decl> := let () = <expr> 
-        | let _ = <expr> 
-        | let g = <expr> 
-        |let <ident> <ident> ... = <expr> 
-        | type <ident> = <Constr> | <Constr> | ... # non paramétré
-        | let rec <ident> <ident> ... = <expr> 
+<decl> := type ('a,...) <ident> = <exp_ty>
+        | type ('a,...) <ident> = <constr> of (<exp_ty> * ... * <exp_ty>)
+                                  # au plus 256 constructeurs par type
+        | let <var> = <expr> 
+        | let <ident> <arg> ... = <expr> 
+          and <ident> <arg> ... = <expr> 
+          ...
+        | let rec <ident> <arg> ... = <expr> 
+          and <ident> <arg> ... = <expr> 
+          ...
 
 <expr> := (<expr>)
         | (<expr> : <expr_ty>)
         | <constant>
-        | <expr> <op> <expr>
-        | <op> <expr>
-        | let <ident> = <expr> in <expr> 
+        | (<expr>,<expr>)
+        | <expr> :: <expr>
+        | <constr> (<ident>,...,<ident>)
+        | <expr> <binop> <expr>
+        | <unop> <expr>
+        | (fun <var> -> <expr>)
+        | <ident> <expr> ...    # appel de fonction globale
+        | <expr> <expr> ...     # appel de fonction calculée
+        | let <ident> = <expr> in <expr>
+        | let <expr> where <ident> = <expr>
+        | let <ident> <arg> ... = <expr>      
+          and <ident> <arg> ... = <expr> 
+          ...
+          in <expr> # fonction local
         | <expr> ; <expr>
         | if <expr> then <expr> else <expr>
-        | match <expr> with | <constant> -> <expr> | ... | _ -> <expr>  # (if imbriqués dichotomiques)
+        |   match <expr> with 
+            | <constr> (<ident>,...,<ident>) -> <expr> 
+            | ...
         | while <expr> do <expr> done
         | for <ident> = <expr> to <expr> do <expr> done
         | ref <expr>
@@ -61,25 +76,33 @@ Par defaut, -src="", dst="generated_files"
         | [|<expr>;<expr>;...|]
         | <expr>.(<expr>)
         | <expr>.(<expr>) <- <expr>
-        | assert <expr>
-        | <primitives> <expr> ...
-        | <ident> <expr> ... # application
+        | assert <expr>   
+
+<var> := <ident>
+| (<ident> : <exp_ty>)
+| _
+| ()
+
+<arg> := <ident> 
+| (<ident> : <exp_ty>)
+| _
+| ()
+
 <constant> := <bool>
             | <int>
             | ()
             | [||]
-            | <Constr>
+            | []
+            | <constr>
             | <string>
 
-<expr_ty> := <ident>
+<expr_ty> := (<expr_ty>,...) <ident>
+           | <var_ty>
            | <expr_ty> * ... * <expr_ty>
            | <expr_ty> -> <expr_ty>
 
-<binop> := + | - | = | < | <= | > | >= | '&&' | '||'
+<binop> := + | - | = | < | <= | > | >= | <> | '&&' | '||'
 <unop> := - | not
-# remarque : =, > et < ne fonctionne qu'avec des entiers. 
 
-<primitives> :=  print_char | print_int | print_string | print_newline | read_int | exit | incr | decr | Array.length | Array.get | Array.set | Array.make | String.get | String.make
-...
 
 ```
