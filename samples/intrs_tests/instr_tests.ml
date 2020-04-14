@@ -367,6 +367,8 @@ let code = [|103;7;9;103;6;112|]
 let code = [|103;2;9;103;84;113|]
 
 (* 114 MODINT *)
+(* Resultat attendu : acc = 2 *)
+let code = [|103;3;9;103;8;114|]
 
 (* 115 ANDINT *)
 (* Resultat attendu : acc = 1 *)
@@ -385,8 +387,12 @@ let code = [|103;1;9;103;0;117|]
 let code = [|103;2;9;103;15;118|]
 
 (* 119 LSRINT *)
+(* Resultat attendu : acc = 3 *)
+let code = [|103;2;9;103;15;119|]
 
 (* 120 ASRINT *)
+(* Resultat attendu : acc = 3 *)
+let code = [|103;2;9;103;15;120|]
 
 (* 121 EQ *)
 (* Resultat attendu : acc = 1 *)
@@ -453,12 +459,20 @@ let code = [|135;1;3|]
 let code = [|136;0;3|]
 
 (* 137 ULTINT *)
+(* Resultat attendu : acc = 1 *)
+let code = [|103;42;9;103;41;137|]
 
 (* 138 UGEINT *)
+(* Resultat attendu : acc = 1 *)
+let code = [|103;42;9;103;42;138|]
 
 (* 139 BULTINT *)
+(* Resultat attendu : pc = 7 *)
+let code = [|103;42;139;41;3|]
 
 (* 140 BUGEINT *)
+(* Resultat attendu : pc = 7 *)
+let code = [|103;42;140;43;3|]
 
 (* 141 GETPUBMET *)
 

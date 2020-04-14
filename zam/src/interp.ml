@@ -421,11 +421,15 @@ let interp code =
        let v = take_argument code in
        let ofs = take_argument code in
        if Prims.compare_imm v (!acc) >= 0 then pc := (!pc) + ofs - 1
-    | 137 (* ULTINT *) -> acc := Prims.ultint (pop_stack ()) (!acc)
-    | 138 (* UGEINT *) -> acc := Prims.ugeint (pop_stack ()) (!acc)
+    | 137 (* ULTINT *) -> acc := Prims.ultint (!acc) (pop_stack ()) 
+    | 138 (* UGEINT *) -> acc := Prims.ugeint (!acc) (pop_stack ())
     
-    (* BULTINT *)
-    (* BUGEINT *)
+    | 139 (* BULTINT *) -> let val = take_argument code in 
+                           let ofs = take_argument code in
+                           if Prims.ultint val (!acc) = 1 then pc := (!pc) + ofs - 1
+    | 140 (* BUGEINT *) -> let val = take_argument code in 
+                           let ofs = take_argument code in
+                           if Prims.ugeint val (!acc) = 1 then pc := (!pc) + ofs - 1
     (* GETPUBMET *)
     (* GETDYNMET *)
 
