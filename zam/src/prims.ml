@@ -15,7 +15,7 @@ let orint v1 v2 =
 	if v1 <> 0 || v2 <> 0 then 1 else 0
 
 let xorint v1 v2 = 
-	if (v1 <> 0 && v2 = 0) || (v1 <> 0 && v2 = 0) then 1 else 0
+	if (v1 <> 0 && v2 = 0) || (v2 <> 0 && v1 = 0) then 1 else 0
 
 let rec lslint v dep = 
   if dep = 0 then v
@@ -37,7 +37,7 @@ let leint v1 v2 =
 	if v1 <= v2 then 1 else 0
 
 let gtint v1 v2 = 
-	if v1 < v2 then 1 else 0
+	if v1 > v2 then 1 else 0
 
 let geint v1 v2 = 
 	if v1 >= v2 then 1 else 0

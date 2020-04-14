@@ -44,29 +44,25 @@ let debug_print_state () =
   print_newline ();
   print_string " pc: "; 
   print_int (!pc);
-  print_newline ();
-  print_string " acc: "; 
+  print_string ", acc: "; 
   if Mlvalues.is_ptr (!acc) then 
     debug_print_block (!acc)
   else 
     print_int (Mlvalues.long_val (!acc));
-  print_newline ();
-  print_string " env: ";
+  print_string ", env: ";
   if Mlvalues.is_ptr (!env) then
     debug_print_block (!env)
   else 
     print_int (Mlvalues.long_val (!env));
-  print_newline ();
-  print_string " global: ";
-  if Mlvalues.is_ptr (!global) then
-    debug_print_block (!global);
-  print_newline ();
-  print_string " sp: "; 
+  print_string ", sp: "; 
   print_int (!sp);
-  print_newline ();
-  print_string " extra args: ";
+  print_string ", extra args: ";
   print_int (!extra_args);
   print_newline ()
+  (* print_string " global: ";
+  if Mlvalues.is_ptr (!global) then
+    debug_print_block (!global);
+  print_newline (); *)
 
 let debug_print_stack () =
   print_newline ();
@@ -137,6 +133,7 @@ let interp code =
     | 32 (* APPLY *) -> let args = take_argument code in 
                         extra_args := args - 1;
                         pc := Mlvalues.addr_closure (!acc) - 1; (* -1 pour enlever incrémentation d'apres *)
+                        (* env := !acc *)
                         env := Mlvalues.env_closure (!acc)
     | 33 (* APPLY1 *) -> let arg = pop_stack () in
                          push_stack (!extra_args);
@@ -144,6 +141,7 @@ let interp code =
                          push_stack (!pc);   (* +1 ?? *)
                          push_stack arg;
                          pc := Mlvalues.addr_closure (!acc) - 1;  (* -1 ?? *)
+                         (* env := !acc; *)
                          env := Mlvalues.env_closure (!acc);
                          extra_args := 0
     | 34 (* APPLY2 *) -> let arg1 = pop_stack () in
@@ -197,12 +195,13 @@ let interp code =
     | 40 (* RETURN *) -> let n = take_argument code in
                          sp := (!sp) - n; 
                          if !extra_args = 0 
-                         then (pc := Mlvalues.long_val (pop_stack ());
+                         then (pc := Mlvalues.long_val (pop_stack ()) - 1;
                                env := pop_stack ();
                                extra_args := Mlvalues.long_val (pop_stack ()))
-                         else (decr extra_args;
-                              pc := Mlvalues.addr_closure (!acc) - 1;  (* -1 ?? *)
-                              env := Mlvalues.env_closure (!acc))
+                         else decr extra_args;
+                              pc := Mlvalues.addr_closure (!acc) - 1;
+                              (* env := (!acc) *)
+                              env := Mlvalues.env_closure (!acc)
     | 41 (* RESTART *) ->
           let n = Mlvalues.size (!env) in
           for i = 1 to n - 1 do
@@ -226,9 +225,9 @@ let interp code =
                            let addr = take_argument code in
                            if n > 0 then push_stack (!acc);
                            let closure_env = Mlvalues.make_env (n + 1) in
-                           Mlvalues.set_field closure_env 0 (Mlvalues.val_long (!pc + addr)); (* addr ou pc + addr, a verifier *)
+                           Mlvalues.set_field closure_env 0 (Mlvalues.val_long (addr)); 
                            for i = 1 to n - 1 do Mlvalues.set_field closure_env i (pop_stack ()) done;
-                           acc := Mlvalues.make_closure (!pc + addr) closure_env (* addr ou pc + addr, a verifier *)
+                           acc := Mlvalues.make_closure (addr) closure_env
     
     (* CLOSUREREC *)
     (* OFFSETCLOSUREM2 *)
@@ -371,28 +370,33 @@ let interp code =
                                 push_stack (!acc);
                                 acc := n
     | 109 (* NEGINT *) -> acc := Prims.negint (!acc)
-    | 110 (* ADDINT *) -> acc := Prims.addint (pop_stack ()) (!acc)
-    | 111 (* SUBINT *) -> acc := Prims.subint (pop_stack ()) (!acc)
-    | 112 (* MULINT *) -> acc := Prims.mulint (pop_stack ()) (!acc)
-    | 113 (* DIVINT *) -> acc := Prims.divint (pop_stack ()) (!acc)
-    | 114 (* MODINT *) -> acc := Prims.modint (pop_stack ()) (!acc)
-    | 115 (* ANDINT *) -> acc := Prims.andint (pop_stack ()) (!acc)
-    | 116 (* ORINT  *) -> acc := Prims.orint  (pop_stack ()) (!acc)
-    | 117 (* XORINT *) -> acc := Prims.xorint (pop_stack ()) (!acc)
-    | 118 (* LSLINT *) -> acc := Prims.lslint (pop_stack ()) (!acc)
-    | 119 (* LSRINT *) -> acc := Prims.lsrint (pop_stack ()) (!acc)
-    | 120 (* ASRINT *) -> acc := Prims.asrint (pop_stack ()) (!acc)
-    | 121 (* EQ     *) -> acc := Prims.eq     (pop_stack ()) (!acc)
-    | 122 (* NEQ    *) -> acc := Prims.neq    (pop_stack ()) (!acc)
-    | 123 (* LTINT  *) -> acc := Prims.ltint  (pop_stack ()) (!acc)
-    | 124 (* LEINT  *) -> acc := Prims.leint  (pop_stack ()) (!acc)
-    | 125 (* GTINT  *) -> acc := Prims.gtint  (pop_stack ()) (!acc)
-    | 126 (* GEINT  *) -> acc := Prims.geint  (pop_stack ()) (!acc)
+    | 110 (* ADDINT *) -> acc := Prims.addint (!acc) (pop_stack ()) 
+    | 111 (* SUBINT *) -> acc := Prims.subint (!acc) (pop_stack ()) 
+    | 112 (* MULINT *) -> acc := Prims.mulint (!acc) (pop_stack ()) 
+    | 113 (* DIVINT *) -> acc := Prims.divint (!acc) (pop_stack ()) 
+    | 114 (* MODINT *) -> acc := Prims.modint (!acc) (pop_stack ()) 
+    | 115 (* ANDINT *) -> acc := Prims.andint (!acc) (pop_stack ()) 
+    | 116 (* ORINT  *) -> acc := Prims.orint  (!acc) (pop_stack ()) 
+    | 117 (* XORINT *) -> acc := Prims.xorint (!acc) (pop_stack ()) 
+    | 118 (* LSLINT *) -> acc := Prims.lslint (!acc) (pop_stack ()) 
+    | 119 (* LSRINT *) -> acc := Prims.lsrint (!acc) (pop_stack ()) 
+    | 120 (* ASRINT *) -> acc := Prims.asrint (!acc) (pop_stack ()) 
+    | 121 (* EQ     *) -> acc := Prims.eq     (!acc) (pop_stack ()) 
+    | 122 (* NEQ    *) -> acc := Prims.neq    (!acc) (pop_stack ()) 
+    | 123 (* LTINT  *) -> acc := Prims.ltint  (!acc) (pop_stack ()) 
+    | 124 (* LEINT  *) -> acc := Prims.leint  (!acc) (pop_stack ()) 
+    | 125 (* GTINT  *) -> acc := Prims.gtint  (!acc) (pop_stack ()) 
+    | 126 (* GEINT  *) -> acc := Prims.geint  (!acc) (pop_stack ()) 
     | 127 (* OFFSETINT *) -> let ofs = take_argument code in 
-                             acc := Prims.addint ofs (!acc)
-    | 128 (* OFFSETREF *) -> failwith "todo"
+                             acc := Prims.addint (!acc) ofs
+    | 128 (* OFFSETREF *) -> let ofs = take_argument code in
+                             let old = Mlvalues.get_field (!acc) 0 in
+                             Mlvalues.set_field (!acc) 0 (Prims.addint old ofs);
+                             acc := Mlvalues.unit
     | 129 (* ISINT *) -> acc := Prims.isint (!acc) 
-    | 130 (* GETMETHOD *) -> failwith "todo"
+    | 130 (* GETMETHOD *) -> let x = Mlvalues.long_val (pop_stack ()) in
+                             let y = Mlvalues.get_field x 0 in
+                             acc := Mlvalues.get_field y (Mlvalues.long_val (!acc))
     | 131 (* BEQ *) ->
        let v = take_argument code in
        let ofs = take_argument code in

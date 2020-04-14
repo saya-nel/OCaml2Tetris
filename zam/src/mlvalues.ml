@@ -13,12 +13,12 @@ let val_long (n : long) : value = n
 let long_val (v : value) : long = v
 
 (* transforme un pointeur en mlvalue *)
-let val_ptr (n : ptr) : value =
-  (- (n - 16384))
+let val_ptr (p : ptr) : value =
+  (- (p + 16384))
 
 (* transforme un mlvalue en pointeur *)
 let ptr_val (v : value) : ptr =
-  (- (v - 16384))
+  (- (v + 16384))
 
 let is_ptr (v : value) : bool = 
   v < (- 16384)

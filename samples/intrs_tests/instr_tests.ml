@@ -155,7 +155,7 @@ let code = [|103;1;9;103;1;9;103;42;20;1|]
 (* 51 PUSHOFFSETCLOSURE2 *)
 
 (* 52 PUSHOFFSETCLOSURE *)
-
+]
 (* 53 GETGLOBAL *)
 (* Resultat attendu : acc = 42 *)
 let code = [|103;42;57;1;53;1|]
@@ -342,7 +342,7 @@ let code = [|103;42;106|]
 (* Resultat attendu : acc = 3, stack = 42 *)
 let code = [|103;42;107|]
 
-(* 108 PUSHCONST1 *)
+(* 108 PUSHCONSTINT *)
 (* Resultat attendu : acc = 43, stack = 42 *)
 let code = [|103;42;108;43|]
 
@@ -351,58 +351,106 @@ let code = [|103;42;108;43|]
 let code = [|103;-42;109|]
 
 (* 110 ADDINT *)
+(* Resultat attendu : acc = 42 *)
+let code = [|103;2;9;103;40;110|]
 
 (* 111 SUBINT *)
+(* Resultat attendu : acc = 42 *)
+let code = [|103;8;9;103;50;111|]
 
 (* 112 MULINT *)
+(* Resultat attendu : acc = 42 *)
+let code = [|103;7;9;103;6;112|]
 
 (* 113 DIVINT *)
+(* Resultat attendu : acc = 42 *)
+let code = [|103;2;9;103;84;113|]
 
 (* 114 MODINT *)
 
 (* 115 ANDINT *)
+(* Resultat attendu : acc = 1 *)
+let code = [|103;1;9;103;1;115|]
 
 (* 116 ORINT *)
+(* Resultat attendu : acc = 1 *)
+let code = [|103;1;9;103;0;116|]
 
 (* 117 XORINT *)
+(* Resultat attendu : acc = 1 *)
+let code = [|103;1;9;103;0;117|]
 
 (* 118 LSINT *)
+(* Resultat attendu : acc = 60 *)
+let code = [|103;2;9;103;15;118|]
 
 (* 119 LSRINT *)
 
 (* 120 ASRINT *)
 
 (* 121 EQ *)
+(* Resultat attendu : acc = 1 *)
+let code = [|103;42;9;103;42;121|]
 
 (* 122 NEQ *)
+(* Resultat attendu : acc = 1 *)
+let code = [|103;42;9;103;43;122|]
 
 (* 123 LTINT *)
+(* Resultat attendu : acc = 1 *)
+let code = [|103;43;9;103;42;123|]
 
 (* 124 LEINT *)
+(* Resultat attendu : acc = 1 *)
+let code = [|103;43;9;103;43;124|]
 
 (* 125 GTINT *)
+(* Resultat attendu : acc = 1 *)
+let code = [|103;42;9;103;43;125|]
 
 (* 126 GEINT *)
+(* Resultat attendu : acc = 1 *)
+let code = [|103;42;9;103;42;126|]
 
 (* 127 OFFSETINT *)
+(* Resultat attendu : acc = 42 *)
+let code = [|103;40;127;2|]
 
 (* 128 OFFSETREF *)
+(* Resultat attendu : acc = <42> *)
+let code = [|103;40;63;0;57;0;53;0;128;2;53;0|]
 
 (* 129 ISINT *)
+(* Resulat attendu : acc = 1 *)
+let code = [|103;42;129|]
 
 (* 130 GETMETHOD *)
+(* Resultat attendu : acc = 42 *)
+let code = [|103;42;63;0;63;0;9;103;0;130|]
 
 (* 131 BEQ *)
+(* Resultat attendu : pc = 5 *)
+let code = [|131;0;3|]
 
 (* 132 BNEQ *)
+(* Resultat attendu : pc = 5 *)
+let code = [|132;1;3|]
 
 (* 133 BLTINT *)
+(* Resultat attendu : pc = 5 *)
+let code = [|133;-1;3|]
 
 (* 134 BLEINT *)
+(* Resultat attendu : pc = 5 *)
+let code = [|134;0;3|]
 
 (* 135 BGTINT *)
+(* Resultat attendu : pc = 5 *)
+let code = [|135;1;3|]
 
 (* 136 BGEINT *)
+(* Resultat attendu : pc = 5 *)
+let code = [|136;0;3|]
 
 (* 137 ULTINT *)
 

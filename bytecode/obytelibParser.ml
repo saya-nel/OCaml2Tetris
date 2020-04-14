@@ -292,7 +292,7 @@ let () =
   let serial = string_list_to_string to_send in
 
    (* on écrit dans le fichier ../zam/input.ml le tableau d'instructions *)
-  write_instr_array ~dst:"./zam/input.ml" serial
+  write_instr_array ~dst:"./zam/input.ml" serial;
 
   (* pour afficher le bytecode :  *)
-  (* Code.print data symb prim stdout code ; *)
+  Code.print data symb prim stdout code
