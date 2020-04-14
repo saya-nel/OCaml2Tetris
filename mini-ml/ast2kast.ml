@@ -158,7 +158,13 @@ and rw_exp lenv genv e =
              rw_exp lenv genv e2,
              rw_exp lenv genv e3)
   | Ast.BinOp(op,e1,e2) ->
-     Kast.BinOp(op,rw_exp lenv genv e1,rw_exp lenv genv e2)
+     (match op with  
+      (* les primitives `or` et `and` de la VM necessite le calcule des deux arguments *)
+      (* on réécrit donc le `or` et `and` de mini-ml avec des if then else *)
+      | Ast.Or -> 
+        rw_exp lenv genv (Ast.If (e1,Ast.Constant(Ast.Bool(true)),e2))
+      | Ast.And -> rw_exp lenv genv (Ast.If (e1,e2,Ast.Constant(Ast.Bool(false))))
+      | _ -> Kast.BinOp(op,rw_exp lenv genv e1,rw_exp lenv genv e2))
   | Ast.UnOp(op,e1) -> Kast.UnOp(op,rw_exp lenv genv e1)
   | Ast.Ext(ext) ->
      (match ext with 

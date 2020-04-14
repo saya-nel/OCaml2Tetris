@@ -49,7 +49,7 @@ let rewrite m =
   match m with 
   | Ast.Module(mod_name,decls) ->
     collect := [];
-    let decls = List.append (!collect) (List.map rw_decl decls) in
+    let decls = List.rev_append (!collect) (List.map rw_decl decls) in (* le reverse est important ! *)
     Ast.Module(mod_name,decls)
 
 
