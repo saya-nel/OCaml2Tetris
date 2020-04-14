@@ -12,7 +12,7 @@ let exp_create e = Past.{exp_desc = e; exp_loc = pos()}
 
 /* (* reserved words *) */
 %token LET WHERE IN IF THEN ELSE ASSERT WHILE FOR TO DO DONE MATCH WITH PIPE BEGIN END EXTERNAL AND_KW CONS
-%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT FUN SHARP OF IMPLY
+%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT FUN SHARP OF IMPLY CAT AT
 
 %token <string> IDENT IDENT_CAPITALIZE VM_IDENT
 %token <string> STRING
@@ -48,7 +48,7 @@ let exp_create e = Past.{exp_desc = e; exp_loc = pos()}
 %left      PLUS MINUS     
 %left      LAND
 %left      LOR 
-%left TIMES DIV              
+%left TIMES DIV     CAT AT /* ? */              
 %left      DOT  
 %left      ACCESS                
 %nonassoc  IDENT LPAREN RPAREN BEGIN END        /* highest precedence */        
@@ -103,9 +103,13 @@ decl_type:
  ;
 
 defun:
-| IDENT arguments EQ seq { ($1,$2,None,$4) }
-| IDENT arguments COLON exp_ty EQ seq { ($1,$2,Some $4,$6) }
+| ident arguments EQ seq { ($1,$2,None,$4) }
+| ident arguments COLON exp_ty EQ seq { ($1,$2,Some $4,$6) }
 ;
+
+ident: 
+| IDENT {$1}
+| CAT { "(^)"}
 
 defuns:
 | defun                {[$1]}
@@ -143,8 +147,10 @@ ty_cstp_aux:
 | exp_ty_cstrparam TIMES ty_cstp_aux  { $1::$3 }
 ;
 constructor :
-| IDENT_CAPITALIZE                { $1 }
-| IDENT_CAPITALIZE DOT constructor { $1 ^ "." ^ $3}
+| LBRACKET RBRACKET                     { "[]" }
+| LPAREN CONS RPAREN                    { "::" }
+| IDENT_CAPITALIZE                      { $1 }
+| IDENT_CAPITALIZE DOT constructor      { $1 ^ "." ^ $3}
 ;
 
 
@@ -223,6 +229,7 @@ expression :
             | Some ty -> exp_create @@ Annotation(e,ty)),
         exp))
          $2 $4}
+| LET REC error { error_exit (pos()) "pas de construction let rec local" }
 | expression WHERE argument EQ seq   { exp_create @@ 
                                          match $3 with 
                                          | "_",None -> Seq($5,$1)
@@ -281,8 +288,10 @@ expr:
  | expression LAND expression            { exp_create @@ BinOp(Land,$1,$3) }
  | expr ASSIGN expression                { exp_create @@ Ref_assign($1,$3) } 
  | MINUS expr                            { exp_create @@ UnOp(UMinus,$2) }
- | expression COMMA expression         { exp_create @@ Pair($1,$3) }
- | expression CONS expression          { exp_create @@ Cons($1,$3) }
+ | expression COMMA expression           { exp_create @@ Pair($1,$3) }
+ | expression CONS expression            {  exp_create @@ App(exp_create @@ Constant(List_cons),[$1;$3]) } 
+ | expression AT expression              { exp_create @@ App(exp_create @@ Ident("List.append"),[$1;$3]) }
+ 
 /* | error                                 { raise (Parse_Exception ("malformed expression ")) }*/
 ;
 
@@ -291,7 +300,7 @@ app:
  | exp exprs                             { exp_create @@ App($1,$2) }
  | exp ATAT app                          { exp_create @@ App($1,[$3]) }
  | SHARP exp                             { exp_create @@ Magic($2) }
- | ASSERT exp                            { exp_create @@ Assert ($2,pos()) }
+ | ASSERT exp                            { exp_create @@ Assert($2,pos()) }
  | extra_app_constructor                 { $1 }
  ;
 
@@ -305,7 +314,7 @@ exp:
 | LPAREN seq RPAREN                     { $2 }
 | BEGIN seq END                         { $2 }
 | constant                              { exp_create @@ Constant($1) }
-| IDENT                                 { exp_create @@ Ident($1) }
+| ident                                 { exp_create @@ Ident($1) }
 | ident_in_mod                          { exp_create @@ Ident($1) }
 | ARRAY_OPEN array_content ARRAY_CLOSE  { exp_create @@ Array_create($2) }
 | exp ARRAY_ACCESS_OPEN seq RPAREN     { exp_create @@ Array_access($1,$3) }
@@ -319,9 +328,7 @@ constant:
  | CHAR                                  { Char($1) }
  | BOOL                                  { Bool($1) }
  | STRING                                { String($1) }
- | constructor                           { Constr($1) }
- | LBRACKET RBRACKET                     { List_empty }
- | LPAREN CONS RPAREN                    { List_cons }
+ | constructor                           { match $1 with "[]" -> List_empty | _ -> Constr($1) }
  | ARRAY_OPEN ARRAY_CLOSE                { Array_empty }
  ;
 
@@ -335,8 +342,13 @@ match_body_aux:
 ;
 match_case:
 | WILDCARD RIGHT_ARROW seq  { Otherwise($3) }
-| constant cst_parameters RIGHT_ARROW seq  { Case($1,$2,$4) }
+| app_cst RIGHT_ARROW seq  { let c,args = $1 in Case(c,args,$3) }
 | error { error_exit (pos()) "match clause malformée." }
+;
+
+app_cst:
+| constant cst_parameters    { ($1,$2) }
+| argument_aux CONS argument_aux  { (Constr("::"),[$1;$3]) }
 ;
 
 cst_parameters:

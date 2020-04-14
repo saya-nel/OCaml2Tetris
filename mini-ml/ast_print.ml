@@ -34,12 +34,12 @@ and sprint_decl lvl = function
      sprint_fun lvl dfs
   | DefFunRec (dfs) ->
      sprint_fun ~recflag:true lvl dfs
-  | Type (p,lvs,ty) -> "..." (* TODO *)
+  | Sum (cstrs) -> "(* " ^ String.concat ", " cstrs ^ "*)"  (* TODO *)
 and sprint_fun ?(recflag=false) lvl l =
   (indent_string lvl) ^
     (if recflag then "let rec" else "let") ^
       String.concat ("\n" ^ indent_string lvl ^ "and") @@
-        List.map (fun (name,args,e) ->
+        List.map (fun (DF (name,args,e)) ->
             let s = sptf " %s %s = " name (String.concat " " args) in  
             s ^ "\n" ^ (indent_string (next lvl)) ^ (sprint_exp (next lvl) e)) l
 and sprint_exp lvl = function

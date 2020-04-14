@@ -139,5 +139,9 @@ let _ =
                   | Nil -> assert true
                   | Cons(x3,t2) -> assert false)))
 
+let rec sum x =
+	if x < - 0 then 0 else sum (x - 1)
+
+let _ = sum 30000
 let _ = 
   print_string "ok"

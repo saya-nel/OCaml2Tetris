@@ -157,6 +157,12 @@ module PrimTypes = struct
 
   let ty_abs = Tarrow (Tint, Tint)
 
+  let ty_concat = Tarrow (Tstring, Tarrow (Tstring, Tstring))
+
+  let ty_string_of_int = Tarrow (Tint, Tstring)
+
+  let ty_none = Trec("option")
+  let ty_some = Tarrow (v (), Trec("option"))
 end
 
 let primitives =
@@ -195,5 +201,10 @@ let primitives =
      ("print_string",     "Pervasives.print_string",     ty_print_string); 
      ("print_int",        "Pervasives.print_int",        ty_print_int);
      ("print_newline",    "Pervasives.print_newline",    ty_print_newline);
-     ("abs",              "Pervasives.abs",              ty_abs) ] in
+     ("abs",              "Pervasives.abs",              ty_abs);
+     ("(^)",              "Pervasives.(^)",              ty_concat);
+     ("string_of_int",    "Pervasives.string_of_int",    ty_string_of_int);
+     ("None",             "Pervasives.None",             ty_none);
+     ("Some",             "Pervasives.Some",             ty_some);
+     ("::",               "List.cons",                   ty_internal_cons)] in
   openned_ml_pervasives @ ml_internal

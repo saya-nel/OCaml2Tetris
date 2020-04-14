@@ -7,12 +7,12 @@ let rec rewrite m =
 
 and rw_decl d = match d with
   | Ast.DefFunRec l -> 
-     Ast.DefFunRec (List.map (fun ((name,args,e) as f) -> 
+     Ast.DefFunRec (List.map (fun (Ast.DF (name,args,e) as f) -> 
                         (try let f' = rw_defun f in 
-                             (name,args,f')
+                            Ast.DF (name,args,f')
                          with Abort -> f)) l )
   | d -> d
-and rw_defun (name,args,e) =
+and rw_defun (Ast.DF (name,args,e)) =
   Ast.Ext(Ast.Label(name,rw_exp name args e))
 and rw_exp f args exp = 
   let rec rw_exp exp = match exp with 

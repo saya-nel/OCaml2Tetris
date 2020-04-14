@@ -1,34 +1,38 @@
-(* attention, la propagation des constantes devrait respecter l'architecture (addition 16 bit etc.) *)
+(* attention, la propagation des Bc.Constantes devrait respecter l'architecture (addition 16 bit etc.) *)
 
-open Bc
+let bc_int n = [Bc.Push (Bc.Constant(n))]
 
-let bc_int n = [Push (Constant(n))]
-
-let rec rewrite bcm = 
-  {bcm with bc_body=rw (bcm.bc_body)}
-and rw = function
+let rec rw bc = 
+  match bc with
   | [] -> []
-  | Push(Constant n) :: Push(Constant m) :: BinOp(Add) :: bc -> 
+  | Bc.Push(Bc.Constant n) :: Bc.Push(Bc.Constant m) :: Bc.BinOp(Bc.Add) :: bc -> 
      rw @@ (bc_int ((n + m) mod 0xFFFF)) @ bc
-  | Push(Constant n) :: Push(Constant m) :: BinOp(Sub) :: bc -> 
+  | Bc.Push(Bc.Constant n) :: Bc.Push(Bc.Constant m) :: Bc.BinOp(Bc.Sub) :: bc -> 
      rw @@ (bc_int ((n - m) mod 0xFFFF)) @ bc
-  | Push(Constant n) :: Push(Constant m) :: BinOp(Mult) :: bc -> 
+  | Bc.Push(Bc.Constant n) :: Bc.Push(Bc.Constant m) :: Bc.BinOp(Bc.Mult) :: bc -> 
      rw @@ (bc_int ((n * m) mod 0xFFFF)) @ bc
-  | Push(Constant n) :: Push(Constant m) :: BinOp(Div) :: bc -> 
+  | Bc.Push(Bc.Constant n) :: Bc.Push(Bc.Constant m) :: Bc.BinOp(Bc.Div) :: bc -> 
      rw @@ (bc_int ((n / m) mod 0xFFFF)) @ bc
-  | Push(Constant n) :: Push(Constant m) :: BinOp(Eq) :: bc -> 
-     rw @@ (if n = m then True else False) :: bc
-  | Push(Constant n) :: Push(Constant m) :: BinOp(Gt) :: bc -> 
-     rw @@ (if n > m then True else False) :: bc
-  | Push(Constant n) :: Push(Constant m) :: BinOp(Lt) :: bc -> 
-     rw @@ (if n < m then True else False) :: bc
-  | False :: False :: BinOp(And) :: bc
-    | False :: True :: BinOp(And) :: bc
-    | True :: False :: BinOp(And) :: bc -> rw (False :: bc)
-  | True :: True :: BinOp(And) :: bc -> rw (True :: bc)
-  | False :: False :: BinOp(Or) :: bc -> rw (False :: bc)
-  | False :: True :: BinOp(Or) :: bc
-    | True :: False :: BinOp(Or) :: bc 
-    | True :: True :: BinOp(Or) :: bc -> rw (True :: bc)
+  | Bc.Push(Bc.Constant n) :: Bc.Push(Bc.Constant m) :: Bc.BinOp(Bc.Eq) :: bc -> 
+     rw @@ (if n = m then Bc.True else Bc.False) :: bc
+  | Bc.Push(Bc.Constant n) :: Bc.Push(Bc.Constant m) :: Bc.BinOp(Bc.Gt) :: bc -> 
+     rw @@ (if n > m then Bc.True else Bc.False) :: bc
+  | Bc.Push(Bc.Constant n) :: Bc.Push(Bc.Constant m) :: Bc.BinOp(Bc.Lt) :: bc -> 
+     rw @@ (if n < m then Bc.True else Bc.False) :: bc
+  | Bc.False :: Bc.False :: Bc.BinOp(Bc.And) :: bc
+    | Bc.False :: Bc.True :: Bc.BinOp(Bc.And) :: bc
+    | Bc.True :: Bc.False :: Bc.BinOp(Bc.And) :: bc -> rw (Bc.False :: bc)
+  | Bc.True :: Bc.True :: Bc.BinOp(Bc.And) :: bc -> rw (Bc.True :: bc)
+  | Bc.False :: Bc.False :: Bc.BinOp(Bc.Or) :: bc -> rw (Bc.False :: bc)
+  | Bc.False :: Bc.True :: Bc.BinOp(Bc.Or) :: bc
+    | Bc.True :: Bc.False :: Bc.BinOp(Bc.Or) :: bc 
+    | Bc.True :: Bc.True :: Bc.BinOp(Bc.Or) :: bc -> rw (Bc.True :: bc)
   | s::bc -> s::(rw bc)
                   (* | Goto l1 :: Goto l2 :: bc ->  *)
+
+
+let rewrite bcm = 
+  match bcm with 
+  | Bc.Module (mod_name,bc_body,init) -> 
+    let bc_body=rw bc_body in
+    Bc.Module (mod_name,bc_body,init)

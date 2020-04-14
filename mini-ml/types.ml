@@ -85,6 +85,7 @@ let rec unify t1 t2 loc = match head t1, head t2 with
                                       List.iter2 (fun t1 t2 -> unify t1 t2 loc) ts ts' 
   | Tident s, ty -> unify (List.assoc s !alias) ty loc
   | ty, Tident s -> unify (List.assoc s !alias) ty loc
+  | (Trec _) ,_ | _, (Trec _) -> ()
   | t1, t2 -> 
       unification_error t1 t2 loc
 

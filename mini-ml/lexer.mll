@@ -78,7 +78,9 @@ rule token = parse
 | ">="               { GE }
 | "<="               { LE }
 | "=>"               { IMPLY }
+| "@"                { AT }
 | "@@"               { ATAT }
+| "(^)"              { CAT }
 | "#"                { SHARP }            
 | ident_capitalize as lxm { IDENT_CAPITALIZE(lxm) }
 | ident as lxm       { IDENT(lxm) }

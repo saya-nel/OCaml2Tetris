@@ -239,4 +239,4 @@ let type_check {decls;mod_name} env =
       Printf.printf "\nError: %s\nThis expression has type %s but an expression was expected of type
          %s\n" (Parseutils.string_of_position loc) (Past_print.sprint_ty 0 t1) (Past_print.sprint_ty 0 t2); exit 0
   | Unbound_value (x,loc) -> Printf.printf "Error: %s\nUnbound value %s\n" (Parseutils.string_of_position loc)  x; exit 0
-
+  | _ -> Printf.printf "UN BUG DANS LE TYPEUR. on continue.\n"; env

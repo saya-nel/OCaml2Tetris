@@ -48,7 +48,7 @@ and fold_decl = function
   | Ast.DefFunRec(l) -> Ast.DefFunRec (fold_fundecs l)
   | d -> d 
 and fold_fundecs l = 
-  List.map (fun (name,args,e) -> (name,args,fold_exp e)) l 
+  List.map (fun (Ast.DF (name,args,e)) -> (Ast.DF (name,args,fold_exp e))) l 
 and fold_exp = function
   | Ast.Ident name -> Ast.Ident name
   | Ast.Constant c -> Ast.Constant c

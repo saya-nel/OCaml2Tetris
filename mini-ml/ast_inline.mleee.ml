@@ -15,26 +15,9 @@ and depth_list l =
   List.fold_left (fun acc e -> max acc (depth e)) 0 l
 
 
-let rec visit_tmodule ?(depth_max=5) m =
-  if depth_max <= 0 then m else 
-    match m with Ast.Module(mod_name,decls) ->
-      let _,decls = visit_decls ~depth_max [] [] decls in
-      Ast.Module(mod_name,decls)
 
-and visit_decls ?(depth_max=10) env acc = function
-  | [] -> (env,List.rev acc)
-  | Ast.DefFun(l)::ds -> 
-     let l = List.map (fun (Ast.DF (name,args,e)) -> Ast.DF (name,args,visit_exp env e)) l in
-     let env = List.rev @@
-                 List.fold_left (fun env (Ast.DF (name,args,e)) -> 
-                     if depth e < depth_max then (name,(args,e))::env else env) env l in
-     visit_decls env (Ast.DefFun(l)::acc) ds
-  | Ast.DefVar(v,e)::ds -> visit_decls env (Ast.DefVar(v,visit_exp env e) :: acc) ds
-  | Ast.DefFunRec(l)::ds -> 
-     let l = List.map (fun (Ast.DF (name,args,e)) -> Ast.DF (name,args,visit_exp env e)) l in
-     visit_decls env (Ast.DefFunRec(l) :: acc) ds
-  | d::ds ->  visit_decls env (d :: acc) ds
-and visit_exp env e = 
+
+let rec visit_exp env e = 
   match e with
   | Ast.Ident name -> e
   | Ast.Constant c -> e
@@ -57,6 +40,28 @@ and visit_exp env e =
      let ms = List.map (function Ast.Case(c,e) -> Ast.Case(c,visit_exp env e) | Ast.Otherwise e -> Ast.Otherwise (visit_exp env e)) ms in
      Ast.Match(visit_exp env e,ms) 
   | e -> e
+
+
+let rec visit_decls ?(depth_max=10) env acc = function
+  | [] -> (env,List.rev acc)
+  | Ast.DefFun(l)::ds -> 
+     let l = List.map (fun (Ast.DF (name,args,e)) -> Ast.DF (name,args,visit_exp env e)) l in
+     let env = List.rev @@
+                 List.fold_left (fun env (Ast.DF (name,args,e)) -> 
+                     if depth e < depth_max then (name,(args,e))::env else env) env l in
+     visit_decls env (Ast.DefFun(l)::acc) ds
+  | Ast.DefVar(v,e)::ds -> visit_decls env (Ast.DefVar(v,visit_exp env e) :: acc) ds
+  | Ast.DefFunRec(l)::ds -> 
+     let l = List.map (fun (Ast.DF (name,args,e)) -> Ast.DF (name,args,visit_exp env e)) l in
+     visit_decls env (Ast.DefFunRec(l) :: acc) ds
+  | d::ds ->  visit_decls env (d :: acc) ds
+
+let visit_tmodule ?(depth_max=5) m =
+  if depth_max <= 0 then m else 
+    match m with Ast.Module(mod_name,decls) ->
+      let _,decls = visit_decls ~depth_max [] [] decls in
+      Ast.Module(mod_name,decls)
+
 
 (* idéalement, on aimerait pouvoir intégrer des fonctions d'autres modules,
               mais pour cela, il faudrait gérer les identificateurs de modules ... *)

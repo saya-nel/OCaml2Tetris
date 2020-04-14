@@ -29,6 +29,8 @@ type token =
   | SHARP
   | OF
   | IMPLY
+  | CAT
+  | AT
   | IDENT of (string)
   | IDENT_CAPITALIZE of (string)
   | VM_IDENT of (string)

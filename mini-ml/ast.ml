@@ -1,3 +1,4 @@
+(* en mini-ml *)
 
 type ty = Past.ty
 type pos = Parseutils.pos
@@ -7,9 +8,10 @@ and tmodule = Module of (name * decl list)
 and name = string
 and decl = 
   | DefVar of (name * exp)
-  | DefFun of    ((name * name list * exp) list)
-  | DefFunRec of ((name * name list * exp) list)
-  | Type of (name * name list * ty)
+  | DefFun of    (defun list)
+  | DefFunRec of (defun list)
+  | Sum of (name list)
+and defun = DF of (name * name list * exp)
 and exp = 
   | Constant of (constant)
   | Ident of (name)

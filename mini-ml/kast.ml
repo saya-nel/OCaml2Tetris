@@ -1,12 +1,13 @@
-type prog = {
-    modules : tmodule list
-  }
-          
+type prog = tmodule list
+
+(*     
 and tmodule = {
     mod_name : Ast.name ;
     decls: decl list ;
     init : Ast.name list
-  }
+  } *)
+
+and tmodule = Module of (Ast.name * decl list * Ast.name list)
 
 and decl = 
   | DefFun of (Ast.name * arity * exp)

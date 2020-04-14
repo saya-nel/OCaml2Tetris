@@ -5,6 +5,7 @@ all:
 	$(CC) -c parseutils.ml
 	ocamllex lexer.mll       # generates lexer.ml
 	ocamlyacc parser.mly     # generates parser.ml and parser.mli
+	$(CC) -c gensym.ml
 	$(CC) -c types.ml
 	$(CC) -c past.ml
 	$(CC) -c past_print.ml
@@ -30,13 +31,23 @@ all:
 	$(CC) -c lexer.ml
 	$(CC) -c parser.ml
 	$(CC) -c main.ml
-	$(CC) -o $(EXE) parseutils.cmo lexer.cmo types.cmo past.cmo  \
+	$(CC) -o $(EXE) parseutils.cmo lexer.cmo types.cmo past.cmo gensym.cmo \
 	past_print.cmo ast_print.cmo ast.cmo past2ast.cmo ast_inline.cmo \
 	ast_fold.cmo ast_globz.cmo freevr.cmo  ast_lift.cmo  runtime.cmo  \
 	ast_closure.cmo ast_tailrec.cmo typing.cmo  kast.cmo ast2kast.cmo \
 	bc.cmo kast2bc.cmo bc_print.cmo bc_fold.cmo parser.cmo main.cmo
 
-test:	test/assert.ml	
+test:	test/assert.ml	./compile
 	./compile -assert -typecheck -printast stdlib/pervasives.ml stdlib/array.ml test/assert.ml
+
+
+test2: 	./compile
+	./compile stdlib/pervasives.ml stdlib/array.ml test/modules/m1.ml test/modules/m2.ml -assert -printast
+
+bootstrap:	./compile
+	./compile -assert -printpast -noglobalize -nofolding -inline=0 bootstrap/stdlib-full/pervasives.ml bootstrap/stdlib-full/array.ml \
+	bootstrap/stdlib-full/string.ml bootstrap/stdlib-full/list.ml gensym.ml ast.ml freevr.ml kast.ml ast_lift.ml  ast_globz.ml \
+	 ast_closure.ml  bc.ml bc_print.ml kast2bc.ml bootstrap/main_bootstrap.ml # ast2kast.ml # 
+
 clean:
 	rm -f $(EXE) *.cmo *.cmi compile *.vm *.tst *.out 
