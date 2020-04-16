@@ -6,11 +6,7 @@ let compile_assertions = ref false
 let assoc_constructor name (genv,lenv) =
  match List.assoc_opt name lenv with 
  | None -> (match List.assoc_opt name genv with 
-           | None -> (* !! *) 
-                     if name = "::" then (1,2) 
-                     else if name = "None" then (1,0) 
-                     else if name = "Some" then (1,1) else (* !! *) 
-                     (print_string ("Error: Unbound constructor " ^ name ^ ". exit.\n"); exit 0)
+           | None -> (print_string ("Error: Unbound constructor " ^ name ^ ". exit.\n"); exit 0)
            | Some (id,arity) -> (id,arity))
  | Some (id,arity) -> (id,arity)
 
@@ -152,8 +148,6 @@ and rw_cst env = function
 | Past.Char c -> Ast.Char c 
 | Past.String s -> Ast.String s
 | Past.Constr name -> let id,_ = assoc_constructor name env in Ast.Int(id)
-| Past.List_empty -> Ast.Int(0)
-| Past.List_cons -> Ast.Int(1)
 | Past.Array_empty -> Ast.Array_empty 
 and visit_binop = function
   | Past.Add -> Ast.Add

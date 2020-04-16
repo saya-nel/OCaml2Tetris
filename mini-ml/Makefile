@@ -45,7 +45,7 @@ test2: 	./compile
 	./compile stdlib/pervasives.ml stdlib/array.ml test/modules/m1.ml test/modules/m2.ml -assert -printast
 
 bootstrap:	./compile
-	./compile -assert -printpast -noglobalize -nofolding -inline=0 bootstrap/stdlib-full/pervasives.ml bootstrap/stdlib-full/array.ml \
+	./compile -typecheck -assert -printpast -noglobalize -nofolding -inline=0 bootstrap/stdlib-full/pervasives.ml bootstrap/stdlib-full/array.ml \
 	bootstrap/stdlib-full/string.ml bootstrap/stdlib-full/list.ml gensym.ml ast.ml freevr.ml kast.ml ast_lift.ml  ast_globz.ml \
 	 ast_closure.ml  bc.ml bc_print.ml kast2bc.ml bootstrap/main_bootstrap.ml # ast2kast.ml # 
 

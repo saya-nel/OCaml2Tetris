@@ -275,10 +275,8 @@ function ML_Pervasives.compare 0
     lt
     not
     if-goto IfFalse17
-    push     constant 1
-    pop temp 0
     push     constant 0
-    push temp 0
+    push constant 1
     sub
     goto IfEnd18
 label IfFalse17

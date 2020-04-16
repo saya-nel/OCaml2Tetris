@@ -14,8 +14,7 @@ let mv f dst =
 
 let link_test_file dir = 
   let oc = open_out (Filename.concat dir ("Main.tst")) in
-  Printf.fprintf oc "%s\n" "load, output-file Main.out, output-list RAM[12]%D1.6.1;
-                            repeat 2500000 { vmstep; }";
+  Printf.fprintf oc "%s\n" "load; repeat 2500000 { vmstep; }"; (*, output-file Main.out, output-list RAM[12]%D1.6.1; *)
   close_out oc
 
 let link_runtime dir = 
@@ -58,10 +57,6 @@ module PrimTypes = struct
     let a,b = v (),v () in 
     Tarrow(a,Tarrow(b,Tproduct(a,b)))
 
-  let ty_internal_cons = 
-    let a = v () in 
-    Tarrow(a,Tarrow(Tlist a,Tlist a))
-
   let ty_internal_fst = 
     let a,b = v (),v () in 
     Tarrow(Tproduct(a,b),a)
@@ -103,15 +98,6 @@ module PrimTypes = struct
   let ty_snd = 
     let a,b = v (), v() in 
     Tarrow(Tproduct(a,b),b)
-
-
-  let ty_hd = 
-    let a = v () in 
-    Tarrow(Tlist a,a)
-
-  let ty_tl = 
-    let a = v () in 
-    Tarrow(Tlist a,Tlist a)
 
   let ty_print_char =
     Tarrow(Tchar,Tunit)
@@ -161,8 +147,6 @@ module PrimTypes = struct
 
   let ty_string_of_int = Tarrow (Tint, Tstring)
 
-  let ty_none = Trec("option")
-  let ty_some = Tarrow (v (), Trec("option"))
 end
 
 let primitives =
@@ -178,12 +162,9 @@ let primitives =
      ("Internal.print_char_array", "Internal.print_char_array",   ty_print_string); 
      ("Internal.print_int",        "Internal.print_int",          ty_print_int);
      ("Internal.print_newline",    "Internal.print_newline",      ty_print_newline);
-     ("Internal.make_pair",        "Internal.make_pair",          ty_internal_pair);
-     ("Internal.cons",             "Internal.make_pair",          ty_internal_cons);
+     ("Internal.make_pair",        "Internal.make_pair",          ty_internal_pair); 
      ("Internal.fst",              "Internal.left",               ty_fst);
      ("Internal.snd",              "Internal.right",              ty_snd);
-     ("Internal.hd",               "Internal.left",               ty_hd);
-     ("Internal.tl",               "Internal.right",              ty_tl);
      ("Internal.obj_magic",        "Internal.obj_magic",          ty_obj_magic)] in
   let openned_ml_pervasives =
     [("exit",             "Pervasives.exit",             ty_exit);
@@ -195,16 +176,11 @@ let primitives =
      ("decr",             "Pervasives.decr",             ty_decr);
      ("fst",              "Pervasives.fst",              ty_fst);
      ("snd",              "Pervasives.snd",              ty_snd);
-     ("hd",               "Pervasives.hd",               ty_hd);
-     ("tl",               "Pervasives.tl",               ty_tl);
      ("print_char",       "Pervasives.print_char",       ty_print_char);
      ("print_string",     "Pervasives.print_string",     ty_print_string); 
      ("print_int",        "Pervasives.print_int",        ty_print_int);
      ("print_newline",    "Pervasives.print_newline",    ty_print_newline);
      ("abs",              "Pervasives.abs",              ty_abs);
      ("(^)",              "Pervasives.(^)",              ty_concat);
-     ("string_of_int",    "Pervasives.string_of_int",    ty_string_of_int);
-     ("None",             "Pervasives.None",             ty_none);
-     ("Some",             "Pervasives.Some",             ty_some);
-     ("::",               "List.cons",                   ty_internal_cons)] in
+     ("string_of_int",    "Pervasives.string_of_int",    ty_string_of_int)] in
   openned_ml_pervasives @ ml_internal

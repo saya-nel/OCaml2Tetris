@@ -4,7 +4,9 @@
 (* Loïc Sylvestre                        *)
 
 let make (n : int) (x : 'a) : 'a array = Internal.array_make n x
+let create n x = make n x
 let create_uninitialized (n : int) : 'a array = Internal.array_create_uninitialized n
+
 let get (a : 'a array) (i : int) : 'a = Internal.array_get a i
 let set (a : 'a array) (i : int) (x : 'a) : unit = Internal.array_set a i x
 let length (a : 'a array) : int = Internal.array_length a

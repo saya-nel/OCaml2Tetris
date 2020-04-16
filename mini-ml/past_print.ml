@@ -99,8 +99,6 @@ and sprint_exp lvl {exp_desc} = match exp_desc with
      sptf "(%s := %s)" (sprint_exp 0 e1) (sprint_exp 0 e2)
   | Pair(e1,e2) ->
      sptf "(%s, %s)" (sprint_exp 0 e1) (sprint_exp 0 e2) 
-  | Cons(e1,e2) ->
-     sptf "(%s :: %s)" (sprint_exp 0 e1) (sprint_exp 0 e2) 
   | Array_create(es) ->
      "[|" ^ mapcat "; " (sprint_exp 0) es ^ "|]"
   | Array_assign(e1,e2,e3) ->
@@ -162,8 +160,6 @@ and sprint_constant lvl = function
   | Char c -> sptf "%c" c
   | String s -> sptf "\"%s\"" s
   | Constr name -> name
-  | List_empty -> "([])"
-  | List_cons -> "(::)"
   | Array_empty -> "[||]"
 and sprint_binop lvl = function
   | Add -> "+"
@@ -201,9 +197,6 @@ and sprint_ty lvl ty =
      sptf "(%s -> %s)"
        (sprint_ty lvl t1)
        (sprint_ty lvl t2)
-  | Tlist t ->
-     sptf "(%s list)"
-       (sprint_ty lvl t)
   | Tarray t ->
      sptf "(%s array)"
        (sprint_ty lvl t)
@@ -219,7 +212,6 @@ and sprint_ty lvl ty =
                                 | [] -> "" 
                                 | [name] -> (sprint_ty lvl name) ^ " "
                                 | _ -> mapcat " " (sprint_ty lvl) args ^" ") name (* à revoir *)
-  | Trec s -> s (* bof,provisoire *)
 and sprint_var lvl (p,opt) = 
   match opt with 
   | None -> p

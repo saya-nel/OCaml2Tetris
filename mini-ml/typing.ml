@@ -13,15 +13,22 @@ match tyopt with
 | Some ty -> unify t ty loc
 
 let initial_env primitives =
-  List.fold_right (fun (x,c,ty) env -> add true x ty env) primitives empty_env;;
+  List.fold_left
+    (fun env (x,ty) -> add true x ty env) empty_env primitives;;
 
 (* algorithme W *)
 let rec w env decs = function
 | [] -> decs
-| d::ds -> let xts = w_dec env d in
-     List.iter (fun (x,t) -> Printf.printf "%s : %s\n" x (Past_print.sprint_ty 0 t)) xts; 
-     let env' = List.fold_left (fun env (x,t) -> add true x (canon t) env) env xts in
-     w env' (decs @ xts) ds 
+| d::ds -> 
+     let xts = w_dec env d in
+     let env = List.fold_left 
+                  (fun env (x,t) -> 
+                      let tc = canon t in
+                       Printf.printf "%s : %s\n" x
+                           (Past_print.sprint_ty 0 tc);
+                      add true x tc env) env xts 
+     in
+     w env (decs @ xts) ds 
 and w_dec env {decl_desc;decl_loc} = 
 match decl_desc with
 | DefVar ((x,tyopt),e) -> 
@@ -43,11 +50,13 @@ match decl_desc with
 | Type (name,_,Exp_ty ty) -> 
   (Types.alias := (name,ty) :: !Types.alias); (* A REVOIR, c'EST OK *)
   []
-  | Type (name,_,Sum cs) -> 
-    (Types.alias := (name,Trec name) :: !Types.alias);   (* ATTENTION ERREUR, type compatible avec tout *)
+  | Type (name,args,Sum cs) -> 
+    let vargs = List.map (fun _ -> Tvar (V.create ())) args in
+    let tc = Tconstr (name,vargs) in
+    (Types.alias := (name,tc) :: !Types.alias);   (* ATTENTION ERREUR, type compatible avec tout *)
     List.map (fun (c,tys) -> 
                 (c,List.fold_right (fun ty tn -> Tarrow(ty,tn)) tys (* (Tident name) *)
-                                                               (Trec name))) cs
+                                                               tc)) cs
 and w_defun env (f,args,tyropt,e) decl_loc = 
   let env' = List.fold_left 
                (fun env (xi,tyopt) -> 
@@ -132,10 +141,6 @@ match exp_desc with
       let t1 = w_exp env e1 in
       let t2 = w_exp env e2 in
       Tproduct (t1,t2)   
-   | Cons(e1,e2) -> 
-      let t1 = w_exp env e1 in
-      let t2 = w_exp env e2 in
-      unify t2 (Tlist t1); t2
    | Array_create (es) -> 
       let v = Tvar (V.create ()) in 
       List.iter (fun e -> unify (w_exp env e) v) es; 
@@ -201,8 +206,6 @@ and w_constant env exp_loc = function
 | Int _ -> Tint 
 | Char _ -> Tchar
 | String _ -> Tstring
-| List_empty -> let v = Tvar (V.create ()) in Tlist v
-| List_cons -> let v = Tvar (V.create ()) in Tarrow(v,Tlist v)
 | Array_empty -> let v = Tvar (V.create ()) in Tarray v
 | Constr s -> find s exp_loc env
 

@@ -31,7 +31,6 @@ and expression_desc =
   | BinOp of (binop * exp * exp)
   | UnOp of (unop * exp)
   | Pair of (exp * exp)
-  | Cons of (exp * exp)
   | Array_create of (exp list)
   | Array_assign of (exp * exp * exp)
   | Array_access of (exp * exp)
@@ -50,8 +49,6 @@ and constant =
   | Char of char
   | String of string
   | Constr of string
-  | List_empty
-  | List_cons
   | Array_empty
 and match_case =
   | Case of (constant * name list * exp)  (* eg. [A(x,y,z) -> e] *)

@@ -182,7 +182,6 @@ ident_ty:
 | exp_ty IDENT                 { match $2 with 
                                    | "array" -> Tarray $1 
                                    | "ref" -> Tref $1
-                                   | "list" -> Tlist $1
                                    | s -> Tconstr(s,[$1])  }
 ;
 
@@ -289,7 +288,7 @@ expr:
  | expr ASSIGN expression                { exp_create @@ Ref_assign($1,$3) } 
  | MINUS expr                            { exp_create @@ UnOp(UMinus,$2) }
  | expression COMMA expression           { exp_create @@ Pair($1,$3) }
- | expression CONS expression            {  exp_create @@ App(exp_create @@ Constant(List_cons),[$1;$3]) } 
+ | expression CONS expression            { exp_create @@ App(exp_create @@ Constant(Constr("::")),[$1;$3]) } 
  | expression AT expression              { exp_create @@ App(exp_create @@ Ident("List.append"),[$1;$3]) }
  
 /* | error                                 { raise (Parse_Exception ("malformed expression ")) }*/
@@ -328,7 +327,7 @@ constant:
  | CHAR                                  { Char($1) }
  | BOOL                                  { Bool($1) }
  | STRING                                { String($1) }
- | constructor                           { match $1 with "[]" -> List_empty | _ -> Constr($1) }
+ | constructor                           { Constr($1) }
  | ARRAY_OPEN ARRAY_CLOSE                { Array_empty }
  ;
 

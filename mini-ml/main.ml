@@ -90,16 +90,28 @@ let compile cstrenv genv (mdl : Past.tmodule) =
 
 (* compile le programme formés des modules mdls *)
 let compile_all mdls =
-  let genv = let prims = List.map (fun (x,c,_) -> (x,c)) Runtime.primitives in
-             Ast2kast.empty_genv prims "__init__" in
   if !print_past then List.iter (fun mdl -> print_string @@ Past_print.sprint_module 0 mdl) mdls;
-  if !type_check then (let env = ref (Typing.initial_env (Runtime.primitives)) in
+  if !type_check then (let env = ref 
+                        (let init = [("[]",let v = Types.var_create () in Types.Tconstr("list",[v]));
+                                     ("::",let v = Types.var_create () in Types.(Tarrow(v,Tarrow(Tconstr("list",[v]),Tconstr("list",[v])))));
+                                     ("None",let v = Types.var_create () in Types.Tconstr("option",[v]));
+                                     ("Some",let v = Types.var_create () in Types.(Tarrow(v,Tconstr("option",[v])))); ] in
+                         let prims = List.map (fun (x,c,ty) -> (x,ty)) Runtime.primitives in
+                         Typing.initial_env (prims @ init)) 
+                      in
                        List.iter (fun mdl -> env := Typing.type_check mdl Ast2kast.(!env)) mdls);
   
   let (_,_,bc_mdls) = 
+    let genv = let prims = List.map (fun (x,c,_) -> (x,c)) Runtime.primitives in
+               Ast2kast.empty_genv prims "__init__" in
+    let cstrenv = [ ("[]",(0,0));
+                    ("::",(1,2));
+                    ("None",(0,0));
+                    ("Some",(1,1)) ] in
     List.fold_left (fun (cstrenv,genv,acc) mdl -> 
-        let cstrenv,genv,bc_mdl = compile cstrenv genv mdl in 
-        (cstrenv,genv,acc @ [bc_mdl])) (([],[]),genv,[]) mdls in 
+                      let cstrenv,genv,bc_mdl = compile cstrenv genv mdl in 
+                      (cstrenv,genv,acc @ [bc_mdl])) 
+          ((cstrenv,[]),genv,[]) mdls in 
   Kast2bc.bc_of_prog bc_mdls
 
 

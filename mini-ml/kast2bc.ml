@@ -141,7 +141,7 @@ let rec bc_of_exp e =
          let bc_e1 = bc_of_exp e1 in
          let bc_e2 = bc_of_exp e2 in
          bc_e1 @ ((Bc.Pop Bc.Anywhere) :: []) @ bc_e2
-  | Kast.App(e,args) ->
+  | Kast.App(e,args) -> 
            (match e with
               (* appel de fonctions globales *)
             | Kast.GFun (name) -> let arity = List.length args in 

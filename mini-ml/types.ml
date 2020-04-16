@@ -11,12 +11,10 @@ type typ =
   | Tvar of tvar
   | Tarrow of typ * typ
   | Tproduct of typ * typ
-  | Tlist of typ
   | Tarray of typ
   | Tref of typ
   | Tconstr of (typid * typ list)
   | Tident of typid
-  | Trec of typid
 and tvar =
   { id : int;
     mutable def : typ option }
@@ -33,6 +31,8 @@ module V = struct
   let create = let r = ref 0 in fun () -> incr r; { id = !r; def = None }
 end
 
+let var_create () = Tvar (V.create ())
+
 (* réduction en tête d'un type (la compression de chemin serait possible) *)
 let rec head = function
   | Tvar { def = Some t } -> head t
@@ -40,10 +40,9 @@ let rec head = function
 
 (* forme canonique d'un type = on applique head récursivement *)
 let rec canon t = match head t with
-  | Tvar _ | Tident _ | Trec _ | Tint | Tbool | Tunit | Tchar | Tstring as t -> t
+  | Tvar _ | Tident _ | Tint | Tbool | Tunit | Tchar | Tstring as t -> t
   | Tarrow (t1, t2) -> Tarrow (canon t1, canon t2)
   | Tproduct (t1, t2) -> Tproduct (canon t1, canon t2)
-  | Tlist t -> Tlist (canon t)
   | Tarray t -> Tarray (canon t)
   | Tref t -> Tref (canon t)
   | Tconstr (c,ts) -> Tconstr (c,List.map canon ts)
@@ -57,12 +56,12 @@ let unification_error t1 t2 loc = raise (UnificationFailure (canon t1, canon t2,
 let rec occur v t = match head t with
   | Tvar w -> V.equal v w
   | Tarrow (t1, t2) | Tproduct (t1, t2) -> occur v t1 || occur v t2
-  | Tlist t1 | Tarray t1 | Tref t1 -> occur v t1
+  | Tarray t1 | Tref t1 -> occur v t1
   | Tconstr (_,ts) -> List.for_all (occur v) ts
-  | Tident _ | Tunit | Tint | Tbool | Tchar | Tstring | Trec _ -> false
+  | Tident _ | Tunit | Tint | Tbool | Tchar | Tstring -> false
 
-let rec unify t1 t2 loc = match head t1, head t2 with
-  | Trec _, Trec _ -> ()
+let rec unify t1 t2 loc = 
+  match head t1, head t2 with
   | Tunit, Tunit -> ()
   | Tint, Tint -> ()
   | Tbool, Tbool -> ()
@@ -79,13 +78,12 @@ let rec unify t1 t2 loc = match head t1, head t2 with
   | Tarrow (t11, t12), Tarrow (t21, t22)
   | Tproduct (t11, t12), Tproduct (t21, t22) ->
       unify t11 t21 loc; unify t12 t22 loc
-  | Tlist t, Tlist (t') | Tarray t, Tarray (t') | Tref t, Tref (t')  -> 
+  | Tarray t, Tarray (t') | Tref t, Tref (t')  -> 
       unify t t' loc
   | Tconstr (c,ts), Tconstr (c',ts') -> if c <> c' then unification_error t1 t2 loc else
                                       List.iter2 (fun t1 t2 -> unify t1 t2 loc) ts ts' 
   | Tident s, ty -> unify (List.assoc s !alias) ty loc
   | ty, Tident s -> unify (List.assoc s !alias) ty loc
-  | (Trec _) ,_ | _, (Trec _) -> ()
   | t1, t2 -> 
       unification_error t1 t2 loc
 
@@ -102,9 +100,9 @@ type schema = { vars : Vset.t; typ : typ }
 (* variables libres *)
 
 let rec fvars t = match head t with
-  | Tunit | Tint | Tbool | Tchar | Tstring | Tident _ | Trec _  -> Vset.empty
+  | Tunit | Tint | Tbool | Tchar | Tstring | Tident _ -> Vset.empty
   | Tarrow (t1, t2) | Tproduct (t1, t2) -> Vset.union (fvars t1) (fvars t2)
-  | Tlist t | Tarray t | Tref t -> (fvars t)
+  | Tarray t | Tref t -> (fvars t)
   | Tconstr (c,ts) ->  List.fold_left (fun acc t -> Vset.union acc (fvars t)) Vset.empty ts
   | Tvar v -> Vset.singleton v
 
@@ -156,10 +154,10 @@ let find x loc env =
     | Tident s -> Tident s
     | Tarrow (t1, t2) -> Tarrow (subst t1, subst t2)
     | Tproduct (t1, t2) -> Tproduct (subst t1, subst t2)
-    | Tlist t -> Tlist (subst t)
     | Tarray t -> Tarray (subst t)
     | Tref t -> Tref (subst t)
     | Tconstr (c,ts) -> Tconstr (c,List.map subst ts)
-    | Trec s -> Trec s
   in
   subst tx.typ
+
+

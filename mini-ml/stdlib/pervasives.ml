@@ -3,8 +3,6 @@
 (*                                       *)
 (* Loïc Sylvestre                        *)
 
-type 'a option = None | Some of 'a
-
 let exit (n : int) : unit = 
 	Internal.exit n
 

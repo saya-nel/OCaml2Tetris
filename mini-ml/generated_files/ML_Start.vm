@@ -1,20 +1,10 @@
 function ML_Start.main 0
-    call ML_Ast_lift.__init__gen 0
-    call ML_Ast_lift.__init___lambda3 0
-    call ML_Ast_globz.__init__gen 0
-    call ML_Ast_globz.__init__collect 0
-    call ML_Ast_closure.__init__gen 0
-    call ML_Bc_print.__init__prefix 0
-    call ML_Bc_print.__init__indent 0
-    call ML_Kast2bc.__init___lambda14 0
-    call ML_Kast2bc.__init__gen_label 0
-    call ML_Kast2bc.__init__lambda_code 0
-    call ML_Kast2bc.__init__apply_code 0
-    call ML_Kast2bc.__init__indent_string 0
-    call ML_Kast2bc.__init___lambda17 0
-    call ML_Kast2bc.__init___lambda20 0
-    call ML_Main_bootstrap.__init__p 0
-    call ML_Main_bootstrap.__init__voidExpr303 0
-    call ML_Main_bootstrap.__init__voidExpr305 0
+    call ML_List.__init____static1 0
+    call ML_List.__init____static2 0
+    call ML_L1.__init____static3 0
+    call ML_L1.__init__l 0
+    call ML_L1.__init__l2 0
+    call ML_L1.__init__voidExpr13 0
+    call ML_L1.__init__voidExpr15 0
     push     constant 0
     return
