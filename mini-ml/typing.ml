@@ -229,7 +229,7 @@ match exp_desc with
    | Assert (e,_) -> 
      let ty = w_exp env e in 
      unify ty Types.Tbool; 
-     Types.Tunit
+     Types.Tvar (V.create ())
    | Magic e -> let _ = w_exp env e in Types.Tvar (V.create ())
 
 and w_constant env exp_loc = function

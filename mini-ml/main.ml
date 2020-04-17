@@ -66,7 +66,7 @@ let compile cstrenv genv (mdl : Past.tmodule) =
 
     (* intégration des appels de fonctions *)
     
-    (* let mdl = Ast_inline.visit_tmodule ~depth_max:!inline_depth mdl in *)
+    let mdl = Ast_inline.visit_tmodule ~depth_max:!inline_depth mdl in
     (* apparament, dans cette version du compilateur avec bootstrap, l'inlining cause des plantage en simulation. Les déclarations sont elles bien dans l'ordre ? *)
     
 

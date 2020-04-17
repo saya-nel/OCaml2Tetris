@@ -147,6 +147,7 @@ module PrimTypes = struct
 
   let ty_string_of_int = Tarrow (Tint, Tstring)
 
+  let ty_int_of_char = Tarrow (Tchar, Tint)
 end
 
 let primitives =
@@ -165,7 +166,8 @@ let primitives =
      ("Internal.make_pair",        "Internal.make_pair",          ty_internal_pair); 
      ("Internal.fst",              "Internal.left",               ty_fst);
      ("Internal.snd",              "Internal.right",              ty_snd);
-     ("Internal.obj_magic",        "Internal.obj_magic",          ty_obj_magic)] in
+     ("Internal.obj_magic",        "Internal.obj_magic",          ty_obj_magic);
+     ("Obj.magic",        "Internal.obj_magic",                   ty_obj_magic)] in
   let openned_ml_pervasives =
     [("exit",             "Pervasives.exit",             ty_exit);
      ("failwith",         "Pervasives.failwith",         ty_failwith);
@@ -182,5 +184,6 @@ let primitives =
      ("print_newline",    "Pervasives.print_newline",    ty_print_newline);
      ("abs",              "Pervasives.abs",              ty_abs);
      ("(^)",              "Pervasives.(^)",              ty_concat);
-     ("string_of_int",    "Pervasives.string_of_int",    ty_string_of_int)] in
+     ("string_of_int",    "Pervasives.string_of_int",    ty_string_of_int);
+     ("int_of_char",      "Pervasives.int_of_char",      ty_int_of_char)] in
   openned_ml_pervasives @ ml_internal

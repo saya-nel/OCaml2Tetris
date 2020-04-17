@@ -19,8 +19,8 @@ and tvar =
   { id : int;
     mutable def : typ option }
 
-let alias = ref ([] : (typid * typ) list)
-let old_alias = ref ([] : (typid * typ) list)
+let alias = ref ([] : (typid * typ) list)       (* alias définis dans le module courrant *)
+let old_alias = ref ([] : (typid * typ) list)   (* alias, de la forme M.t, définis dans de précédents modules *)
 
 (* module V pour les variables de type *)
 

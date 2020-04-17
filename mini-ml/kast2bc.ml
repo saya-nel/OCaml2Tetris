@@ -148,10 +148,10 @@ let rec bc_of_exp e =
                                   mapcat bc_of_exp args @ ((Bc.Call(name,arity)) :: [])
               (* mécanisme générale : application de fonctions unaires *)
             | _ -> (* calcul de l'expression en position fonctionnelle *)
-                   let eB = bc_of_exp e 
+                   (let eB = bc_of_exp e 
                    in (* puis calcul des arguments (contrairement à OCAML) *)
-                   let argsB = mapcat (fun e -> bc_of_exp e @ ((Bc.Call("Apply.apply",2))) :: []) args in         
-              eB @ argsB)
+                   let argsB = mapcat (fun e -> (bc_of_exp e) @ (((Bc.Call("Apply.apply",2))) :: [])) args in         
+              eB @ argsB))
            (* C[(e0 e1 ... ek)]            *)
            (* ~> C[(e0 e1 ... e(k-1))];    *)  
            (*    C[ek];                    *)
@@ -182,17 +182,17 @@ let rec bc_of_exp e =
       | Kast.SetGlobal (e1,i) ->
          let bc_e1 = bc_of_exp e1 in
          bc_e1 @ ((Bc.Pop (Bc.Static(i))) :: []) @ 
-                 (Bc.Push (Bc.Static(i))) :: (Bc.Pop (Bc.Temp(7))) :: []
+                 ((Bc.Push (Bc.Static(i))) :: (Bc.Pop (Bc.Temp(7))) :: [])
       | Kast.ReadGlobal (i) -> 
          (Bc.Push (Bc.Static(i))) :: []
       | Kast.SetLocal(n,e) -> 
-         (bc_of_exp e) @ ((Bc.Pop (Bc.Local n)) :: [])
+         (bc_of_exp e) @ ((Bc.Pop (Bc.Local(n))) :: [])
       | Kast.Label (s,e) -> 
-         (Bc.Label s) :: (bc_of_exp e)
+         (Bc.Label(s)) :: (bc_of_exp e)
       | Kast.Goto (s,args) -> 
          let xs = mapcat bc_of_exp (List.rev args) in
-         let m = List.mapi (fun i -> fun _ -> Bc.Pop(Bc.Argument(i))) args in
-         xs @ m @ ((Bc.Goto s)) :: [])
+         let m = List.mapi (fun i -> fun _ -> Bc.Pop (Bc.Argument(i))) args in
+         xs @ (m @ (((Bc.Goto(s))) :: [])))
 
 let bc_of_decl mod_name d = 
   match d with 

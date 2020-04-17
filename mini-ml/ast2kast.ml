@@ -67,6 +67,11 @@ let lenv_extend_tail x lenv =
              (i,Lenv(args,((x,i) :: locals),free)))
 
 
+let compare_ast_int c1 c2 =
+  match c1 with
+  | Ast.Int(n1) -> (match c2 with | Ast.Int(n2) -> Pervasives.compare n1 n2 | _ -> assert false)
+  | _ -> assert false
+
 let rec rw_constant lenv genv cst = 
 match cst with 
  | Ast.Unit -> Kast.Constant(Kast.Unit)
@@ -121,10 +126,9 @@ and rw_exp lenv genv e =
      let p = lenv_extend_tail name lenv in (* optimisation (avec `lenv_extend_tail`) : recyclage des variables masquées, 
                                                    contrainte pour la génération de code : dans, C[let x = e1(x) in e2] C[e1] doit bien manipuler le nouveau [x] et [e1] l'ancien *)
      let i = fst p in
-     let lenv = snd p in
-     Kast.Let(i,rw_exp lenv genv e1, rw_exp lenv genv e2)
- 
- | Ast.Fun(_) -> assert false (* déjà transformer en fermeture *)
+     let lenv' = snd p in
+     Kast.Let(i,rw_exp lenv genv e1, rw_exp lenv' genv e2)
+ | Ast.Fun(_,_) -> assert false (* déjà transformer en fermeture *)
 
  | Ast.Closure(code,name,v) ->
     let id = fst code in
@@ -197,14 +201,17 @@ and rw_exp lenv genv e =
      let otherw = snd p in 
      let sms = List.map (fun m -> 
                            match m with 
-                           | Ast.Case(c,e) -> (match c with | Ast.Int(n) -> (Ast.Int(n),e) | _ -> (c,e))
+                           | Ast.Case(c,e) -> (c,e)
+                               (*  (match c with 
+                                 | Ast.Int(n) -> (Ast.Int(n),e) 
+                                 | _ -> (c,e)) *)
                               (* NB : on va trier les constantes : mais avant celà, *)
                               (* il faut absolument renommer les constructeurs par leur entier associé, *)
-                              (* sinon, la liste ne sera pas triée correctement et cela produira des bug *)
+                              (* sinon, la liste ne sera pas triée correctement et cela produira des bugs *)
                               (* dans la génération de code *)
                            | _ -> assert false) ms
      in
-     let smst = List.sort (fun p1 -> fun p2 -> Pervasives.compare (fst p1) (fst p2)) sms in
+     let smst = List.sort (fun p1 -> fun p2 -> compare_ast_int (fst p1) (fst p2)) sms in
      let var = Gensym.next "L" gen in
      rw_exp lenv genv (Ast.Let(var,e,aux_ast_match2 otherw var smst))
 
@@ -242,7 +249,7 @@ and aux_ast_match2 otherw var ms =
            let pls = List.partition (fun p -> fst p < md) ms in
            let l1 = fst pls in
            let l2 = snd pls in 
-           let l2t = List.tl l2 in (* je vire celui qui est égal *)
+           let l2t = List.tl l2 in (* j'enleve celui qui est égal *)
            Ast.If(Ast.BinOp(Ast.Lt,
                             Ast.Ident(var),
                             Ast.Constant(md)),
