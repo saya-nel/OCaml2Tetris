@@ -19,8 +19,8 @@ and tvar =
   { id : int;
     mutable def : typ option }
 
-let alias = ref []
-
+let alias = ref ([] : (typid * typ) list)
+let old_alias = ref ([] : (typid * typ) list)
 
 (* module V pour les variables de type *)
 
@@ -51,13 +51,15 @@ let rec canon t = match head t with
 
 exception UnificationFailure of typ * typ * Parseutils.pos
 
+exception Alias_not_found of string * Parseutils.pos
+
 let unification_error t1 t2 loc = raise (UnificationFailure (canon t1, canon t2, loc))
 
 let rec occur v t = match head t with
   | Tvar w -> V.equal v w
   | Tarrow (t1, t2) | Tproduct (t1, t2) -> occur v t1 || occur v t2
   | Tarray t1 | Tref t1 -> occur v t1
-  | Tconstr (_,ts) -> List.for_all (occur v) ts
+  | Tconstr (_,ts) -> List.exists (occur v) ts
   | Tident _ | Tunit | Tint | Tbool | Tchar | Tstring -> false
 
 let rec unify t1 t2 loc = 
@@ -82,8 +84,12 @@ let rec unify t1 t2 loc =
       unify t t' loc
   | Tconstr (c,ts), Tconstr (c',ts') -> if c <> c' then unification_error t1 t2 loc else
                                       List.iter2 (fun t1 t2 -> unify t1 t2 loc) ts ts' 
-  | Tident s, ty -> unify (List.assoc s !alias) ty loc
-  | ty, Tident s -> unify (List.assoc s !alias) ty loc
+  | Tident s, ty -> unify (match List.assoc_opt s !alias with
+                           | Some t -> t 
+                           | None -> (match List.assoc_opt s !old_alias with
+                                     | Some t -> t 
+                                     | None -> raise (Alias_not_found (s,loc)))) ty loc
+  | ty, Tident s -> unify t2 t1 loc
   | t1, t2 -> 
       unification_error t1 t2 loc
 

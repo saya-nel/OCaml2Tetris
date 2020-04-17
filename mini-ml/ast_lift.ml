@@ -28,7 +28,9 @@ let rec rw_exp cl env lenv e =
   | Ast.BinOp(op,e1,e2) -> Ast.BinOp(op,rw_exp cl env lenv e1,rw_exp cl env lenv e2)
   | Ast.UnOp(op,e1) -> Ast.UnOp(op,rw_exp cl env lenv e1)
   | Ast.Block(xs) -> Ast.Block(List.map (rw_exp cl env lenv) xs)
-  | Ast.Seq(e1,e2) -> if (match e1 with | Ast.Constant(c) -> c = Ast.Unit | _ -> false)
+  | Ast.Seq(e1,e2) -> if (match e1 with 
+                          | Ast.Constant(c) -> (match c with Ast.Unit -> true | _ -> false) 
+                          | _ -> false)
                       then rw_exp cl env lenv e2
                       else Ast.Seq(rw_exp cl env lenv e1,rw_exp cl env lenv e2)
   | Ast.While(e1,e2) -> Ast.While(rw_exp cl env lenv e1,rw_exp cl env lenv e2)

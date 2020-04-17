@@ -25,7 +25,8 @@ let rec rw_exp e =
   | Ast.UnOp(op,e1) -> Ast.UnOp(op,rw_exp e1)
   | Ast.Block(xs) -> Ast.Block(List.map rw_exp xs)
   | Ast.Seq(e1,e2) -> if (match e1 with
-                         | Ast.Constant(c) -> c = Ast.Unit (* attention : on suppose que rien d'alloué ne vaut 0 *)
+                         | Ast.Constant(c) -> (match c with Ast.Unit -> true | _ -> false) 
+                        (* attention : on suppose que rien d'alloué ne vaut 0 *)
                          | _ -> false ) then rw_exp e2 else Ast.Seq(rw_exp e1,rw_exp e2)
   | Ast.While(e1,e2) -> Ast.While(rw_exp e1,rw_exp e2)
   | Ast.Match(e,ms) -> let ms = List.map (fun m -> 

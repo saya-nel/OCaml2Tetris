@@ -68,7 +68,7 @@ match decl_desc with
   List.map (fun (x,_,_,_) -> (x,find x decl_loc env')) funs
 | Type (name,args,Exp_ty tyrepr) ->
   let vargs = List.map (fun var -> (var,Types.Tvar (V.create ()))) args in
-  let ty = ty_of_repr vargs tyrepr in
+  let ty = ty_of_repr vargs tyrepr in   (* Error: A type parameter occurs several times *)
   (Types.alias := (name,ty) :: !Types.alias); (* A REVOIR, c'EST OK *)
   []
   | Type (name,args,Sum cs) -> 
@@ -86,9 +86,13 @@ and w_defun env (f,args,tyropt,e) decl_loc =
                   let ty = get_tyopt tyopt in
                   add false xi ty env) env args in
   let tret = w_exp env' e in
-  unify_opt tret tyropt decl_loc;
-  let t = List.fold_right (fun (xi,_) t -> let ti = find xi decl_loc env' in Types.Tarrow(ti,t)) args tret in
-  t
+  (match tyropt with
+  | None -> ()
+  | Some tyrepr -> let ty = ty_of_repr [] tyrepr in unify tret ty decl_loc);
+  let t = List.fold_right (fun (xi,_) t -> 
+                             let ti = find xi decl_loc env' in 
+                             Types.Tarrow(ti,t))
+           args tret in  t
 
 
 and w_exp env {exp_desc;exp_loc} = 
@@ -106,8 +110,7 @@ match exp_desc with
       let t1 = w_exp env e1 in
       let ty = get_tyopt tyopt_repr in
       unify t1 ty;
-      let env' = match x with s -> add true s t1 env in
-      w_exp env' e2
+      w_exp (add true x t1 env) e2
   | Fun ((x,tyopt), e1) ->
       let ty = get_tyopt tyopt in
       let env = add false x ty env in
@@ -141,7 +144,7 @@ match exp_desc with
       unify t2 t3; t2
   | Match (e1,ms) ->
       let t1 = w_exp env e1 in
-      let aux t = function 
+      let aux = function
       | Case(c,args,e) -> let tc = (w_constant env exp_loc c) in
                           let tret, tyargs, arity = 
                             let rec aux2 acc accn = function
@@ -150,7 +153,7 @@ match exp_desc with
                           in
 
                           unify t1 tret;
-                          
+
                           let len = List.length args in
                           if arity != len then
                           (Printf.printf "Error : This constructor expects %d argument(s),\n\
@@ -163,8 +166,8 @@ match exp_desc with
       | Otherwise e -> w_exp env e in
       (match ms with 
        | [] -> assert false
-       | ms -> let v = Types.Tvar (V.create ()) in  
-               List.iter (fun m -> unify (aux t1 m) v) ms; v)
+       | m::sm -> let tt = (aux m) in
+                  List.iter (fun m -> unify (aux m) tt) sm; tt)
     (* .... *)
    | Pair(e1,e2) -> 
       let t1 = w_exp env e1 in
@@ -265,10 +268,13 @@ let type_check {decls;mod_name} env =
   try let decs = w env [] decls in 
       let env = List.fold_left (fun env (x,t) -> 
         add true (mod_name ^ "." ^ x) (canon t) env) env decs
-      in env
+      in 
+      Types.old_alias := (List.map (fun (id,ty) -> let id = mod_name ^ "." ^ id in (id,ty)) !Types.alias)  @ !Types.old_alias;
+      env
   with 
   | UnificationFailure (t1,t2,loc) -> 
       Printf.printf "\nError: %s\nThis expression has type %s but an expression was expected of type
          %s\n" (Parseutils.string_of_position loc) (Past_print.sprint_real_ty 0 t1) (Past_print.sprint_real_ty 0 t2); exit 0
   | Unbound_value (x,loc) -> Printf.printf "Error: %s\nUnbound value %s\n" (Parseutils.string_of_position loc)  x; exit 0
-  | _ -> Printf.printf "UN BUG DANS LE TYPEUR. on continue.\n"; env
+  | Types.Alias_not_found(name,loc) -> Printf.printf "Error: %s\n alias not found %s\n" (Parseutils.string_of_position loc)  name; exit 0
+  | exn -> Printf.printf "UN BUG DANS LE TYPEUR. on continue : %s\n" ( Printexc.to_string exn); env

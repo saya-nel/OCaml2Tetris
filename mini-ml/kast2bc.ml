@@ -120,7 +120,7 @@ let rec bc_of_exp e =
           bc_e1 @ 
          ((Bc.UnOp Bc.Not) :: (Bc.IfGoto lbl_end) :: []) @
           bc_e2 @ 
-         (Bc.Goto lbl_begin) :: (Bc.Label lbl_end) :: []
+         ((Bc.Goto lbl_begin) :: (Bc.Label lbl_end) :: [])
   | Kast.Closure (code,closure_env) ->
      let addr = fst code in
      let ke = snd code in
