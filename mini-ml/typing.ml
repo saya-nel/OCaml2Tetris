@@ -3,14 +3,33 @@
 open Types
 open Past
 
+let ty_of_repr venv ty = 
+ let rec aux = function 
+ | Tint -> Types.Tint
+ | Tbool -> Types.Tbool
+  | Tunit -> Types.Tunit
+  | Tchar -> Types.Tchar
+  | Tstring -> Types.Tstring
+  | Tvar name -> (match List.assoc_opt name venv with
+                  | None -> Types.Tvar (V.create ())  (* (Printf.printf "Error: Unbound type parameter %s.\n\n %sexit.\n" name (Parseutils.string_of_position exp_loc);
+                             exit 0); *)
+                  | Some v -> v)
+  | Tarrow (t1,t2) -> Types.Tarrow(aux t1,aux t2)
+  | Tproduct (t1,t2) -> Types.Tproduct(aux t1,aux t2)
+  | Tarray (t) -> Types.Tarray(aux t)
+  | Tref (t) -> Types.Tref(aux t)
+  | Tconstr (name,tylist) -> Types.Tconstr(name, List.map aux tylist)
+  | Tident (name) -> Types.Tident(name)
+in aux ty
+
 let get_tyopt = function
-| None -> Tvar (V.create ()) 
-| Some ty -> ty
+| None -> Types.Tvar (V.create ()) 
+| Some tyrepr -> ty_of_repr [] tyrepr
 
 let unify_opt t tyopt loc = 
 match tyopt with
 | None -> ()
-| Some ty -> unify t ty loc
+| Some ty -> unify t (ty_of_repr [] ty) loc
 
 let initial_env primitives =
   List.fold_left
@@ -25,7 +44,7 @@ let rec w env decs = function
                   (fun env (x,t) -> 
                       let tc = canon t in
                        Printf.printf "%s : %s\n" x
-                           (Past_print.sprint_ty 0 tc);
+                           (Past_print.sprint_real_ty 0 tc);
                       add true x tc env) env xts 
      in
      w env (decs @ xts) ds 
@@ -41,21 +60,25 @@ match decl_desc with
 | DefFunRec funs -> 
   let funcs = List.map (fun (x,_,_,_) -> x) funs in
   let env = List.fold_left (fun env f ->
-                               let v0 = Tvar (V.create ()) in 
+                               let v0 = Types.Tvar (V.create ()) in 
                                add true f v0 env) env funcs in
   let env' = List.fold_left (fun env ((x,args,tyopt,e) as f) -> 
                                let t = w_defun env f decl_loc in 
                                add true x t env) env funs in
   List.map (fun (x,_,_,_) -> (x,find x decl_loc env')) funs
-| Type (name,_,Exp_ty ty) -> 
+| Type (name,args,Exp_ty tyrepr) ->
+  let vargs = List.map (fun var -> (var,Types.Tvar (V.create ()))) args in
+  let ty = ty_of_repr vargs tyrepr in
   (Types.alias := (name,ty) :: !Types.alias); (* A REVOIR, c'EST OK *)
   []
   | Type (name,args,Sum cs) -> 
-    let vargs = List.map (fun _ -> Tvar (V.create ())) args in
-    let tc = Tconstr (name,vargs) in
+    let vargs = List.map (fun var -> 
+                           (var,Types.Tvar (V.create ()))) args in 
+    let tc = Types.Tconstr (name,List.map snd vargs) in (* Error: A type parameter occurs several times *)
     (Types.alias := (name,tc) :: !Types.alias);   (* ATTENTION ERREUR, type compatible avec tout *)
     List.map (fun (c,tys) -> 
-                (c,List.fold_right (fun ty tn -> Tarrow(ty,tn)) tys (* (Tident name) *)
+                (c,List.fold_right (fun ty_repr tn -> let ty = ty_of_repr vargs ty_repr in
+                                                      Types.Tarrow(ty,tn)) tys (* (Tident name) *)
                                                                tc)) cs
 and w_defun env (f,args,tyropt,e) decl_loc = 
   let env' = List.fold_left 
@@ -64,23 +87,24 @@ and w_defun env (f,args,tyropt,e) decl_loc =
                   add false xi ty env) env args in
   let tret = w_exp env' e in
   unify_opt tret tyropt decl_loc;
-  let t = List.fold_right (fun (xi,_) t -> let ti = find xi decl_loc env' in Tarrow(ti,t)) args tret in
+  let t = List.fold_right (fun (xi,_) t -> let ti = find xi decl_loc env' in Types.Tarrow(ti,t)) args tret in
   t
 
 
 and w_exp env {exp_desc;exp_loc} = 
 let unify t1 t2 = unify t1 t2 exp_loc in
 match exp_desc with
-  | Annotation (e,ty) -> 
+  | Annotation (e,tyrepr) -> 
+    let ty = ty_of_repr [] tyrepr in
     let t1 = w_exp env e in
     unify ty t1;
     ty
   | Constant c -> (w_constant env exp_loc c)
   | Ident x -> 
     find x exp_loc env
-  | Let ((x,tyopt), e1, e2) ->
+  | Let ((x,tyopt_repr), e1, e2) ->
       let t1 = w_exp env e1 in
-      let ty = get_tyopt tyopt in
+      let ty = get_tyopt tyopt_repr in
       unify t1 ty;
       let env' = match x with s -> add true s t1 env in
       w_exp env' e2
@@ -92,36 +116,41 @@ match exp_desc with
   | App (ef, es) ->
       let t1 = w_exp env ef in
       let ts = List.map (w_exp env) es in
-      let v = Tvar (V.create ()) in
-      let t2 = List.fold_right (fun t acc -> Tarrow (t,acc)) ts v in
+      let v = Types.Tvar (V.create ()) in
+      let t2 = List.fold_right (fun t acc -> Types.Tarrow (t,acc)) ts v in
       unify t1 t2;
       v
   | BinOp (op,e1,e2) ->
     let top = w_binop op in
     let t1 = w_exp env e1 in
     let t2 = w_exp env e2 in
-    let v = Tvar (V.create ()) in
-    unify top (Tarrow (t1,Tarrow(t2,v)));
+    let v = Types.Tvar (V.create ()) in
+    unify top (Types.Tarrow (t1,Types.Tarrow(t2,v)));
     v
   | UnOp (op,e1) ->
     let top = w_unop op in
     let t1 = w_exp env e1 in
-    let v = Tvar (V.create ()) in
-    unify top (Tarrow (t1,v));
+    let v = Types.Tvar (V.create ()) in
+    unify top (Types.Tarrow (t1,v));
     v
   | If (e1, e2, e3) -> 
       let t1 = w_exp env e1 in
       let t2 = w_exp env e2 in
       let t3 = w_exp env e3 in
-      unify t1 Tbool;
+      unify t1 Types.Tbool;
       unify t2 t3; t2
   | Match (e1,ms) ->
       let t1 = w_exp env e1 in
       let aux t = function 
       | Case(c,args,e) -> let tc = (w_constant env exp_loc c) in
-                          let tret, tyargs, arity = let rec aux acc accn = function
-                                             | Tarrow (ty,t) -> aux (ty::acc) (accn+1) t
-                                             | r -> (r,List.rev acc, accn) in aux [] 0 tc in
+                          let tret, tyargs, arity = 
+                            let rec aux2 acc accn = function
+                            | Types.Tarrow (ty,t) -> aux2 (ty::acc) (accn+1) t
+                            | r -> (r,List.rev acc, accn) in aux2 [] 0 tc 
+                          in
+
+                          unify t1 tret;
+                          
                           let len = List.length args in
                           if arity != len then
                           (Printf.printf "Error : This constructor expects %d argument(s),\n\
@@ -134,7 +163,7 @@ match exp_desc with
       | Otherwise e -> w_exp env e in
       (match ms with 
        | [] -> assert false
-       | ms -> let v = Tvar (V.create ()) in  
+       | ms -> let v = Types.Tvar (V.create ()) in  
                List.iter (fun m -> unify (aux t1 m) v) ms; v)
     (* .... *)
    | Pair(e1,e2) -> 
@@ -142,71 +171,71 @@ match exp_desc with
       let t2 = w_exp env e2 in
       Tproduct (t1,t2)   
    | Array_create (es) -> 
-      let v = Tvar (V.create ()) in 
+      let v = Types.Tvar (V.create ()) in 
       List.iter (fun e -> unify (w_exp env e) v) es; 
       Tarray v
    | Array_assign (e1,e2,e3) ->
      let t1 = w_exp env e1 in
      let t2 = w_exp env e2 in
      let t3 = w_exp env e3 in
-     unify t2 Tint;
-     unify t1 (Tarray t3);
+     unify t2 Types.Tint;
+     unify t1 (Types.Tarray t3);
      Tunit
    | Array_access (e1,e2) ->
      let t1 = w_exp env e1 in
      let t2 = w_exp env e2 in
-     let v = Tvar (V.create ()) in 
-     unify t1 (Tarray v);
-     unify t2 Tint;
+     let v = Types.Tvar (V.create ()) in 
+     unify t1 (Types.Tarray v);
+     unify t2 Types.Tint;
      v
    | Ref(e1) -> 
      let t1 = w_exp env e1 in
      Tref t1
    | Ref_access(e1) ->
      let t1 = w_exp env e1 in
-     let t = Tvar (V.create ()) in 
-     unify t1 (Tref t);
+     let t = Types.Tvar (V.create ()) in 
+     unify t1 (Types.Tref t);
      t
    | Ref_assign(e1,e2) ->
      let t1 = w_exp env e1 in
      let t2 = w_exp env e2 in
-     unify t1 (Tref t2);
-     Tunit
+     unify t1 (Types.Tref t2);
+     Types.Tunit
    (* | String ->  *)
    | Seq(e1,e2) -> 
      let t1 = w_exp env e1 in
      let t2 = w_exp env e2 in
-     unify t1 Tunit;
+     unify t1 Types.Tunit;
      t2
    | While(e1,e2) ->
      let t1 = w_exp env e1 in
      let t2 = w_exp env e2 in
-     unify t1 Tbool;
-     unify t2 Tunit;
+     unify t1 Types.Tbool;
+     unify t2 Types.Tunit;
      Tunit
    | For(x,e1,e2,e3) ->
      let t1 = w_exp env e1 in
      let t2 = w_exp env e2 in
-     unify t1 Tint;
+     unify t1 Types.Tint;
      unify t2
-      Tint;
-     let env' = add true x Tint env in
+     Types.Tint;
+     let env' = add true x Types.Tint env in
      let t3 = w_exp env' e3 in
-     unify t3 Tunit;
-     Tunit
+     unify t3 Types.Tunit;
+     Types.Tunit
    | Assert (e,_) -> 
      let ty = w_exp env e in 
-     unify ty Tbool; 
-     Tunit
-   | Magic e -> let _ = w_exp env e in Tvar (V.create ())
+     unify ty Types.Tbool; 
+     Types.Tunit
+   | Magic e -> let _ = w_exp env e in Types.Tvar (V.create ())
 
 and w_constant env exp_loc = function
-| Unit -> Tunit
-| Bool _ -> Tbool
-| Int _ -> Tint 
-| Char _ -> Tchar
-| String _ -> Tstring
-| Array_empty -> let v = Tvar (V.create ()) in Tarray v
+| Unit -> Types.Tunit
+| Bool _ -> Types.Tbool
+| Int _ -> Types.Tint 
+| Char _ -> Types.Tchar
+| String _ -> Types.Tstring
+| Array_empty -> let v = Types.Tvar (V.create ()) in Types.Tarray v
 | Constr s -> find s exp_loc env
 
 and w_binop = function
@@ -240,6 +269,6 @@ let type_check {decls;mod_name} env =
   with 
   | UnificationFailure (t1,t2,loc) -> 
       Printf.printf "\nError: %s\nThis expression has type %s but an expression was expected of type
-         %s\n" (Parseutils.string_of_position loc) (Past_print.sprint_ty 0 t1) (Past_print.sprint_ty 0 t2); exit 0
+         %s\n" (Parseutils.string_of_position loc) (Past_print.sprint_real_ty 0 t1) (Past_print.sprint_real_ty 0 t2); exit 0
   | Unbound_value (x,loc) -> Printf.printf "Error: %s\nUnbound value %s\n" (Parseutils.string_of_position loc)  x; exit 0
   | _ -> Printf.printf "UN BUG DANS LE TYPEUR. on continue.\n"; env

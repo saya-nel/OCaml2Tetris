@@ -180,7 +180,6 @@ and sprint_unop lvl = function
   | Not -> "not"
   | UMinus -> "-"  
 and sprint_ty lvl ty = 
-  let open Types in 
   match ty with
   (*| Sum (names) -> String.concat " | " names *)
   | Tint -> "int"
@@ -203,10 +202,7 @@ and sprint_ty lvl ty =
   | Tref t ->
      sptf "(%s ref)"
        (sprint_ty lvl t)
-  | Tvar v ->
-     (match v.def with 
-      | None -> Printf.sprintf "'a%d" v.id
-      | Some ty -> sprint_ty lvl ty)
+  | Tvar name -> (indent_string lvl) ^ name
   | Tconstr (name,args) -> sptf "%s%s" 
                                (match args with
                                 | [] -> "" 
@@ -219,3 +215,42 @@ and sprint_var lvl (p,opt) =
      sptf "(%s : %s)"
        p
        (sprint_ty lvl ty)
+
+
+
+
+
+
+let rec sprint_real_ty lvl ty = 
+  let open Types in 
+  match ty with
+  (*| Sum (names) -> String.concat " | " names *)
+  | Tint -> "int"
+  | Tbool -> "bool"
+  | Tchar -> "char"
+  | Tunit -> "unit"
+  | Tstring -> "string"
+  | Tident (name) -> name 
+  | Tproduct (t1,t2) ->
+     sptf "(%s * %s)"
+       (sprint_real_ty lvl t1)
+       (sprint_real_ty lvl t2)
+  | Tarrow (t1,t2) ->
+     sptf "(%s -> %s)"
+       (sprint_real_ty lvl t1)
+       (sprint_real_ty lvl t2)
+  | Tarray t ->
+     sptf "(%s array)"
+       (sprint_real_ty lvl t)
+  | Tref t ->
+     sptf "(%s ref)"
+       (sprint_real_ty lvl t)
+  | Tvar v ->
+     (match v.def with 
+      | None -> Printf.sprintf "'a%d" v.id
+      | Some ty -> sprint_real_ty lvl ty)
+  | Tconstr (name,args) -> sptf "%s%s" 
+                               (match args with
+                                | [] -> "" 
+                                | [name] -> (sprint_real_ty lvl name) ^ " "
+                                | _ -> mapcat " " (sprint_real_ty lvl) args ^" ") name (* à revoir *)

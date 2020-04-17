@@ -1,7 +1,6 @@
 %{
   open Parseutils
   open Past
-  open Types
 
 let decl_create d = Past.{decl_desc = d; decl_loc = pos()}
 let exp_create e = Past.{exp_desc = e; exp_loc = pos()}
@@ -58,7 +57,7 @@ let exp_create e = Past.{exp_desc = e; exp_loc = pos()}
 
 %type <Past.decl list>  tmodule
 %type <Past.exp>        expr
-%type <Types.typ>       exp_ty
+%type <Past.typ>       exp_ty
 %type <Past.match_case> match_case
 
 %%
@@ -121,9 +120,9 @@ ignore:
 ;
 
 ty :
- | exp_ty    { Exp_ty($1) }
+ | exp_ty         { Exp_ty($1) }
  | PIPE sum_ty    { Sum($2) }
- | sum_ty    { Sum($1) }
+ | sum_ty         { Sum($1) }
  ;
 
 sum_ty:
@@ -157,14 +156,14 @@ constructor :
 exp_ty_cstrparam:
  | LPAREN exp_ty RPAREN         { $2 }
  | ident_ty                     { $1 }
- | tvar                         { $1 }
+ | TVAR                         { Tvar $1 }
  | error { error_exit (pos()) "expression de type malformée." }
 ;
 
 exp_ty:
  | LPAREN exp_ty RPAREN         { $2 }
  | ident_ty                     { $1 }
- | tvar                         { $1 }
+ | TVAR                         { Tvar $1 }
  | exp_ty TIMES exp_ty          { Tproduct($1,$3) }
  | exp_ty RIGHT_ARROW exp_ty    { Tarrow($1,$3) }
  | error { error_exit (pos()) "expression de type malformée." }
@@ -185,9 +184,6 @@ ident_ty:
                                    | s -> Tconstr(s,[$1])  }
 ;
 
-tvar:
-| TVAR                          { Tvar (V.create ()) }
-;
 
 param_type_decl:
 |                                       { [] }

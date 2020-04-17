@@ -4,22 +4,22 @@ type prog = tmodule list
 and tmodule = { mod_name : name ; 
                 decls : decl list }
 and name = string
-and var = (name * Types.typ option)
+and var = (name * typ option)
 
 and decl = { decl_desc: declaration_desc; 
              decl_loc : loc
             }
 and declaration_desc =
   | DefVar of (var * exp)
-  | DefFun of    ((name * var list * Types.typ option * exp) list)
-  | DefFunRec of ((name * var list * Types.typ option * exp) list)
+  | DefFun of    ((name * var list * typ option * exp) list)
+  | DefFunRec of ((name * var list * typ option * exp) list)
   | Type of (name * name list * ty)
-and ty = Exp_ty of Types.typ | Sum of constr list
-and constr = name * Types.typ list
+and ty = Exp_ty of typ | Sum of constr list
+and constr = name * typ list
 and exp = { exp_desc: expression_desc; 
             exp_loc : loc }
 and expression_desc =
-  | Annotation of (exp * Types.typ)
+  | Annotation of (exp * typ)
   | Constant of (constant)
   | Ident of (name)
   | Let of (var * exp * exp)
@@ -72,3 +72,17 @@ and binop =
 and unop =
   | UMinus
   | Not
+
+and typ =
+  | Tint
+  | Tbool
+  | Tunit
+  | Tchar
+  | Tstring
+  | Tvar of name
+  | Tarrow of typ * typ
+  | Tproduct of typ * typ
+  | Tarray of typ
+  | Tref of typ
+  | Tconstr of (name * typ list)
+  | Tident of name
