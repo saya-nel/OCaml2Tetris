@@ -109,7 +109,6 @@ and eval_binop = function
   (* land et lor dépendent de l'architecture (16 bits *)
   | (op,e1,e2) -> Ast.BinOp(op,e1,e2)
 and eval_unop = function
-  | (Ast.Not,Ast.Constant(Ast.Bool(b))) -> Ast.Constant(Ast.Bool(not b))
   | (Ast.UMinus,Ast.Constant(Ast.Int(n))) -> Ast.Constant(Ast.Int(- n))
   | (op,e) -> Ast.UnOp(op,e)
 

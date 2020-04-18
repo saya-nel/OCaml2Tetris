@@ -53,7 +53,6 @@ type token =
   | LT
   | GE
   | LE
-  | NOT
   | TRUE
   | FALSE
   | TYPE

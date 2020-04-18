@@ -75,10 +75,12 @@ let rec assoc_opt e l =
             let b = snd x in
             if String.equal e a then Pervasives.Some b else assoc_opt e l
 
-let rec mapi i f l = 
+let rec mapi_aux i f l = 
   match l with
   | [] -> []
-  | a::tl -> let r = f i a in r :: mapi (i + 1) f tl
+  | a::tl -> let r = f i a in r :: mapi_aux (i + 1) f tl
+
+let mapi f l = mapi_aux 0 f l 
 
 let rec rmap_aux f accu l = 
   match l with  
@@ -92,14 +94,38 @@ let rev_map f l =
 let rec insert e l = 
 match l  with 
   | [] -> e :: []
-  | x :: l -> if e < x then e :: x :: l
+  | x :: l -> if (Obj.magic e) < (Obj.magic x) then e :: x :: l
               else x :: insert e l
+
 let rec sort compare l = 
 match l  with
   | [] -> []
   | x :: l -> insert x (sort l)
 
+let rec memq x l =
+  match l with
+  | [] -> false
+  | a::l -> (# a) = (# x) || memq x l
+
 let rec mem x l =
   match l with
   | [] -> false
-  | a::l -> Pervasives.compare a x = 0 || mem x l
+  | a::l -> String.equal (# a) (# x) || mem x l
+
+
+
+let rec nth_aux l n =
+    match l with
+    | [] -> failwith "nth"
+    | a::l -> if n = 0 then a else nth_aux l (n-1)
+
+let nth l n =
+  if n < 0 then failwith "List.nth" else
+  nth_aux l n
+
+let rec partition_aux p yes no l = match l with
+  | [] -> (rev yes, rev no)
+  | x :: l -> if p x then partition_aux p (x :: yes) no l else partition_aux p yes (x :: no) l
+
+let partition p l =
+  partition_aux p [] [] l

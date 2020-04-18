@@ -56,7 +56,6 @@ and binop =
 
 and unop =
   | UMinus
-  | Not
 
 and ext = 
   | Array_alloc of (exp) 

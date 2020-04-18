@@ -1,13 +1,7 @@
-let l = 42 :: []
+type exp = Int of (int) | Add of (exp * exp)
 
-let l2 = l @ l
+let f e = 
+  match e with 
+  | Int(n) -> ()
+  | Add(e1,e2) -> ()
 
-let _ = 
-match l with 
-| [] -> ()
-| x::t -> print_int x
-
-let mapcat f l = List.concat (List.map f l)
-
-
-let _ = mapcat (fun x -> x + 1) ("foo" :: [])

@@ -134,5 +134,4 @@ and sprint_binop lvl = function
   | Lor -> "lor"
   | Land -> "land"
 and sprint_unop lvl = function
-  | Not -> "not"
   | UMinus -> "-"

@@ -59,7 +59,6 @@ let bc_of_binop op =
 
 let bc_of_unop op = 
   match op with
-  | Ast.Not -> (Bc.UnOp Bc.Not) :: []
   | Ast.UMinus -> (Bc.Pop (Bc.Temp(0))) ::
                   (Bc.Push(Bc.Constant(0))) :: 
                   (Bc.Push(Bc.Temp(0))) ::

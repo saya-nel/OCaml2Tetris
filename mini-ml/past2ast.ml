@@ -165,5 +165,4 @@ and visit_binop = function
   | Past.Lor -> Ast.Lor
   | Past.Land -> Ast.Land
 and visit_unop = function
-  | Past.Not -> Ast.Not
   | Past.UMinus -> Ast.UMinus

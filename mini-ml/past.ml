@@ -71,7 +71,6 @@ and binop =
 
 and unop =
   | UMinus
-  | Not
 
 and typ =
   | Tint

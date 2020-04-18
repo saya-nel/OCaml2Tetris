@@ -62,7 +62,6 @@ rule token = parse
 | (['"'](([^'"'])* as s)['"']) { STRING(s) }
 | (['''](['a'-'z''A'-'Z''0'-'9'' ''-''_''!'','';''.''''] as c)[''']) { CHAR(c) }
 | ['''](ident as c) { TVAR(c) }
-| "not"              { NOT }
 | "+"                { PLUS }
 | "-"                { MINUS }
 | "*"                { TIMES }

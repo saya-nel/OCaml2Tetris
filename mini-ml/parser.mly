@@ -8,7 +8,6 @@ let exp_create e = Past.{exp_desc = e; exp_loc = pos()}
 
 %}
 
-
 /* (* reserved words *) */
 %token LET WHERE IN IF THEN ELSE ASSERT WHILE FOR TO DO DONE MATCH WITH PIPE BEGIN END EXTERNAL AND_KW CONS
 %token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT FUN SHARP OF IMPLY CAT AT
@@ -21,12 +20,11 @@ let exp_create e = Past.{exp_desc = e; exp_loc = pos()}
 
 %token <string> TVAR
 
-%token PLUS MINUS TIMES DIV AND OR LAND LOR EQ NEQ GT LT GE LE NOT TRUE FALSE TYPE
+%token PLUS MINUS TIMES DIV AND OR LAND LOR EQ NEQ GT LT GE LE TRUE FALSE TYPE
 %token REC
 /* (* control characters *) */
 %token EOF TERMINAISON DOT COLON LPAREN RPAREN LBRACKET RBRACKET SEMICOL BEGIN END COMMA OF
 %token ARRAY_OPEN ARRAY_CLOSE ARRAY_ACCESS_OPEN LEFT_ARROW RIGHT_ARROW ASSIGN ACCESS WILDCARD
-
 
 %nonassoc LET 
 %nonassoc WHERE 
@@ -51,7 +49,7 @@ let exp_create e = Past.{exp_desc = e; exp_loc = pos()}
 %left      DOT  
 %left      ACCESS                
 %nonassoc  IDENT LPAREN RPAREN BEGIN END        /* highest precedence */        
-
+%left ACCESS
 
 %start tmodule         /* the entry point */
 
@@ -207,8 +205,6 @@ seq :
 ;
 
 expression : 
-| ACCESS expr                            { exp_create @@ Ref_access($2) } 
-| NOT expr                               { exp_create @@ UnOp(Not,$2) }
 | expr                                   { $1 }
 | FUN argument RIGHT_ARROW seq        { exp_create @@ Fun($2,$4) }
 | LET argument EQ seq IN seq          { exp_create @@ Let($2,$4,$6) }
@@ -305,6 +301,7 @@ exprs :
  ;
 
 exp:
+| ACCESS exp                            { exp_create @@ Ref_access($2) } 
 | LPAREN expression COLON exp_ty RPAREN { exp_create @@ Annotation($2,$4) }
 | LPAREN seq RPAREN                     { $2 }
 | BEGIN seq END                         { $2 }

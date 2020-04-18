@@ -1,4 +1,9 @@
 
+let rec mod v1 v2 =
+  if v1 < v2 then v1
+  else mod (v1 - v2) v2
+
+
 let print_endline s = print_string s;print_newline();;
 
 type peg = V |Out | Empty | Peg;;
@@ -35,8 +40,8 @@ let rec solve m =
   if m = 31 then
     begin match board.(4).(4) with Peg -> true | _ -> false end
   else
-      if !counter mod 500 = 0 then begin
-        print_int !counter; print_newline ()
+      (if mod (!counter) 500 = 0 then begin
+        print_int (!counter); print_newline ()
       end;
       for i=1 to 7 do
       for j=1 to 7 do
@@ -73,7 +78,7 @@ let rec solve m =
         | _ -> ()
       done
       done;
-      failwith "cannot find"
+      failwith "cannot find")
 ;;
 
 let print_peg x = match x with
@@ -91,8 +96,8 @@ let print_board board =
  done
 ;;
 
-print_board board;;
-if solve 0 then (print_string "\n"; print_board board)
+let _ = print_board board;;
+let _ = if solve 0 then (print_string "\n"; print_board board)
 else print_endline "Pas trouve"
 ;; 
 

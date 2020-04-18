@@ -21,6 +21,8 @@ let incr r =
 let decr r = 
 	ref_set_contents r (ref_contents r - 1)
 
+let not b = if b then false else true
+
 let fst (p : 'a * 'b) : 'a = 
 	(# p).(0)
 
@@ -81,7 +83,7 @@ let equal t1 t2 : bool =
 
 
 let string_of_int n = Internal.array_make 1 n
-let int_of_char n = n (* todo *)
+let int_of_char (n : char) : int = (# n)
 
 let compare x y = if x < y then -1 else if x = y then 0 else 1
 

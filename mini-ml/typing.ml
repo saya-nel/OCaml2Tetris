@@ -259,7 +259,6 @@ and w_binop = function
 
 and w_unop = function
 | UMinus -> Tarrow(Tint,Tint)
-| Not -> Tarrow(Tbool,Tbool)
 
 (* initial_env prims *) 
 

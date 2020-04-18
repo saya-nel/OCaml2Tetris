@@ -135,21 +135,21 @@ and rw_exp lenv genv e =
     let c = snd code in
       (* après lambda-lifting *)
      let lenv_code = 
-       match lenv with 
-       | Lenv(args,locals,free) -> 
-         let free = associate 1 
+       match lenv with
+       | Lenv(args,locals,free) ->
+         let free = associate 1
                      (match v with 
-                      | Ast.Block(l) -> 
+                      | Ast.Block(l) ->
                         (match l with
-                         | [] -> assert false 
-                         | addr::l -> List.map (fun e -> 
-                                                  match e with 
-                                                  | Ast.Ident(sym) -> sym 
+                         | [] -> assert false
+                         | addr::l -> List.map (fun e ->
+                                                  match e with
+                                                  | Ast.Ident(sym) -> sym
                                                   | _ -> assert false) l)
                       | _ -> assert false) in
          let args=(name,1)::[] in
          let locals=[] in
-         Lenv(args,locals,free) 
+         Lenv(args,locals,free)
      in
      let lenv_v = snd (lenv_extend name lenv) in
      let kc = rw_exp lenv_code genv c in
