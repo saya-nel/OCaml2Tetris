@@ -1,6 +1,7 @@
 type value = int 
 type long = int
 type ptr = int
+
 (* ************************************* *)
 (* blk = [|TAG;COLOR;F1;F2;...|]         *)
 (* size blk = Array.length blk - 2       *)
