@@ -76,7 +76,7 @@ let debug_print_stack () =
 
 
 let interp code =
-  let trap_sp = ref 0 in
+  (* let trap_sp = ref 0 in *)
 
   (* env := make_empty_env (); *)
   sp := 0;
@@ -323,7 +323,7 @@ let interp code =
 
       | 82 (* GETSTRINGCHAR *) -> (* parfois appele GETBYTESCHAR *)
         assert (!sp > 0);
-        let n = pop_stack () in
+        (* let n = pop_stack () in *)
         () (* Mlvalues.get_bytes (!acc) (Mlvalues.long_val n) *) (* à revoir, résultat va dans l'acc ? *)
       | 83 (* SETBYTESCHAR *) -> assert ((!sp) > 1);
         let n = pop_stack () in
