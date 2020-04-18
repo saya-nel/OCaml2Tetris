@@ -269,15 +269,15 @@ let code = [|103;42;9;103;0;9;103;0;63;0;57;0;53;0;81;53;0|]
 (* 83 SETSTRINGCHAR *)
 
 (* 84 BRANCH *)
-(* Resultat attendu : pc = 7 *)
+(* Resultat attendu : pc = 5 *)
 let code = [|84;5|]
 
 (* 85 BRANCHIF *)
-(* Resultat attendu : pc = 7 *)
+(* Resultat attendu : pc = 5 *)
 let code = [|103;1;85;3|]
 
 (* 86 BRANCHIFNOT *)
-(* Resultat attendu : pc = 7 *)
+(* Resultat attendu : pc = 5 *)
 let code = [|103;0;86;3|]
 
 (* 87 SWITCH *)

@@ -55,7 +55,7 @@ let set_bytes (v : value) (i : int) (x : value) =  (* à revoir. cf get_bytes. *
 let closure_tag = 1 (* ??? *)
 let env_tag = 2
 let make_closure pc env = 
-  val_ptr (# [|val_long closure_tag;val_long pc;env|])   (* ? *)
+  val_ptr (# [|val_long closure_tag; val_long 0;val_long pc;env|])   (* ? *)
 
 let make_env sz =
   make_block env_tag sz

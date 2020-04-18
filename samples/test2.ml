@@ -1,2 +1,2 @@
-let f x = x in
+let f x = x + 1 in
 f 42

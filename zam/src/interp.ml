@@ -80,10 +80,9 @@ let interp code =
 
   (* env := make_empty_env (); *)
   sp := 0;
-  print_int (!acc);
   while !pc < Array.length code do
+    debug_print_state ();
     incr pc where () = 
-      (* debug_print_state (); *)
     match code.(!pc) with
     | 0 (* ACC0 *) -> acc := stack.((!sp)-1)
     | 1 (* ACC1 *) -> acc := stack.((!sp)-2)
@@ -138,7 +137,7 @@ let interp code =
     | 33 (* APPLY1 *) -> let arg = pop_stack () in
                          push_stack (!extra_args);
                          push_stack (!env);
-                         push_stack (!pc);   (* +1 ?? *)
+                         push_stack (!pc +1);   (* +1 ?? *)
                          push_stack arg;
                          pc := Mlvalues.addr_closure (!acc) - 1;  (* -1 ?? *)
                          (* env := !acc; *)
@@ -194,13 +193,12 @@ let interp code =
                            extra_args := (!extra_args) + 2
     | 40 (* RETURN *) -> let n = take_argument code in
                          sp := (!sp) - n; 
-                         if !extra_args = 0 
-                         then (pc := Mlvalues.long_val (pop_stack ()) - 1;
+                         if (!extra_args) <= 0 
+                         then (pc := (Mlvalues.long_val (pop_stack ())) - 1;
                                env := pop_stack ();
                                extra_args := Mlvalues.long_val (pop_stack ()))
                          else decr extra_args;
                               pc := Mlvalues.addr_closure (!acc) - 1;
-                              (* env := (!acc) *)
                               env := Mlvalues.env_closure (!acc)
     | 41 (* RESTART *) ->
           let n = Mlvalues.size (!env) in
@@ -222,8 +220,8 @@ let interp code =
                          env := pop_stack ();
                          extra_args := pop_stack () )
      | 43 (* CLOSURE *) -> let n = take_argument code in
-                           let addr = take_argument code in
                            if n > 0 then push_stack (!acc);
+                           let addr = take_argument code in
                            let closure_env = Mlvalues.make_env (n + 1) in
                            Mlvalues.set_field closure_env 0 (Mlvalues.val_long (addr)); 
                            for i = 1 to n - 1 do Mlvalues.set_field closure_env i (pop_stack ()) done;
@@ -328,14 +326,14 @@ let interp code =
                                Mlvalues.set_bytes (!acc) n v;
                                acc := Mlvalues.unit
     | 84 (* BRANCH *) -> let n = take_argument code in 
-                         assert (n < Array.length code);
-                         pc := (!pc) + n
+                         (* assert (n < Array.length code); *)
+                         pc := (!pc) + n - 2 (* - 2 pour enlever incr d'apres + take_argument incr*)
     | 85 (* BRANCHIF *) -> let n = take_argument code in 
-                           assert (n < Array.length code);
-                           pc := if Mlvalues.long_val (!acc) = 1 then (!pc) + n else (!pc) + 1
+                           (* assert (n < Array.length code); *)
+                           if Mlvalues.long_val (!acc) = 1 then pc := (!pc) + n - 2 (* - 2 pour enlever incr d'apres + take_argument incr*)
     | 86 (* BRANCHIFNOT *) -> let n = take_argument code in 
-                              assert (n < Array.length code);
-                              pc := if Mlvalues.long_val (!acc) = 0 then (!pc) + n else (!pc) + 1
+                              (* assert (n < Array.length code); *)
+                              if Mlvalues.long_val (!acc) = 0 then pc := (!pc) + n - 2 (* - 2 pour enlever incr d'apres + take_argument incr*)
     
     (* SWITCH *)
 
