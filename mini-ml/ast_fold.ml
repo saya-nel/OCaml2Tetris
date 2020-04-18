@@ -4,6 +4,7 @@
 let rec occ (v : string) e = match e with
   | Ast.Constant c -> 0
   | Ast.Let(name,e1,e2) -> if v = name then occ v e1 else occ v e1 + occ v e2
+  | Ast.LetRec (f,w,e1,e2) -> (if v <> w then occ v e1 else 0) + (if v <> f then occ v e2 else 0)
   | Ast.App(e,args) -> occ v e + occ_list v args
   | Ast.If(e1,e2,e3) -> occ v e1 + occ v e2 + occ v e3
   | Ast.BinOp(op,e1,e2) -> occ v e1 + occ v e2
@@ -25,6 +26,8 @@ let replace v x e =
     | Ast.Constant c -> Ast.Constant c
     | Ast.Let(name,e1,e2) -> let s = if v = name then e2 else replace e2 in (* gestion de la capture *)
                              Ast.Let(name,replace e1,s)
+    | Ast.LetRec (f,w,e1,e2) -> Ast.LetRec (f,w,(if v = w then e1 else replace e1),
+                                                (if v = f then e2 else replace e2))
     | Ast.App(e,args) -> Ast.App(replace e,List.map replace args) 
     | Ast.If(e1,e2,e3) -> Ast.If(replace e1,replace e2,replace e3)
     | Ast.BinOp(op,e1,e2) -> Ast.BinOp(op,replace e1,replace e2)
@@ -64,6 +67,7 @@ and fold_exp = function
           | Ast.Constant _,0 -> e2
           | Ast.Constant _,_ -> fold_exp (replace v e1 e2)
           | _ -> Ast.Let(v,e1,e2)))
+  | Ast.LetRec(f,v,e1,e2) -> Ast.LetRec(f,v,e1,e2) (* TODO *)
   | Ast.App(e,args) -> Ast.App(fold_exp e,List.map fold_exp args) 
   | Ast.If(e1,e2,e3) -> (match fold_exp e1 with 
                          | Ast.Constant(Ast.Bool(b)) -> fold_exp (if b then e2 else e3)

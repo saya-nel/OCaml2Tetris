@@ -6,11 +6,25 @@ let rec rw_exp env e =
   | Ast.Ident (name) -> Ast.Ident name
   | Ast.Fun (name,e) -> 
      (match env with 
+      (* [] -> optimisation si pas de variables libres ? *)
       | _ -> let addr = Gensym.next_int gen in
              let code = rw_exp (name :: env) e in
              let closure_env = List.map (fun name -> Ast.Ident(name)) env in
              let closure = Ast.Constant(Ast.Int addr) :: closure_env in
              Ast.Closure((addr,code),name,Ast.Block(closure)))
+    | Ast.LetRec (f,name,e1,e2) ->
+     let addr = Gensym.next_int gen in
+     let code = rw_exp (name :: env) e1 in
+     let closure_env = Ast.Ident(f) :: List.map (fun name -> Ast.Ident(name)) env in
+     let closure = Ast.Constant(Ast.Int addr) :: closure_env in
+     let clos = Ast.Closure((addr,code),name,Ast.Block(closure)) in
+     let x = Gensym.next "tmp" gen in
+     Ast.LetRec(f,"fake", 
+                Ast.Let(x,clos,
+                        Ast.Seq(Ast.App(Ast.Ident("Internal.array_set"),
+                                        [Ast.Ident(x);Ast.Constant(Ast.Int(1));Ast.Ident(x)]),
+                                Ast.Ident(x))),
+                e2)
   | Ast.Constant(c) -> Ast.Constant(c)
   | Ast.Let(v,e1,e2) -> Ast.Let(v,rw_exp env e1,rw_exp env e2)
   | Ast.App(e,args) -> Ast.App(rw_exp env e,List.map (rw_exp env) args) 

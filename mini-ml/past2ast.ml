@@ -56,6 +56,7 @@ and rw_exp env Past.{exp_desc;exp_loc} =
   | Past.Annotation (e,_) -> rw_exp env e
   | Past.Constant c -> Ast.Constant(rw_cst env c)
   | Past.Let((name,_),e1,e2) ->  Ast.Let(name,rw_exp env e1,rw_exp env e2)
+  | Past.LetRec(name,(x,_),e1,e2) ->  Ast.LetRec(name,x,rw_exp env e1,rw_exp env e2)
   | Past.App(e,args) -> 
     let args = List.map (rw_exp env) args in 
     (match e with 

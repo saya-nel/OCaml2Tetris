@@ -78,6 +78,7 @@ decls :
  ;
 
 decl : 
+ /* | seq                                        { [decl_create @@ DefVar(("_",None),$1)] } */
  | LET argument EQ seq                        { [decl_create @@ DefVar($2,$4)] }
  | LET defuns                                 { [decl_create @@ DefFun($2)] }
  | LET REC defuns                             { [decl_create @@ DefFunRec($3)] }
@@ -220,7 +221,9 @@ expression :
             | Some ty -> exp_create @@ Annotation(e,ty)),
         exp))
          $2 $4}
-| LET REC error { error_exit (pos()) "pas de construction let rec local" }
+| LET REC ident argument EQ seq IN seq                      
+ { exp_create @@ LetRec($3,$4,$6,$8) }
+/* | LET REC error { error_exit (pos()) "pas de construction let rec local" } */
 | expression WHERE argument EQ seq   { exp_create @@ 
                                          match $3 with 
                                          | "_",None -> Seq($5,$1)

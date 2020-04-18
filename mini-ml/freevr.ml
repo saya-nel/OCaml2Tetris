@@ -10,9 +10,13 @@ match e with
        && List.exists (String.equal name) env
     then coll := name :: !coll
 | Ast.Let(name,e1,e2) -> 
-     let lenv = name :: lenv in 
+     let lenv' = name :: lenv in 
      collect_exp coll env lenv e1;
-     collect_exp coll env lenv e2 
+     collect_exp coll env lenv' e2 
+| Ast.LetRec(name,x,e1,e2) -> 
+     let lenv' = name :: lenv in 
+     collect_exp coll env lenv' e1;
+     collect_exp coll env lenv' e2 
  | Ast.Fun(name,e) ->
      let lenv = name :: lenv in 
      collect_exp coll env lenv e

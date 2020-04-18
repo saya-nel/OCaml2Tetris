@@ -128,6 +128,13 @@ and rw_exp lenv genv e =
      let i = fst p in
      let lenv' = snd p in
      Kast.Let(i,rw_exp lenv genv e1, rw_exp lenv' genv e2)
+ | Ast.LetRec(f,_,e1,e2) -> 
+
+  let p = lenv_extend_tail f lenv in (* optimisation (avec `lenv_extend_tail`) : recyclage des variables masquées, 
+                                                   contrainte pour la génération de code : dans, C[let x = e1(x) in e2] C[e1] doit bien manipuler le nouveau [x] et [e1] l'ancien *)
+     let i = fst p in
+     let lenv' = snd p in
+     Kast.Let(i,rw_exp lenv' genv e1, rw_exp lenv' genv e2)
  | Ast.Fun(_,_) -> assert false (* déjà transformer en fermeture *)
 
  | Ast.Closure(code,name,v) ->

@@ -19,8 +19,10 @@ let rec rw_exp cl env lenv e =
              let d = Ast.DefVar(sym,f) in
              cl := d :: !cl;
              Ast.App(Ast.Ident (sym),List.map (fun v -> Ast.Ident(v)) vars))     
-  | Ast.Let(name,e1,e2) -> let lenv = name :: lenv in
-                           Ast.Let(name,rw_exp cl env lenv e1,rw_exp cl env lenv e2)
+  | Ast.Let(name,e1,e2) -> let lenv' = name :: lenv in
+                           Ast.Let(name,rw_exp cl env lenv' e1,rw_exp cl env lenv e2)
+  | Ast.LetRec(name,x,e1,e2) -> let lenv' = name :: lenv in
+                                Ast.LetRec(name,x,rw_exp cl env lenv' e1,rw_exp cl env lenv' e2)
   | Ast.Ident(name) -> Ast.Ident(name)
   | Ast.Constant(c) -> Ast.Constant(c)
   | Ast.App(e,args) -> Ast.App(rw_exp cl env lenv e,List.map (rw_exp cl env lenv) args) 
