@@ -247,31 +247,35 @@ let interp code =
           Mlvalues.set_field !acc (2 * i - 1) (Mlvalues.make_block Mlvalues.infix_tag (2 * i));
           Mlvalues.set_field !acc (2 * i - 1) (Mlvalues.val_long ((take_argument code) - i - 2))
         done;
-        for i = 1 to v-1 do Mlvalues.set_field !acc (i + 2 * f - 1) (pop_stack ()) done;
+        for i = 1 to v-1 do 
+          Mlvalues.set_field !acc (i + 2 * f - 1) (pop_stack ()) 
+        done;
         push_stack !acc;
-        for i = 1 to f-1 do push_stack (Mlvalues.get_field !acc (2 * i)) done
-
+        for i = 1 to f-1 do 
+          push_stack (Mlvalues.get_field !acc (2 * i)) 
+        done
       | 45 (* OFFSETCLOSUREM2 *) -> 
-        (* acc := ... *)()
+        acc := Mlvalues.val_long (Mlvalues.long_val !env - 2)
       | 46 (* OFFSETCLOSURE0 *) -> 
-        (* acc := ... *)()
+        acc := !env
       | 47 (* OFFSETCLOSURE2 *) -> 
-        (* acc := ... *)()
+        acc := Mlvalues.val_long (Mlvalues.long_val !env + 2)
       | 48 (* OFFSETCLOSURE *) -> 
         let n = take_argument code in
-        (* acc := ... *)()
+        acc := Mlvalues.val_long (Mlvalues.long_val !env + n)
       | 49 (* PUSHOFFSETCLOSUREM2 *) -> 
         push_stack !acc;
-        (* acc := ... *) ()
+        acc := Mlvalues.val_long (Mlvalues.long_val !env - 2)
       | 50 (* PUSHOFFSETCLOSURE0 *) -> 
         push_stack !acc;
-        (* acc := ... *) ()
+        acc := !env
       | 51 (* PUSHOFFSETCLOSURE2 *) ->
         push_stack !acc;
-        (* acc := ... *) ()
+        acc := Mlvalues.val_long (Mlvalues.long_val !env + 2)
       | 52 (* PUSHOFFSETCLOSURE *) -> 
+        let n = take_argument code in
         push_stack !acc;
-        (* acc := ... *) ()
+        acc := Mlvalues.val_long (Mlvalues.long_val !env + n)
       | 53 (* GETGLOBAL *) -> let n = take_argument code in
         acc := (Mlvalues.get_field (!global) n)
       | 54 (* PUSHGETGLOBAL *) -> push_stack (!acc);
