@@ -174,7 +174,7 @@ let interp code =
       | 37 (* APPTERM1 *) -> let s = take_argument code in 
         stack.((!sp) - s + 0) <- stack.((!sp) - 1 + 0);
         sp := (!sp) - (s - 1);             
-        pc := (Mlvalues.long_val (Mlvalues.addr_closure (!acc))) - 1;
+        pc := (Mlvalues.long_val (Mlvalues.addr_closure (!acc))) - 1
       | 38 (* APPTERM2 *) -> let s = take_argument code in 
         stack.((!sp) - s + 0) <- stack.((!sp) - 2 + 0);
         stack.((!sp) - s + 1) <- stack.((!sp) - 2 + 1);
@@ -233,15 +233,18 @@ let interp code =
         Mlvalues.set_field closure_env 0 (Mlvalues.val_long (addr)); 
         for i = 1 to n - 1 do Mlvalues.set_field closure_env i (pop_stack ()) done;
         acc := Mlvalues.make_closure (addr) closure_env
-      | 44 (* CLOSUREREC *) -> let f = take_argument code in
+      | 44 (* CLOSUREREC *) -> 
+        let f = take_argument code in
         let v = take_argument code in
         let o = take_argument code in
         let t = take_argument code in
         if v > 0 then push_stack !acc;
         let closure_size = (2 * f) - 1 + v in
         let closure_env = Mlvalues.make_env closure_size in ()
-      (* Mlvalues.set_field closure_env 0 (!pc - 4 + (Mlvalues.long_val o)); (* -4 car on a fait 4 fois take_argument *)
-         for i = 1 to v do Mlvalues.set_field closure_env i (pop_stack ()) done *)
+      
+      (* Mlvalues.set_field closure_env 0 (!pc - 4 + (Mlvalues.long_val o));  *)
+      (* -4 car on a fait 4 fois take_argument *)
+      (* for i = 1 to v do Mlvalues.set_field closure_env i (pop_stack ()) done *)
 
 
       (* OFFSETCLOSUREM2 *)
