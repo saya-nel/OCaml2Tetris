@@ -11,6 +11,8 @@ let env = ref (Mlvalues.val_long 0)
 
 let global = ref (Mlvalues.make_block 0 20)
 
+let trap_sp = ref 0
+
 let pop_stack () =
   let v = stack.(!sp - 1) in 
   decr sp;
@@ -76,9 +78,6 @@ let debug_print_stack () =
 
 
 let interp code =
-  (* let trap_sp = ref 0 in *)
-
-  (* env := make_empty_env (); *)
   sp := 0;
   while !pc < Array.length code do
     debug_print_state ();
@@ -234,17 +233,15 @@ let interp code =
         Mlvalues.set_field closure_env 0 (Mlvalues.val_long (addr)); 
         for i = 1 to n - 1 do Mlvalues.set_field closure_env i (pop_stack ()) done;
         acc := Mlvalues.make_closure (addr) closure_env
-
-      (* CLOSUREREC *)
-      | 44 -> let f = take_argument code in
+      | 44 (* CLOSUREREC *) -> let f = take_argument code in
         let v = take_argument code in
         let o = take_argument code in
         let t = take_argument code in
         if v > 0 then push_stack !acc;
         let closure_size = (2 * f) - 1 + v in
-        let closure_env = Mlvalues.make_env closure_size in
-        Mlvalues.set_field closure_env 0 (!pc - 4 + o); (* -4 car on a fait 4 fois take_argument *)
-        for i = 1 to v do Mlvalues.set_field closure_env i (pop_stack ()) done
+        let closure_env = Mlvalues.make_env closure_size in ()
+      (* Mlvalues.set_field closure_env 0 (!pc - 4 + (Mlvalues.long_val o)); (* -4 car on a fait 4 fois take_argument *)
+         for i = 1 to v do Mlvalues.set_field closure_env i (pop_stack ()) done *)
 
 
       (* OFFSETCLOSUREM2 *)
@@ -358,10 +355,30 @@ let interp code =
       (* SWITCH *)
 
       | 88 (* BOOLNOT *) -> acc := Prims.bnot (!acc)
+      | 89 (* PUSHTRAP *) -> let ofs = take_argument code in
+        push_stack (Mlvalues.val_long !extra_args);
+        push_stack !env;
+        push_stack (Mlvalues.val_long !trap_sp);
+        push_stack (Mlvalues.val_long (!pc - 1 + ofs)); (* -1 car on a prit un argument *)
+        trap_sp := !sp
+      | 90 (* POPTRAP *) -> 
+        let _ = pop_stack () in
+        trap_sp := Mlvalues.long_val (pop_stack ());
+        let _ = pop_stack () in
+        let _ = pop_stack () in ()
+      | 91 (* RAISE *) -> 
+        if !trap_sp = 0 then begin 
+          print_string "Exception, acc = ";
+          print_int (Mlvalues.long_val !acc);
+          print_newline () end 
+        else begin
+          sp := !trap_sp;
+          pc := Mlvalues.long_val (pop_stack ());
+          trap_sp := Mlvalues.long_val (pop_stack ());
+          env := pop_stack ();
+          extra_args := Mlvalues.long_val (pop_stack ())
+        end
 
-      (* PUSHTRAP *)
-      (* POPTRAP *)
-      (* RAISE *)
       (* CHECK-SIGNALS *)
       (* C-CALL1 *)
       (* C-CALL2 *)
