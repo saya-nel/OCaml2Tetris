@@ -234,28 +234,44 @@ let interp code =
         for i = 1 to n - 1 do Mlvalues.set_field closure_env i (pop_stack ()) done;
         acc := Mlvalues.make_closure (addr) closure_env
       | 44 (* CLOSUREREC *) -> 
+      (* source : https://github.com/stevenvar/OMicroB/blob/master/src/byterun/vm/interp.c#L768 *)
         let f = take_argument code in
         let v = take_argument code in
         let o = take_argument code in
-        let t = take_argument code in
         if v > 0 then push_stack !acc;
         let closure_size = (2 * f) - 1 + v in
-        let closure_env = Mlvalues.make_env closure_size in ()
-      
-      (* Mlvalues.set_field closure_env 0 (!pc - 4 + (Mlvalues.long_val o));  *)
-      (* -4 car on a fait 4 fois take_argument *)
-      (* for i = 1 to v do Mlvalues.set_field closure_env i (pop_stack ()) done *)
+        let closure = Mlvalues.make_block Mlvalues.closure_tag closure_size in
+        acc := closure;
+        Mlvalues.set_field !acc 0 (Mlvalues.val_codeptr o);
+        for i = 1 to f-1 do 
+          Mlvalues.set_field !acc (2 * i - 1) (Mlvalues.make_block Mlvalues.infix_tag (2 * i));
+          Mlvalues.set_field !acc (2 * i - 1) (Mlvalues.val_long ((take_argument code) - i - 2))
+        done;
+        for i = 1 to v-1 do Mlvalues.set_field !acc (i + 2 * f - 1) (pop_stack ()) done;
+        push_stack !acc;
+        for i = 1 to f-1 do push_stack (Mlvalues.get_field !acc (2 * i)) done
 
-
-      (* OFFSETCLOSUREM2 *)
-      (* OFFSETCLOSURE0 *)
-      (* OFFSETCLOSURE2 *)
-      (* OFFSETCLOSURE *)
-      (* PUSHOFFSETCLOSUREM2 *)
-      (* PUSHOFFSETCLOSURE0 *)
-      (* PUSHOFFSETCLOSURE2 *)
-      (* PUSHOFFSETCLOSURE *)
-
+      | 45 (* OFFSETCLOSUREM2 *) -> 
+        (* acc := ... *)()
+      | 46 (* OFFSETCLOSURE0 *) -> 
+        (* acc := ... *)()
+      | 47 (* OFFSETCLOSURE2 *) -> 
+        (* acc := ... *)()
+      | 48 (* OFFSETCLOSURE *) -> 
+        let n = take_argument code in
+        (* acc := ... *)()
+      | 49 (* PUSHOFFSETCLOSUREM2 *) -> 
+        push_stack !acc;
+        (* acc := ... *) ()
+      | 50 (* PUSHOFFSETCLOSURE0 *) -> 
+        push_stack !acc;
+        (* acc := ... *) ()
+      | 51 (* PUSHOFFSETCLOSURE2 *) ->
+        push_stack !acc;
+        (* acc := ... *) ()
+      | 52 (* PUSHOFFSETCLOSURE *) -> 
+        push_stack !acc;
+        (* acc := ... *) ()
       | 53 (* GETGLOBAL *) -> let n = take_argument code in
         acc := (Mlvalues.get_field (!global) n)
       | 54 (* PUSHGETGLOBAL *) -> push_stack (!acc);
