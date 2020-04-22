@@ -128,13 +128,31 @@ and rw_exp lenv genv e =
      let i = fst p in
      let lenv' = snd p in
      Kast.Let(i,rw_exp lenv genv e1, rw_exp lenv' genv e2)
- | Ast.LetRec(f,_,e1,e2) -> 
+ | Ast.LetRec(f,e1,e2) -> 
+   let (i,lenv') = lenv_extend f lenv in
+   let ke1 = rw_exp lenv' genv e1 in
+   let ke2 = rw_exp lenv' genv e2 in
+   Kast.Let (i,ke1,
+                   Kast.Seq(Kast.App(Kast.GFun("Internal.array_set"),[Kast.Variable(Kast.Local(i));Kast.Constant(Kast.Int(i+1));Kast.Variable(Kast.Local(i))]),
+                          ke2))
+  (* let (i,lenv') = lenv_extend f lenv in
+  let (j,lenv2) = lenv_extend "__fake__" lenv' in
+  let ke1 = rw_exp lenv2 genv e1 in
+  let ke2 = rw_exp lenv2 genv e2 in
+  Kast.Let (j,ke1,Kast.Seq(Kast.App(Kast.GFun("Internal.array_set"),[Kast.Variable(Kast.Local(j));Kast.Constant(Kast.Int(i-1));Kast.Variable(Kast.Local(j))]),
+                          ke2)) *)
 
-  let p = lenv_extend_tail f lenv in (* optimisation (avec `lenv_extend_tail`) : recyclage des variables masquées, 
+
+(*
+  let p = lenv_extend f lenv in (* tail ? .optimisation (avec `lenv_extend_tail`) : recyclage des variables masquées, 
                                                    contrainte pour la génération de code : dans, C[let x = e1(x) in e2] C[e1] doit bien manipuler le nouveau [x] et [e1] l'ancien *)
      let i = fst p in
      let lenv' = snd p in
-     Kast.Let(i,rw_exp lenv' genv e1, rw_exp lenv' genv e2)
+
+  let p2 = lenv_extend name lenv' in
+  let j = fst p2 in
+  let lenv2 = snd p2 in
+     Kast.Let(i,rw_exp lenv2 genv e1, rw_exp lenv' genv e2) *)
  | Ast.Fun(_,_) -> assert false (* déjà transformer en fermeture *)
 
  | Ast.Closure(code,name,v) ->

@@ -49,7 +49,6 @@ let exp_create e = Past.{exp_desc = e; exp_loc = pos()}
 %left      DOT  
 %left      ACCESS                
 %nonassoc  IDENT LPAREN RPAREN BEGIN END        /* highest precedence */        
-%left ACCESS
 
 %start tmodule         /* the entry point */
 
@@ -78,7 +77,7 @@ decls :
  ;
 
 decl : 
- /* | seq                                        { [decl_create @@ DefVar(("_",None),$1)] } */
+ | seq terminaison                            { [decl_create @@ DefVar(("_",None),$1)] }
  | LET argument EQ seq                        { [decl_create @@ DefVar($2,$4)] }
  | LET defuns                                 { [decl_create @@ DefFun($2)] }
  | LET REC defuns                             { [decl_create @@ DefFunRec($3)] }
@@ -221,8 +220,8 @@ expression :
             | Some ty -> exp_create @@ Annotation(e,ty)),
         exp))
          $2 $4}
-| LET REC ident argument EQ seq IN seq                      
- { exp_create @@ LetRec($3,$4,$6,$8) }
+| LET REC ident EQ seq IN seq                      
+ { exp_create @@ LetRec($3,$5,$7) }
 /* | LET REC error { error_exit (pos()) "pas de construction let rec local" } */
 | expression WHERE argument EQ seq   { exp_create @@ 
                                          match $3 with 
@@ -343,6 +342,7 @@ match_case:
 
 app_cst:
 | constant cst_parameters    { ($1,$2) }
+| constant cst_args          { ($1,$2) }
 | argument_aux CONS argument_aux  { (Constr("::"),[$1;$3]) }
 ;
 
@@ -350,10 +350,23 @@ cst_parameters:
 |                                  { [] }
 | LPAREN cst_parameters_aux RPAREN { $2 }
 ;
+
 cst_parameters_aux:
 | argument_aux                          { [$1] }
 | argument_aux COMMA cst_parameters_aux {$1::$3}
 ;
+
+
+cst_args:
+|              { [] }
+| cst_args_aux { $1 }
+;
+
+cst_args_aux:
+| argument_aux              { [$1] }
+| argument_aux cst_args_aux {$1::$2}
+;
+
 
 array_content:
 |                            { [] }
@@ -380,4 +393,4 @@ tuple:
 tuple_aux:
 | expr                      { [$1] }
 | expr COMMA tuple_aux      { $1::$3 }
-
+;

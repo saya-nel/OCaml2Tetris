@@ -111,7 +111,13 @@ match exp_desc with
       let ty = get_tyopt tyopt_repr in
       unify t1 ty;
       w_exp (add true x t1 env) e2
-  | LetRec (name,(x,tyopt_repr), e1, e2) -> Types.Tvar (V.create ()) (* TODO *)
+  | LetRec (name, e1, e2) -> 
+  let tt = Types.Tvar (V.create ()) in
+  let env1 = add true name tt env in
+  let t1 = w_exp env1 e1 in
+  unify tt t1;
+  w_exp env1 e2
+  
   | Fun ((x,tyopt), e1) ->
       let ty = get_tyopt tyopt in
       let env = add false x ty env in

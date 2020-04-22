@@ -16,7 +16,7 @@ and exp =
   | Constant of (constant)
   | Ident of (name)
   | Let of (name * exp * exp)
-  | LetRec of (name * name * exp * exp)
+  | LetRec of (name * exp * exp)
   | Fun of (name * exp)
   | Closure of ((int * exp) * string * exp)  (* introduit plus tard *)
   | App of (exp * exp list)

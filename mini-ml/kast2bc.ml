@@ -92,7 +92,7 @@ let bc_of_variable v = match v with
   | Kast.Free (n) ->
      (Bc.Push(Bc.Argument 0)) ::
      (Bc.Push(Bc.Constant (n))) ::
-     (Bc.Call("Array.get",2)) :: [] (* la nieme valeur de l'env, (sans compter l'addresse en position 0) *)
+     (Bc.Call("Internal.array_get",2)) :: [] (* la nieme valeur de l'env, (sans compter l'addresse en position 0) *)
 
 
 let rec bc_of_exp e =
@@ -103,13 +103,12 @@ let rec bc_of_exp e =
          let bc_e1 = bc_of_exp e1 in
          let bc_e2 = bc_of_exp e2 in
          let bc_e3 = bc_of_exp e3 in
-         let lbl_if_false = Gensym.next "IfFalse" gen_label in
+         let lbl_if_true = Gensym.next "IfTrue" gen_label in
          let lbl_end = Gensym.next "IfEnd" gen_label in
-         bc_e1 @ ((Bc.UnOp Bc.Not) ::
-                  (Bc.IfGoto lbl_if_false) :: []) @
-           bc_e2 @ ((Bc.Goto lbl_end) ::
-                    (Bc.Label lbl_if_false) :: []) @
-             bc_e3 @ ((Bc.Label lbl_end) :: [])
+         bc_e1 @ ((Bc.IfGoto lbl_if_true) :: []) @
+           bc_e3 @ ((Bc.Goto lbl_end) ::
+                    (Bc.Label lbl_if_true) :: []) @
+             bc_e2 @ ((Bc.Label lbl_end) :: [])
   | Kast.While(e1,e2) ->
          let bc_e1 = bc_of_exp e1 in 
          let bc_e2 = bc_of_exp e2 in
@@ -121,10 +120,10 @@ let rec bc_of_exp e =
           bc_e2 @ 
          ((Bc.Goto lbl_begin) :: (Bc.Label lbl_end) :: [])
   | Kast.Closure (code,closure_env) ->
-     let addr = fst code in
+     let adr = fst code in
      let ke = snd code in
      (* let n = next_lambda (bc_of_exp lvl e) *)
-     next_closure (bc_of_exp ke) addr;
+     next_closure (bc_of_exp ke) adr;
      bc_of_exp closure_env 
      (* la fermeture est un tableau (module Array)) *)
      (* dont le premier élément est l'id (~+/- l'adresse) de la closure *) 

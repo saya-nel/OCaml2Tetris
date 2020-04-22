@@ -65,8 +65,8 @@ and sprint_exp lvl {exp_desc} = match exp_desc with
        (sprint_exp (z) e1)
        (indent_string lvl)
        (sprint_exp lvl e2)
-  | LetRec(name,var,e1,e2) ->
-     let w = sptf "(let %s %s = " name (sprint_var lvl var) in
+  | LetRec(name,e1,e2) ->
+     let w = sptf "(let rec %s = " name in
      let z = get_indent_level w lvl in
      sptf "%s%s in\n%s%s)" w
        (sprint_exp (z) e1)

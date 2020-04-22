@@ -23,7 +23,7 @@ and expression_desc =
   | Constant of (constant)
   | Ident of (name)
   | Let of (var * exp * exp)
-  | LetRec of (name * var * exp * exp)
+  | LetRec of (name * exp * exp)
   | Fun of (var * exp)
   (* | LetFun of (name * name list * exp * exp) *)
   | App of (exp * exp list)

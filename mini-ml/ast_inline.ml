@@ -2,6 +2,7 @@
 let rec depth e = match e with 
   | Ast.Constant c -> 0
   | Ast.Let(name,e1,e2) -> 1 + max (depth e1) (depth e2)
+  | Ast.LetRec(name,e1,e2) -> 1 + max (depth e1) (depth e2)
   | Ast.App(e,args) -> 1 + max (depth e) (depth_list args)
   | Ast.If(e1,e2,e3) -> 1 + max (depth e1) (max (depth e2) (depth e3))
   | Ast.BinOp(op,e1,e2) -> 1 + max (depth e1) (depth e2)

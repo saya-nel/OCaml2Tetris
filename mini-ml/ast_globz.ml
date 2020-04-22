@@ -19,6 +19,7 @@ let rec rw_exp e =
   match e with
   | Ast.Constant(c) -> rw_constant c
   | Ast.Let(v,e1,e2) -> Ast.Let(v,rw_exp e1,rw_exp e2)
+  | Ast.LetRec(v,e1,e2) -> Ast.LetRec(v,rw_exp e1,rw_exp e2)
   | Ast.App(e,args) -> Ast.App(rw_exp e,List.map rw_exp args) 
   | Ast.If(e1,e2,e3) -> Ast.If(rw_exp e1,rw_exp e2,rw_exp e3)
   | Ast.BinOp(op,e1,e2) -> Ast.BinOp(op,rw_exp e1,rw_exp e2)
