@@ -190,10 +190,12 @@ let instr_string_with_args (instrs : Instr.t array) : string list =
       let s = to_string t in
       (* on va enlever les [] et les ; dans les strings si il y en a *)
       let cleaned = Str.global_replace (regexp ";\\|\\[\\|\\]\\| \\]") "" s in
-      (* enleve les doubles espaces si necessaire*)
+      (* enleve les doubles espaces si necessaire *)
       let cleaned2 = Str.global_replace (regexp  "  ") " " cleaned in
       cleaned2::(aux q)
-  in aux (Array.to_list instrs)
+  in 
+  let res = aux (Array.to_list instrs) in
+  List.map (fun s -> String.trim s) res
 
 
 (* 
@@ -304,6 +306,8 @@ let () =
   (* on va traiter la partie code *)
   (* serialize le code sous forme ["instr1 arg1 arg2"; "instr2"; "instr3 arg1"] etc *)
   let with_args = instr_string_with_args code in
+
+  List.iter (printf "%s ") with_args;
 
   (* met à jour les indexs des labels *)
   let replaced = replace_labels_indexes with_args in
