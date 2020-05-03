@@ -261,8 +261,8 @@ let replace_label_index (instrs : string list) (instr : string) : string = match
     (get_instr instr) ^ " " ^ (get_arg_nth instr 1) ^ " " ^ string_of_int new_val 
   | "CLOSUREREC" -> 
     let nb_args = get_instr_nb_args instr in
-    let res = ref ((get_instr instr) ^ " " ^ (get_arg_nth instr 1) ^ " " ^ (get_arg_nth instr 2) ^ " " ^ (get_arg_nth instr 3)) in
-    for i = 4 to nb_args do
+    let res = ref ((get_instr instr) ^ " " ^ (get_arg_nth instr 1) ^ " " ^ (get_arg_nth instr 2)) in
+    for i = 3 to nb_args do
       let old_val = int_of_string (get_arg_nth instr i) in
       let new_val = old_val + nb_args_before_ind instrs (old_val) in
       res := !res ^ " " ^ (string_of_int new_val)
