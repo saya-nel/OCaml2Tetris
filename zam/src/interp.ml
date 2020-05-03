@@ -226,9 +226,8 @@ let interp code =
         else 
           begin 
             let closure_env = Mlvalues.make_env (!extra_args + 3) in 
-            Mlvalues.set_field closure_env 0 (Mlvalues.val_long (!pc - 4)); (* -4 car avec take_argument on a incr pc *)
-            Mlvalues.set_field closure_env 1 !env;
-            for i = 2 to !extra_args + 1 do 
+            Mlvalues.set_field closure_env 0 !env;
+            for i = 1 to !extra_args do 
               Mlvalues.set_field closure_env i (pop_stack ())
             done;
             acc := Mlvalues.make_closure (!pc - 4) closure_env; (* -4 car avec take_argument on a incr pc *)
@@ -239,9 +238,8 @@ let interp code =
       | 43 (* CLOSURE *) -> let n = take_argument code in
         if n > 0 then push_stack (!acc);
         let addr = take_argument code in
-        let closure_env = Mlvalues.make_env (n + 1) in
-        Mlvalues.set_field closure_env 0 (Mlvalues.val_long (addr)); 
-        for i = 1 to n do (* c'est bien n et pas n-1 *)
+        let closure_env = Mlvalues.make_env n in
+        for i = 0 to n-1 do 
           Mlvalues.set_field closure_env i (pop_stack ()) 
         done;
         acc := Mlvalues.make_closure addr closure_env
@@ -252,20 +250,30 @@ let interp code =
         let o = take_argument code in
         if v > 0 then push_stack !acc;
         let closure_size = (2 * f) - 1 + v in
-        let closure = Mlvalues.make_block Mlvalues.closure_tag closure_size in
-        acc := closure;
-        Mlvalues.set_field !acc 0 (Mlvalues.val_codeptr o);
+        (* on créer l'env de la closure *)
+        let closure_env = Mlvalues.make_env closure_size in
+        Mlvalues.set_field closure_env 0 (Mlvalues.val_long o); (* field0 = o *)
+        (* on met les infixe tag *)
+        print_string "cc\n";
         for i = 1 to f-1 do 
-          Mlvalues.set_field !acc (2 * i - 1) (Mlvalues.make_block Mlvalues.infix_tag (2 * i));
-          Mlvalues.set_field !acc (2 * i - 1) (Mlvalues.val_long ((take_argument code) - i - 2))
+          Mlvalues.set_field closure_env (2 * i - 1) (Mlvalues.make_block Mlvalues.infix_tag (2 * i));
+          Mlvalues.set_field closure_env (2 * i) (Mlvalues.val_long ((take_argument code)))
         done;
-        for i = 1 to v-1 do 
-          Mlvalues.set_field !acc (i + 2 * f - 1) (pop_stack ()) 
+        print_string "cc2\n";
+        (* on depile v elems dans la closure *)
+        for i = 0 to v-1 do
+          Mlvalues.set_field closure_env (i + 2 * f - 1) (pop_stack ())
         done;
+        print_string "cc3\n";
+        (* on crée la closure sur l'acc avec closureenv *)
+        acc := Mlvalues.make_closure o closure_env;
         push_stack !acc;
-        for i = 1 to f-1 do 
-          push_stack (Mlvalues.get_field !acc (2 * i)) 
-        done
+        (* on push les infixe tags *)
+        print_string "cc4\n";
+        for i = 1 to f - 1 do 
+          push_stack (Mlvalues.get_field !acc (2*i))
+        done;
+
       | 45 (* OFFSETCLOSUREM2 *) -> 
         acc := Mlvalues.val_long (Mlvalues.long_val !env - 2)
       | 46 (* OFFSETCLOSURE0 *) -> 
@@ -464,7 +472,9 @@ let interp code =
       | 100 (* CONST1 *) -> acc := Mlvalues.val_long 1
       | 101 (* CONST2 *) -> acc := Mlvalues.val_long 2
       | 102 (* CONST3 *) -> acc := Mlvalues.val_long 3
-      | 103 (* CONSTINT *) -> let n = take_argument code in 
+      | 103 (* CONSTINT *) -> 
+        print_string "COUCOU\n";
+        let n = take_argument code in 
         acc := Mlvalues.val_long n
       | 104 (* PUSHCONST0 *) -> push_stack (!acc);
         acc := (Mlvalues.val_long 0)
