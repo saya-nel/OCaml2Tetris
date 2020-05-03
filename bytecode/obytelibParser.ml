@@ -307,8 +307,6 @@ let () =
   (* serialize le code sous forme ["instr1 arg1 arg2"; "instr2"; "instr3 arg1"] etc *)
   let with_args = instr_string_with_args code in
 
-  List.iter (printf "%s ") with_args;
-
   (* met à jour les indexs des labels *)
   let replaced = replace_labels_indexes with_args in
 

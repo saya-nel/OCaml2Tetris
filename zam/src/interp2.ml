@@ -1,5 +1,3 @@
-let debug = true
-
 let stack_size = 1024
 
 let pc = ref 0
@@ -11,7 +9,7 @@ let stack = Array.make stack_size (Mlvalues.val_long 0)
 let acc = ref (Mlvalues.val_long 0)
 let env = ref (Mlvalues.val_long 0)
 
-let global = ref (Mlvalues.make_block 0 40)
+let global = ref (Mlvalues.make_block 0 20)
 
 let trap_sp = ref 0
 
@@ -28,8 +26,6 @@ let take_argument code =
   code.(!pc)
 
 let rec debug_print_block block =
-  if debug then 
-  begin
   print_string "(block, size : ";
   print_int (Mlvalues.size (Mlvalues.ptr_val block));
   print_string ", tag : ";
@@ -45,11 +41,8 @@ let rec debug_print_block block =
     print_string " | "
   done;
   print_newline ()
-  end
 
 let debug_print_state () = 
-  if debug then 
-  begin
   print_newline ();
   print_string " pc: "; 
   print_int (!pc);
@@ -68,15 +61,12 @@ let debug_print_state () =
   print_string ", extra args: ";
   print_int (!extra_args);
   print_newline ()
-  end
 (* print_string " global: ";
    if Mlvalues.is_ptr (!global) then
    debug_print_block (!global);
    print_newline (); *)
 
 let debug_print_stack () =
-  if debug then 
-  begin
   print_newline ();
   print_string "stack :";
   print_newline ();
@@ -85,7 +75,7 @@ let debug_print_stack () =
     print_string " | "
   done;
   print_newline ()
-  end
+
 
 let interp code =
   sp := 0;
@@ -241,12 +231,10 @@ let interp code =
         let addr = take_argument code in
         let closure_env = Mlvalues.make_env (n + 1) in
         Mlvalues.set_field closure_env 0 (Mlvalues.val_long (addr)); 
-        for i = 1 to n do (* c'est bien n et pas n-1 *)
-          Mlvalues.set_field closure_env i (pop_stack ()) 
-        done;
-        acc := Mlvalues.make_closure addr closure_env
+        for i = 1 to n - 1 do Mlvalues.set_field closure_env i (pop_stack ()) done;
+        acc := Mlvalues.make_closure (addr) closure_env
       | 44 (* CLOSUREREC *) -> 
-      (* source : https://github.com/stevenvar/OMicroB/blob/master/src/byterun/vm/interp.c#L768 *)
+        (* source : https://github.com/stevenvar/OMicroB/blob/master/src/byterun/vm/interp.c#L768 *)
         let f = take_argument code in
         let v = take_argument code in
         let o = take_argument code in
@@ -297,18 +285,14 @@ let interp code =
         let p = take_argument code in
         let g = Mlvalues.get_field (!global) n in
         acc := Mlvalues.get_field g p
-      
       | 56 (* PUSHGETGLOBALFIELD *) -> push_stack (!acc);
         let n = take_argument code in
         let p = take_argument code in
         let g = Mlvalues.get_field (!global) n in
         acc := Mlvalues.get_field g p
-      
-
       | 57 (* SETGLOBAL *) -> let n = take_argument code in
         Mlvalues.set_field (!global) n (!acc);
         acc := Mlvalues.unit
-      
       | 58 (* ATOM0 *) -> acc := Mlvalues.make_block 0 0
       | 59 (* ATOM *) -> let tag = take_argument code in
         acc := Mlvalues.make_block tag 0
@@ -383,13 +367,13 @@ let interp code =
         acc := Mlvalues.unit
       | 84 (* BRANCH *) -> let n = take_argument code in 
         (* assert (n < Array.length code); *)
-        pc := n - 1 (* (!pc) + n - 2 *) (* - 2 pour enlever incr d'apres + take_argument incr*)
+        pc := (!pc) + n - 2 (* - 2 pour enlever incr d'apres + take_argument incr*)
       | 85 (* BRANCHIF *) -> let n = take_argument code in 
         (* assert (n < Array.length code); *)
-        if Mlvalues.long_val (!acc) = 1 then pc := n - 1 (* (!pc) + n - 2 *) (* - 2 pour enlever incr d'apres + take_argument incr*) (* -3 ?? *)
+        if Mlvalues.long_val (!acc) = 1 then pc := (!pc) + n - 2 (* - 2 pour enlever incr d'apres + take_argument incr*)
       | 86 (* BRANCHIFNOT *) -> let n = take_argument code in 
         (* assert (n < Array.length code); *)
-        if Mlvalues.long_val (!acc) = 0 then pc := n - 1 (* (!pc) + n - 3 *) (* - 2 pour enlever incr d'apres + take_argument incr*) (* -3 ?? *)
+        if Mlvalues.long_val (!acc) = 0 then pc := (!pc) + n - 2 (* - 2 pour enlever incr d'apres + take_argument incr*)
 
       (* SWITCH *)
 
@@ -417,49 +401,15 @@ let interp code =
           env := pop_stack ();
           extra_args := Mlvalues.long_val (pop_stack ())
         end
-      | 92 (* CHECK-SIGNALS *) -> print_string "CHECK-SIGNALS"
-      | 93 (* C-CALL1 *) ->
 
-         (*** placer dans le fichier source (.ml):       ***)
-         (*** external print_int : int -> unit = "fake0" ***)
-         let p = take_argument code in
-         push_stack (!env);
-          (match p with
-           | 0 -> print_int (Mlvalues.long_val !acc); push_stack Mlvalues.unit
-           (* indice de la primitive -> code de la primitive *)
-           );
-         let _ = pop_stack () in ()
-      | 94 (* C-CALL2 *) -> 
-         let p = take_argument code in
-         let x = pop_stack () in
-         push_stack (!env);
-         (* (match p with ...) *)
-         for i = 0 to 2 do let _ = pop_stack () in () done
-      | 95 (* C-CALL3 *) ->
-         let p = take_argument code in
-         let x1 = pop_stack () in
-         let x2 = pop_stack () in   
-         push_stack (!env);
-         (* (match p with ...) *)      
-         for i = 0 to 3 do let _ = pop_stack () in () done
-      | 96 (* C-CALL4 *) -> 
-         let p = take_argument code in
-         let x1 = pop_stack () in
-         let x2 = pop_stack () in 
-         let x3 = pop_stack () in   
-         push_stack (!env);
-         (* (match p with ...) *)      
-         for i = 0 to 4 do let _ = pop_stack () in () done
-      | 97 (* C-CALL5 *) -> 
-         let p = take_argument code in
-         let x1 = pop_stack () in
-         let x2 = pop_stack () in 
-         let x3 = pop_stack () in   
-         let x4 = pop_stack () in   
-         push_stack (!env);
-         (* (match p with ...) *)      
-         for i = 0 to 4 do let _ = pop_stack () in () done
-      | 98 (* C-CALLN *) -> (* TODO *) ()
+      (* CHECK-SIGNALS *)
+      (* C-CALL1 *)
+      (* C-CALL2 *)
+      (* C-CALL3 *)
+      (* C-CALL4 *)
+      (* C-CALL5 *)
+      (* C-CALLN *)
+
       | 99  (* CONST0 *) -> acc := Mlvalues.val_long 0
       | 100 (* CONST1 *) -> acc := Mlvalues.val_long 1
       | 101 (* CONST2 *) -> acc := Mlvalues.val_long 2
@@ -508,36 +458,36 @@ let interp code =
       | 131 (* BEQ *) ->
         let v = take_argument code in
         let ofs = take_argument code in
-        if  Prims.compare_imm (Mlvalues.val_long v) (!acc) = 0 then pc := ofs - 1
+        if  Prims.compare_imm (Mlvalues.val_long v) (!acc) = 0 then pc := (!pc) + ofs - 1
       | 132 (* BNEQ *) -> 
         let v = take_argument code in
         let ofs = take_argument code in
-        if Prims.compare_imm (Mlvalues.val_long v) (!acc) <> 0 then pc := ofs - 1 (* pc := (!pc) + ofs - 1 *)
+        if Prims.compare_imm (Mlvalues.val_long v) (!acc) <> 0 then pc := (!pc) + ofs - 1
       | 133 (* BLTINT *) ->
         let v = take_argument code in
         let ofs = take_argument code in
-        if Prims.compare_imm (Mlvalues.val_long v) (!acc) < 0 then pc := ofs - 1
+        if Prims.compare_imm (Mlvalues.val_long v) (!acc) < 0 then pc := (!pc) + ofs - 1
       | 134 (* BLEINT *) ->
         let v = take_argument code in
         let ofs = take_argument code in
-        if Prims.compare_imm (Mlvalues.val_long v) (!acc) <= 0 then pc := ofs - 1
+        if Prims.compare_imm (Mlvalues.val_long v) (!acc) <= 0 then pc := (!pc) + ofs - 1
       | 135 (* BGTINT *) ->
         let v = take_argument code in
         let ofs = take_argument code in
-        if Prims.compare_imm (Mlvalues.val_long v) (!acc) > 0 then pc := ofs - 1
+        if Prims.compare_imm (Mlvalues.val_long v) (!acc) > 0 then pc := (!pc) + ofs - 1
       | 136 (* BGEINT *) ->
         let v = take_argument code in
         let ofs = take_argument code in
-        if Prims.compare_imm (Mlvalues.val_long v) (!acc) >= 0 then pc := ofs - 1
+        if Prims.compare_imm (Mlvalues.val_long v) (!acc) >= 0 then pc := (!pc) + ofs - 1
       | 137 (* ULTINT *) -> acc := Prims.ultint (!acc) (pop_stack ()) 
       | 138 (* UGEINT *) -> acc := Prims.ugeint (!acc) (pop_stack ())
       | 139 (* BULTINT *) -> let v = take_argument code in 
         let ofs = take_argument code in
-        if Mlvalues.long_val (Prims.ultint (Mlvalues.val_long v) (!acc)) = 1 then pc := ofs - 1
+        if Mlvalues.long_val (Prims.ultint (Mlvalues.val_long v) (!acc)) = 1 then pc := (!pc) + ofs - 1
 
       | 140 (* BUGEINT *) -> let v = take_argument code in 
         let ofs = take_argument code in
-        if Mlvalues.long_val (Prims.ugeint (Mlvalues.val_long v) (!acc)) = 1 then pc := ofs - 1
+        if Mlvalues.long_val (Prims.ugeint (Mlvalues.val_long v) (!acc)) = 1 then pc := (!pc) + ofs - 1
       (* GETPUBMET *)
       (* GETDYNMET *)
 
