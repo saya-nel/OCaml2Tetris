@@ -272,7 +272,7 @@ let interp code =
         print_string "cc4\n";
         for i = 1 to f - 1 do 
           push_stack (Mlvalues.get_field !acc (2*i))
-        done;
+        done
 
       | 45 (* OFFSETCLOSUREM2 *) -> 
         acc := Mlvalues.val_long (Mlvalues.long_val !env - 2)

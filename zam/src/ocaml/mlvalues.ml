@@ -24,40 +24,39 @@ let is_ptr (v : value) : bool =
   | P _ -> true | _ -> false 
 
 let size (b : ptr) = 
-  Array.length b - 2 
+  (long_val b.(0)) lsr 8
 
 let tag (b : ptr) = 
-  b.(0)
+   val_long ((long_val b.(0)) land 255)
 
 let unit = val_long 0
 
 let make_block (tag : long) (sz : long) =
-  (* assert (tag >= 0 && sz >= 0); *)
-  let a = Array.make (sz + 2) (val_long 0) in
-  a.(0) <- val_long tag;
-  a.(1) <- val_long 0; (* color *)
+  let a = Array.make (sz + 1) (val_long 0) in
+  (* la taille du bloc est stockée dans la partie haute du header *)
+  a.(0) <- val_long (tag + (sz lsl 8));
   val_ptr a
 
 let get_field (v : value) (i : int) =
-  (ptr_val v).(i+2)
+  (ptr_val v).(i+1)
 
 let set_field (v : value) (i : int) (x : value) = 
-  (ptr_val v).(i+2) <- x
+  (ptr_val v).(i+1) <- x
 
 let get_bytes (v : value) (i : int) = 
   (* à revoir : caser 2 chars par mlvalues (2 * 1 octet) ? *)
-  (ptr_val v).(i+2)
+  (ptr_val v).(i+1)
 
 let set_bytes (v : value) (i : int) (x : value) =  (* à revoir. cf get_bytes. *)
-  (ptr_val v).(i+2) <- x
+  (ptr_val v).(i+1) <- x
 
 
-let closure_tag = 1 (* ??? *)
-let env_tag = 2
-let infix_tag = 3
+let closure_tag = 247
+let env_tag = 2 (* quel est le bon numéro ??? *)
+let infix_tag = 249
 
 let make_closure pc env = 
-  val_ptr [|val_long closure_tag; val_long 0;val_long pc;env|]   (* ? *)
+  val_ptr [|val_long closure_tag;val_long pc;env|]   (* ? *)
 
 let make_env sz =
   make_block env_tag sz

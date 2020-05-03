@@ -25,39 +25,40 @@ let is_ptr (v : value) : bool =
   v < (- 16384)
 
 let size (b : ptr) = 
-  Array.length (# b) - 2 
+  (* a priori, problème si le bloc a taille >= 128 *)
+  (# b).(0) / 256
 
 let tag (b : ptr) = 
-  (# b).(0)
+  (* a priori, problème si le bloc a taille >= 128 *)
+  (# b).(0) land 255
 
 let unit = 0
 
 let make_block (tag : long) (sz : long) =
-  (* assert (tag >= 0 && sz >= 0); *)
-  let a = Array.make (sz + 2) 0 in
-  a.(0) <- val_long tag;
-  a.(1) <- val_long 0; (* color *)
+  let a = Array.make (sz + 1) 0 in
+  (* la taille du bloc est stocké dans la partie haute du header *)
+  a.(0) <- val_long (tag + 256 * sz);
   val_ptr (# a)
 
 let get_field (v : value) (i : int) =
-  (#(ptr_val v)).(i+2)
+  (#(ptr_val v)).(i+1)
 
 let set_field (v : value) (i : int) (x : value) = 
-  (#(ptr_val v)).(i+2) <- x
+  (#(ptr_val v)).(i+1) <- x
 
 let get_bytes (v : value) (i : int) = 
-  (* à revoir : caser 2 chars par mlvalues (2 * 1 octet) ? *)
-  (#(ptr_val v)).(i+2)
+  (* ici, on place un char par mot *)
+  (#(ptr_val v)).(i+1)
 
-let set_bytes (v : value) (i : int) (x : value) =  (* à revoir. cf get_bytes. *)
-  (#(ptr_val v)).(i+2) <- x
+let set_bytes (v : value) (i : int) (x : value) =  (* cf get_bytes. *)
+  (#(ptr_val v)).(i+1) <- x
 
 
-let closure_tag = 1 (* ??? *)
-let env_tag = 2
-let infix_tag = 3
+let closure_tag = 247
+let env_tag = 2 (* quel est le bon numéro ??? *)
+let infix_tag = 249
 let make_closure pc env = 
-  val_ptr (# [|val_long closure_tag; val_long 0;val_long pc;env|])   (* ? *)
+  val_ptr (# [|val_long closure_tag;val_long pc;env|])   (* ? *)
 
 let make_env sz =
   make_block env_tag sz
