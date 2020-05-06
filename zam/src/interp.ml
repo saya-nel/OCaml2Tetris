@@ -47,6 +47,23 @@ let rec debug_print_block block =
       print_newline ()
     end
 
+let debug_print_stack () =
+  if debug then 
+    begin
+      print_newline ();
+      print_string "stack :";
+      print_newline ();
+      for i = 0 to !sp - 1 do  
+        if Mlvalues.is_ptr stack.(i) then 
+          debug_print_block (stack.(i))
+        else begin
+          print_int (Mlvalues.long_val stack.(i)) 
+        end;
+        print_string " | " 
+      done;
+      print_newline ()
+    end
+
 let debug_print_state () = 
   if debug then 
     begin
@@ -73,19 +90,6 @@ let debug_print_state () =
    if Mlvalues.is_ptr (!global) then
    debug_print_block (!global);
    print_newline (); *)
-
-let debug_print_stack () =
-  if debug then 
-    begin
-      print_newline ();
-      print_string "stack :";
-      print_newline ();
-      for i = 0 to !sp - 1 do  
-        print_int (Mlvalues.long_val stack.(i));
-        print_string " | "
-      done;
-      print_newline ()
-    end
 
 let interp code =
   sp := 0;
@@ -249,29 +253,24 @@ let interp code =
         let v = take_argument code in
         let o = take_argument code in
         if v > 0 then push_stack !acc;
-        let closure_size = (2 * f) - 1 + v in
+        let closure_size = (2 * f) - 2 + v in (* - 2 car on met pas le pointeur dans env *)
         (* on créer l'env de la closure *)
         let closure_env = Mlvalues.make_env closure_size in
-        Mlvalues.set_field closure_env 0 (Mlvalues.val_long o); (* field0 = o *)
         (* on met les infixe tag *)
-        print_string "cc\n";
         for i = 1 to f-1 do 
-          Mlvalues.set_field closure_env (2 * i - 1) (Mlvalues.make_block Mlvalues.infix_tag (2 * i));
-          Mlvalues.set_field closure_env (2 * i) (Mlvalues.val_long ((take_argument code)))
+          Mlvalues.set_field closure_env (2 * i - 2) (Mlvalues.make_header Mlvalues.infix_tag (2 * i));
+          Mlvalues.set_field closure_env (2 * i - 1) (Mlvalues.val_long (take_argument code))
         done;
-        print_string "cc2\n";
         (* on depile v elems dans la closure *)
         for i = 0 to v-1 do
           Mlvalues.set_field closure_env (i + 2 * f - 1) (pop_stack ())
         done;
-        print_string "cc3\n";
         (* on crée la closure sur l'acc avec closureenv *)
         acc := Mlvalues.make_closure o closure_env;
         push_stack !acc;
         (* on push les infixe tags *)
-        print_string "cc4\n";
         for i = 1 to f - 1 do 
-          push_stack (Mlvalues.get_field !acc (2*i))
+          push_stack (Mlvalues.get_field (Mlvalues.env_closure !acc) (2*i-1))
         done
 
       | 45 (* OFFSETCLOSUREM2 *) -> 
@@ -473,7 +472,6 @@ let interp code =
       | 101 (* CONST2 *) -> acc := Mlvalues.val_long 2
       | 102 (* CONST3 *) -> acc := Mlvalues.val_long 3
       | 103 (* CONSTINT *) -> 
-        print_string "COUCOU\n";
         let n = take_argument code in 
         acc := Mlvalues.val_long n
       | 104 (* PUSHCONST0 *) -> push_stack (!acc);
