@@ -26,42 +26,59 @@ let is_ptr (v : value) : bool =
 
 let size (b : ptr) = 
   (* a priori, problème si le bloc a taille >= 128 *)
-  (# b).(0) / 256
+  Alloc.heap.(b) / 256
+(* (# b).(0) / 256 *)
 
 let tag (b : ptr) = 
   (* a priori, problème si le bloc a taille >= 128 *)
-  (# b).(0) land 255
+  Alloc.heap.(b) land 255
+(* (# b).(0) land 255 *)
 
 let unit = 0
 
+let make_header (tag : long) (sz : long) =
+  val_long (tag + 256 * sz)
+
 let make_block (tag : long) (sz : long) =
-  let a = Array.make (sz + 1) 0 in
-  (* la taille du bloc est stocké dans la partie haute du header *)
-  a.(0) <- val_long (tag + 256 * sz);
-  val_ptr (# a)
+  let a = Alloc.alloc (sz + 1) in
+  Alloc.heap.(a) := val_long (tag + 256 * sz);
+  val_ptr a
+(* let a = Array.make (sz + 1) 0 in
+   a.(0) <- val_long (tag + 256 * sz);
+   val_ptr (# a) *)
 
 let get_field (v : value) (i : int) =
-  (#(ptr_val v)).(i+1)
+  Alloc.heap.((ptr_val v) + i)
+(* (#(ptr_val v)).(i+1) *)
 
 let set_field (v : value) (i : int) (x : value) = 
-  (#(ptr_val v)).(i+1) <- x
+  Alloc.heap.((ptr_val v) + i) <- x
+(* (#(ptr_val v)).(i+1) <- x *)
 
 let get_bytes (v : value) (i : int) = 
   (* ici, on place un char par mot *)
-  (#(ptr_val v)).(i+1)
+  Alloc.heap.((ptr_val v) + i + 1)
+(* (#(ptr_val v)).(i+1) *)
 
 let set_bytes (v : value) (i : int) (x : value) =  (* cf get_bytes. *)
-  (#(ptr_val v)).(i+1) <- x
-
+  Alloc.heap.((ptr_val v) + i + 1) <- x
+(* (#(ptr_val v)).(i+1) <- x *)
 
 let closure_tag = 247
 let env_tag = 2 (* quel est le bon numéro ??? *)
 let infix_tag = 249
-let make_closure pc env = 
-  val_ptr (# [|val_long closure_tag;val_long pc;env|])   (* ? *)
 
-let make_env sz =
-  make_block env_tag sz
+let make_closure pc size =
+  let res = make_block closure_tag size in
+  set_field res 0 pc;
+  res
+
+(* 
+  let make_closure pc env = 
+  val_ptr (# [|val_long closure_tag;val_long pc;env|]) 
+
+   let make_env sz =
+   make_block env_tag sz *)
 
 let addr_closure (c : value) = get_field c 0
 let env_closure (c : value) = get_field c 1

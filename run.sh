@@ -10,7 +10,7 @@ MINI_ML="mini-ml"
 ROOT="../"
 STDLIB="stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml"
 ZAM_INPUT="../zam/input.ml"
-ZAM_SRC="../zam/src/mlvalues.ml ../zam/src/prims.ml \
+ZAM_SRC=" ../zam/src/alloc.ml ../zam/src/mlvalues.ml ../zam/src/prims.ml \
          ../zam/src/interp.ml ../zam/src/main.ml"
 
 if [ $# -eq 0 ]
