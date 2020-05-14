@@ -4,31 +4,21 @@
 (***  toute valeur >= (-16384) est un entier ***)
 (***********************************************)
 
-let isint = function
-| Mlvalues.I _ -> Mlvalues.val_long 1
-| _ -> Mlvalues.val_long 0
-
+let isint v1 = if v1 >= 0 || v1 <= -15000 (* à revoir *)
+       then 1 else 0
 (*** opérations arithmétiques ***)
 
 let negint (v : Mlvalues.value) : Mlvalues.value = 
-	match v with 
-	| Mlvalues.I n -> Mlvalues.I (-n) 
-	| _ -> assert false
+	(-v) 
 
 let addint (v1 : Mlvalues.value) (v2 : Mlvalues.value) : Mlvalues.value = 
-	match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  Mlvalues.I (n1+n2)
-	| _ -> assert false
+	(v1+v2)
 
 let subint v1 v2 = 
-     match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  Mlvalues.I (n1-n2)
-	| _ -> assert false
+	 (v1-v2)
 
 let mulint v1 v2 =
-	match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  Mlvalues.I (n1*n2)
-	| _ -> assert false
+   (v1*v2)
 
 (*** division d'après la doc OCaml : (-x) / y = x / (-y) = -(x / y). ***)
 (*** (/) 17 2       ~>  8  *)
@@ -48,9 +38,7 @@ let rout_div v1 v2 =
 	else (if v2 >= 0 then - (div (- v1) v2) else (div (- v1) (- v2)))
 
 let divint v1 v2= 	
-    match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  Mlvalues.I (rout_div n1 n2)
-	| _ -> assert false
+    (rout_div v1 v2)
 
 (*** modulo d'après la doc OCaml : `((mod) x y) < 0` si et seulement si `x < 0` ***)
 (*** (mod) 11 3        ~>  2 *)
@@ -67,35 +55,24 @@ let rec rout_mod v1 v2 = (* dans un premier temps, on suppose que v2 >= 0 ***)
   if v1 < 0 then - (modulo (- v1) (abs v2)) else (modulo v1 (abs v2))
 
 let modint v1 v2 =  
-   match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  Mlvalues.I (rout_mod n1 n2)
-	| _ -> assert false
-
+  (rout_mod v1 v2)
 
 (*** opérations logiques ***)
 
 let andint v1 v2 = 
-	match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  Mlvalues.I (if n1 <> 0 && n2 <> 0 then 1 else 0)
-	| _ -> assert false
+  (if v1 <> 0 && v2 <> 0 then 1 else 0)
 	
 
 let orint v1 v2 = 
-	match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  Mlvalues.I (if n1 <> 0 || n2 <> 0 then 1 else 0)
-	| _ -> assert false
+	(if v1 <> 0 || v2 <> 0 then 1 else 0)
 	
 
 let xorint v1 v2 = 
-	match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  Mlvalues.I (if (n1 <> 0 && n2 = 0) || (n1 <> 0 && n2 = 0) then 1 else 0)
-	| _ -> assert false
+	(if (v1 <> 0 && v2 = 0) || (v1 <> 0 && v2 = 0) then 1 else 0)
 	
 
 let bnot v =
-	match v with 
-	| Mlvalues.I n -> Mlvalues.I (if n = 0 then 1 else 0) 
-	| _ -> assert false 
+	 (if v = 0 then 1 else 0) 
 	
 
 (*** opérations de décalage ***)
@@ -107,9 +84,7 @@ let rec lslint_aux n dep =
   
 
 let rec lslint v dep =
-	match v,dep with 
-	| Mlvalues.I n,Mlvalues.I d -> Mlvalues.I (lslint_aux n d)
-	| _ -> assert false 
+	(lslint_aux v dep)
   
 
 let rec lsrint_aux n dep =
@@ -118,9 +93,8 @@ let rec lsrint_aux n dep =
   
 
 let rec lsrint v dep =
-match v,dep with 
-	| Mlvalues.I n,Mlvalues.I d -> Mlvalues.I (lsrint_aux n d)
-	| _ -> assert false 
+(lsrint_aux v dep)
+
 
 let asrint v1 v2 = lsrint v1 v2 
 
@@ -128,49 +102,37 @@ let asrint v1 v2 = lsrint v1 v2
 
 (*** égalité physique ***)
 let eq v1 v2 = 
-	match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  Mlvalues.I (if n1 = n2 then 1 else 0)
-	| _ -> assert false
+  (if v1 = v2 then 1 else 0)
 
 
 (*** différence physique ***)
 let neq v1 v2 = 
-		match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  Mlvalues.I (if n1 <> n2 then 1 else 0)
-	| _ -> assert false
+  (if v1 <> v2 then 1 else 0)
+
 	
 
 let ltint v1 v2 = 
-			match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  Mlvalues.I (	if n1 < n2 then 1 else 0)
-	| _ -> assert false
+  (if v1 < v2 then 1 else 0)
+
 
 
 let leint v1 v2 = 
-				match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  Mlvalues.I (if n1 <= n2 then 1 else 0)
-	| _ -> assert false
+  (if v1 <= v2 then 1 else 0)
 	
 
 let gtint v1 v2 = 
-					match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  Mlvalues.I (if n1 < n2 then 1 else 0)
-	| _ -> assert false
+  (if v1 > v2 then 1 else 0)
 	
 	
 
 let geint v1 v2 = 
-					match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  Mlvalues.I (if n1 >= n2 then 1 else 0)
-	| _ -> assert false
+  (if v1 >= v2 then 1 else 0)
 	
 
 	
 
 let compare_imm v1 v2 : int =
-	match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  if n1 < n2 then -1 else if n1 > n2 then 1 else 0
-	| _ -> assert false
+	if v1 < v2 then -1 else if v1 > v2 then 1 else 0
 	
 
   
@@ -178,18 +140,14 @@ let compare_imm v1 v2 : int =
 (*** comparaison (<) non signée               ***)
 (*** v1 < 0 && v2 >= 0 => (ultint v1 v2) ~> 0 ***)
 let ultint v1 v2 =
-   match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  (if n1 < 0 then (if n2 < 0 then gtint v1 v2 else Mlvalues.I (0))
-	else if n2 < 0 then Mlvalues.I (0) else ltint v1 v2)
-	| _ -> assert false
+    (if v1 < 0 then (if v2 < 0 then gtint v1 v2 else 0)
+	else if v2 < 0 then 0 else ltint v1 v2)
 	
 
 (*** comparaison (>=) non signée              ***)
 (*** v1 < 0 && v2 >= 0 => (ugeint v1 v2) ~> 1 ***)
 let ugeint v1 v2 =
-			match v1,v2 with
-	| Mlvalues.I n1,  Mlvalues.I n2 ->  (if n1 < 0 then (if n2 < 0 then leint v1 v2 else Mlvalues.I (1))  
-	else if n2 < 0 then Mlvalues.I (1) else geint v1 v2)
-	| _ -> assert false
+   (if v1 < 0 then (if v2 < 0 then leint v1 v2 else 1)  
+	else if v2 < 0 then 1 else geint v1 v2)
 	
 
