@@ -81,7 +81,7 @@ let make_closure pc size =
    make_block env_tag sz *)
 
 let addr_closure (c : value) = get_field c 0
-let env_closure (c : value) = get_field c 1
+let env_closure (c : value) = val_long ((long_val c) + 2)
 
 
 let val_codeptr o = val_long o (* ??? *)
