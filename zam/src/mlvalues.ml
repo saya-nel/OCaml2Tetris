@@ -41,18 +41,18 @@ let make_header (tag : long) (sz : long) =
 
 let make_block (tag : long) (sz : long) =
   let a = Alloc.alloc (sz + 1) in
-  Alloc.heap.(a) := val_long (tag + 256 * sz);
+  Alloc.heap.(a) <- val_long (tag + 256 * sz);
   val_ptr a
 (* let a = Array.make (sz + 1) 0 in
    a.(0) <- val_long (tag + 256 * sz);
    val_ptr (# a) *)
 
 let get_field (v : value) (i : int) =
-  Alloc.heap.((ptr_val v) + i)
+  Alloc.heap.((ptr_val v) + i + 1)
 (* (#(ptr_val v)).(i+1) *)
 
 let set_field (v : value) (i : int) (x : value) = 
-  Alloc.heap.((ptr_val v) + i) <- x
+  Alloc.heap.((ptr_val v) + i + 1) <- x
 (* (#(ptr_val v)).(i+1) <- x *)
 
 let get_bytes (v : value) (i : int) = 
