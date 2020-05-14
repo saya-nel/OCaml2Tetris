@@ -238,16 +238,6 @@ let interp code =
             env := pop_stack();
             extra_args := Mlvalues.long_val (pop_stack ())
           end
-      (* let closure_env = Mlvalues.make_env (!extra_args + 3) in 
-         Mlvalues.set_field closure_env 0 !env;
-         for i = 1 to !extra_args do 
-         Mlvalues.set_field closure_env i (pop_stack ())
-         done;
-         acc := Mlvalues.make_closure (!pc - 4) closure_env; 
-         pc := Mlvalues.long_val (pop_stack ()) - 1;
-         env := pop_stack ();
-         extra_args := Mlvalues.long_val (pop_stack ())  
-         end *)
       | 43 (* CLOSURE *) -> let n = take_argument code in
         if n > 0 then push_stack (!acc);
         let addr = take_argument code in
@@ -255,11 +245,6 @@ let interp code =
         for i = 1 to n - 1 do
           Mlvalues.set_field !acc i (pop_stack ())
         done
-      (* let closure_env = Mlvalues.make_env n in
-         for i = 0 to n-1 do 
-         Mlvalues.set_field closure_env i (pop_stack ()) 
-         done;
-         acc := Mlvalues.make_closure addr closure_env *)
       | 44 (* CLOSUREREC *) -> 
         (* source : https://github.com/stevenvar/OMicroB/blob/master/src/byterun/vm/interp.c#L768 *)
         let f = take_argument code in
@@ -277,41 +262,26 @@ let interp code =
         done;
         push_stack !acc;
         for i = 1 to f - 1 do
-          push_stack (Mlvalues.get_field (Mlvalues.env_closure !acc) (2 * i))
+          push_stack (Mlvalues.get_field (!acc) (2 * i))
         done
-      (* let closure_size = (2 * f) - 2 + v in 
-         let closure_env = Mlvalues.make_env closure_size in
-         for i = 1 to f-1 do 
-         Mlvalues.set_field closure_env (2 * i - 2) (Mlvalues.make_header Mlvalues.infix_tag (2 * i));
-         Mlvalues.set_field closure_env (2 * i - 1) (Mlvalues.val_long (take_argument code))
-         done;
-         for i = 0 to v-1 do
-         Mlvalues.set_field closure_env (i + 2 * f - 1) (pop_stack ())
-         done;
-         acc := Mlvalues.make_closure o closure_env;
-         push_stack !acc;
-         for i = 1 to f - 1 do 
-         push_stack (Mlvalues.get_field (Mlvalues.env_closure !acc) (2*i-1))
-         done *)
-
       | 45 (* OFFSETCLOSUREM2 *) -> 
-        acc := Mlvalues.val_long (Mlvalues.long_val !env - 2)
+        acc := Mlvalues.val_long (Mlvalues.long_val !env - 1)
       | 46 (* OFFSETCLOSURE0 *) -> 
         acc := !env
       | 47 (* OFFSETCLOSURE2 *) -> 
-        acc := Mlvalues.val_long (Mlvalues.long_val !env + 2)
+        acc := Mlvalues.val_long (Mlvalues.long_val !env + 1)
       | 48 (* OFFSETCLOSURE *) -> 
         let n = take_argument code in
         acc := Mlvalues.val_long (Mlvalues.long_val !env + n)
       | 49 (* PUSHOFFSETCLOSUREM2 *) -> 
         push_stack !acc;
-        acc := Mlvalues.val_long (Mlvalues.long_val !env - 2)
+        acc := Mlvalues.val_long (Mlvalues.long_val !env - 1)
       | 50 (* PUSHOFFSETCLOSURE0 *) -> 
         push_stack !acc;
         acc := !env
       | 51 (* PUSHOFFSETCLOSURE2 *) ->
         push_stack !acc;
-        acc := Mlvalues.val_long (Mlvalues.long_val !env + 2)
+        acc := Mlvalues.val_long (Mlvalues.long_val !env + 1)
       | 52 (* PUSHOFFSETCLOSURE *) -> 
         let n = take_argument code in
         push_stack !acc;
@@ -583,7 +553,7 @@ let interp code =
   print_string "fin programme :";
   print_newline ();
   debug_print_state ();
-  debug_print_stack ();
+  (* debug_print_stack (); *)
   print_newline ()
 
 
