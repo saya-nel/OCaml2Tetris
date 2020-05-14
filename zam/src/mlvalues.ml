@@ -40,6 +40,7 @@ let make_header (tag : long) (sz : long) =
   val_long (tag + 256 * sz)
 
 let make_block (tag : long) (sz : long) =
+  let sz = if sz = 0 then 1 else sz in
   let a = Alloc.alloc (sz + 1) in
   Alloc.heap.(a) <- val_long (tag + 256 * sz);
   val_ptr a
