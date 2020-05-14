@@ -65,7 +65,7 @@ let set_bytes (v : value) (i : int) (x : value) =  (* cf get_bytes. *)
 (* (#(ptr_val v)).(i+1) <- x *)
 
 let closure_tag = 247
-let env_tag = 2 (* quel est le bon numéro ??? *)
+let env_tag = 250 (* quel est le bon numéro ??? *)
 let infix_tag = 249
 
 let make_closure pc size =
