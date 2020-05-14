@@ -9,8 +9,8 @@ let isint v =
 
 (*** opérations arithmétiques ***)
 
-let negint (v : value) : value = (-v)
-let addint (v1 : value) (v2 : value) : value = v1 + v2 
+let negint v = (-v)
+let addint v1 v2 = v1 + v2 
 let subint v1 v2 = v1 - v2
 let mulint v1 v2 = (v1 * v2)
 
@@ -77,11 +77,11 @@ let asrint v1 v2 = lsrint v1 v2
 (*** opérations de comparaison ***)
 
 (*** égalité physique ***)
-let eq (v1 : value) (v2 : value) : value = 
+let eq v1 v2 = 
   if v1 = v2 then 1 else 0
 
 (*** différence physique ***)
-let neq (v1 : value) (v2 : value) : value = 
+let neq v1 v2 = 
   if v1 <> v2 then 1 else 0
 
 let ltint v1 v2 = 
