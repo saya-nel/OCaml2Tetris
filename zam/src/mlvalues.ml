@@ -1,6 +1,6 @@
 (* alloc définitions *)
 
-let heap_size = 3
+let heap_size = 100
 
 let from_space = Array.make heap_size 0
 let to_space = Array.make heap_size 0
@@ -67,6 +67,7 @@ let set_bytes (v : value) (i : int) (x : value) =  (* cf get_bytes. *)
 let closure_tag = 247
 let env_tag = 250 (* quel est le bon numéro ??? *)
 let infix_tag = 249
+let fwd_ptr_tag = 248
 
 let addr_closure (c : value) = get_field c 0
 let env_closure (c : value) = val_long ((long_val c) + 2)
@@ -76,16 +77,35 @@ let val_codeptr o = val_long o (* ??? *)
 
 
 
+(* registres de interp *)
+let stack_size = 1024
+let stack = Array.make stack_size (val_long 0)
+
+let acc = ref (val_long 0)
+let env = ref (val_long 0)
+
+
 
 (* ALLOC fonctions *)
 
 let heap_can_alloc size =
   (!heap_top) + size <= heap_size
 
+(* let move_addr value =
+   if is_ptr (!value) then (* val pointe vers un bloc *)
+    if tag (!value) == fwd_ptr_tag then (* le bloc pointé est un fwd *)
+      value := 
+    else 
+      begin
+        ()
+      end
+   else () *)
+
 (* lance le gc *)
 let run_gc () =
   print_string "lancement gc";
   print_newline ()
+
 
 (* Alloue si possible, sinon lance le GC puis alloue *)
 let alloc size = 
