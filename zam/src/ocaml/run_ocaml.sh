@@ -19,5 +19,5 @@ if [ $# -eq 0 ]
     # on retourne dans le dossier ocaml et execute zam
     cd zam/src/ocaml
     ./zam ../../input.cmo
-    rm zam ../mlvalues.cmo ../prims.cmo ../interp.cmo ../../input.cmo ../main.cmo mlvalues.cmi prims.cmi ../interp.cmi ../../input.cmi ../main.cmi
+    rm zam ../mlvalues.cmo ../prims.cmo ../interp.cmo ../../input.cmo ../main.cmo ../interp.cmi ../../input.cmi ../main.cmi
 fi
