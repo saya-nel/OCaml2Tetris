@@ -11,7 +11,7 @@ let stack = Array.make stack_size (Mlvalues.val_long 0)
 let acc = ref (Mlvalues.val_long 0)
 let env = ref (Mlvalues.val_long 0)
 
-let global = ref (Mlvalues.val_long 0) (* TODO *)
+let global = ref (Mlvalues.make_block 0 1)
 
 let trap_sp = ref 0
 
@@ -415,7 +415,7 @@ let interp code =
           env := pop_stack ();
           extra_args := Mlvalues.long_val (pop_stack ())
         end
-      | 92 (* CHECK-SIGNALS *) -> print_string "CHECK-SIGNALS"
+      | 92 (* CHECK-SIGNALS *) -> ()
       | 93 (* C-CALL1 *) ->
 
         (*** placer dans le fichier source (.ml):       ***)

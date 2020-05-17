@@ -1,6 +1,6 @@
 (* alloc définitions *)
 
-let heap_size = 100
+let heap_size = 3
 
 let from_space = Array.make heap_size 0
 let to_space = Array.make heap_size 0
@@ -89,14 +89,21 @@ let run_gc () =
 
 (* Alloue si possible, sinon lance le GC puis alloue *)
 let alloc size = 
+  print_string "try alloc ";
+  print_int size;
+  print_newline ();
   if heap_can_alloc size then
     begin
+      print_string "can alloc";
+      print_newline ();
       let res = heap_top in
       heap_top := (!heap_top) + size;
       !res  
     end
   else 
     begin
+      print_string "cant alloc";
+      print_newline ();
       run_gc ();
       if heap_can_alloc size then 
         begin
