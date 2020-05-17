@@ -5,7 +5,7 @@ let pc = ref 0
 let sp = ref 0
 let extra_args = ref 0 
 
-let global = ref (Mlvalues.make_block 0 10)
+let global = ref (Mlvalues.make_block 0 20)
 
 let trap_sp = ref 0
 
@@ -88,7 +88,7 @@ let debug_print_state () =
 let interp code =
   sp := 0;
   while !pc < Array.length code do
-    debug_print_state ();
+    (* debug_print_state (); *)
     begin
       match code.(!pc) with
       | 0 (* ACC0 *) -> Mlvalues.acc := Mlvalues.stack.((!sp)-1)

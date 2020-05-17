@@ -1,6 +1,7 @@
-let rec f x =
-  let y = (1,2) in
-  if x ==  0 then 42
-  else f (x-1)
-in 
-f 1000
+let r = ref (7,8) in
+
+let f x =
+  for i = 0 to 100 do
+    r := (i,i);
+  done
+in f
