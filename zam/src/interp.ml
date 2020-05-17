@@ -11,7 +11,7 @@ let stack = Array.make stack_size (Mlvalues.val_long 0)
 let acc = ref (Mlvalues.val_long 0)
 let env = ref (Mlvalues.val_long 0)
 
-let global = ref (Mlvalues.make_block 0 40)
+let global = ref (Mlvalues.val_long 0) (* TODO *)
 
 let trap_sp = ref 0
 

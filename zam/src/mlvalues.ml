@@ -1,3 +1,17 @@
+(* alloc définitions *)
+
+let heap_size = 100
+
+let from_space = Array.make heap_size 0
+let to_space = Array.make heap_size 0
+
+let heap_top = ref 0
+
+
+
+
+(* mlvalues sauf makeblock / makeclosure *)
+
 type value = int 
 type long = int
 type ptr = int
@@ -26,63 +40,89 @@ let is_ptr (v : value) : bool =
 
 let size (b : ptr) = 
   (* a priori, problème si le bloc a taille >= 128 *)
-  Alloc.heap.(b) / 256
-(* (# b).(0) / 256 *)
+  to_space.(b) / 256
 
 let tag (b : ptr) = 
   (* a priori, problème si le bloc a taille >= 128 *)
-  Alloc.heap.(b) land 255
-(* (# b).(0) land 255 *)
+  to_space.(b) land 255
 
 let unit = 0
 
 let make_header (tag : long) (sz : long) =
   val_long (tag + 256 * sz)
 
-let make_block (tag : long) (sz : long) =
-  let sz = if sz = 0 then 1 else sz in
-  let a = Alloc.alloc (sz + 1) in
-  Alloc.heap.(a) <- val_long (tag + 256 * sz);
-  val_ptr a
-(* let a = Array.make (sz + 1) 0 in
-   a.(0) <- val_long (tag + 256 * sz);
-   val_ptr (# a) *)
-
 let get_field (v : value) (i : int) =
-  Alloc.heap.((ptr_val v) + i + 1)
-(* (#(ptr_val v)).(i+1) *)
+  to_space.((ptr_val v) + i + 1)
 
 let set_field (v : value) (i : int) (x : value) = 
-  Alloc.heap.((ptr_val v) + i + 1) <- x
-(* (#(ptr_val v)).(i+1) <- x *)
+  to_space.((ptr_val v) + i + 1) <- x
 
 let get_bytes (v : value) (i : int) = 
   (* ici, on place un char par mot *)
-  Alloc.heap.((ptr_val v) + i + 1)
-(* (#(ptr_val v)).(i+1) *)
+  to_space.((ptr_val v) + i + 1)
 
 let set_bytes (v : value) (i : int) (x : value) =  (* cf get_bytes. *)
-  Alloc.heap.((ptr_val v) + i + 1) <- x
-(* (#(ptr_val v)).(i+1) <- x *)
+  to_space.((ptr_val v) + i + 1) <- x
 
 let closure_tag = 247
 let env_tag = 250 (* quel est le bon numéro ??? *)
 let infix_tag = 249
 
+let addr_closure (c : value) = get_field c 0
+let env_closure (c : value) = val_long ((long_val c) + 2)
+
+let val_codeptr o = val_long o (* ??? *)
+
+
+
+
+
+(* ALLOC fonctions *)
+
+let heap_can_alloc size =
+  (!heap_top) + size <= heap_size
+
+(* lance le gc *)
+let run_gc () =
+  print_string "lancement gc";
+  print_newline ()
+
+(* Alloue si possible, sinon lance le GC puis alloue *)
+let alloc size = 
+  if heap_can_alloc size then
+    begin
+      let res = heap_top in
+      heap_top := (!heap_top) + size;
+      !res  
+    end
+  else 
+    begin
+      run_gc ();
+      if heap_can_alloc size then 
+        begin
+          let res = heap_top in
+          heap_top := (!heap_top) + size;
+          !res  
+        end
+      else 
+        begin
+          print_string "plus de mémoire";
+          print_newline ();
+          -1
+        end
+    end
+
+
+
+(* mlvalues makebloc / makeclosure *)
+
+let make_block (tag : long) (sz : long) =
+  let sz = if sz = 0 then 1 else sz in
+  let a = alloc (sz + 1) in
+  to_space.(a) <- val_long (tag + 256 * sz);
+  val_ptr a
+
 let make_closure pc size =
   let res = make_block closure_tag size in
   set_field res 0 pc;
   res
-
-(* 
-  let make_closure pc env = 
-  val_ptr (# [|val_long closure_tag;val_long pc;env|]) 
-
-   let make_env sz =
-   make_block env_tag sz *)
-
-let addr_closure (c : value) = get_field c 0
-let env_closure (c : value) = val_long ((long_val c) + 2)
-
-
-let val_codeptr o = val_long o (* ??? *)
