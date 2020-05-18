@@ -1,13 +1,18 @@
 (* alloc définitions *)
 
-let heap_size = 100
+let global_size = 10  (* taille du segment des variables globales *)
+let heap_size = 100   (* taille d'un semi-space *)
 
-let from_space = ref (Array.make heap_size 0)
-let to_space = ref (Array.make heap_size 0)
+(* la mémoire est un grand tableau *)
+
+let ram = Array.make (global_size + heap_size * 2) 0
+
+(* segments mémoire *)
+
+let global_start = 0
+let from_space_start = ref global_size
+let to_space_start = ref (global_size + heap_size)
 let heap_top = ref 0
-
-
-
 
 (* mlvalues sauf makeblock / makeclosure *)
 
@@ -39,11 +44,11 @@ let is_ptr (v : value) : bool =
 
 let size (b : ptr) = 
   (* a priori, problème si le bloc a taille >= 128 *)
-  (!from_space).(b) / 256
+  ram.(!from_space_start+b) / 256
 
 let tag (b : ptr) = 
   (* a priori, problème si le bloc a taille >= 128 *)
-  (!from_space).(b) land 255
+  ram.(!from_space_start+b) land 255
 
 let unit = 0
 
@@ -51,17 +56,25 @@ let make_header (tag : long) (sz : long) =
   val_long (tag + 256 * sz)
 
 let get_field (v : value) (i : int) =
-  (!from_space).((ptr_val v) + i + 1)
+  ram.(!from_space_start + ptr_val v + i + 1)
 
 let set_field (v : value) (i : int) (x : value) = 
-  (!from_space).((ptr_val v) + i + 1) <- x
+  ram.(!from_space_start + ptr_val v + i + 1) <- x
 
 let get_bytes (v : value) (i : int) = 
   (* ici, on place  un char par mot *)
-  (!from_space).((ptr_val v) + i + 1)
+  ram.(!from_space_start + ptr_val v + i + 1)
 
 let set_bytes (v : value) (i : int) (x : value) =  (* cf get_bytes. *)
-  (!from_space).((ptr_val v) + i + 1) <- x
+  ram.(!from_space_start + ptr_val v + i + 1) <- x
+
+let get_global (i : int) =
+  ram.(global_start + i)
+
+let set_global (i : int) (x : value) = 
+  ram.(global_start + i) <- x
+
+
 
 let closure_tag = 247
 let env_tag = 250 (* quel est le bon numéro ??? *)
@@ -87,6 +100,11 @@ let env = ref (val_long 0)
 
 
 (* ALLOC fonctions *)
+
+let swap_semispace () =
+  let tmp = !from_space_start in
+  from_space_start := !to_space_start;
+  to_space_start := tmp
 
 let heap_can_alloc size =
   (!heap_top) + size <= heap_size
@@ -147,7 +165,7 @@ let alloc size =
 let make_block (tag : long) (sz : long) =
   let sz = if sz = 0 then 1 else sz in
   let a = alloc (sz + 1) in
-  (!from_space).(a) <- val_long (tag + 256 * sz);
+  ram.(!from_space_start + a) <- val_long (tag + 256 * sz);
   val_ptr a
 
 let make_closure pc size =

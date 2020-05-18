@@ -4,13 +4,6 @@ let pc = ref 0
 
 let extra_args = ref 0 
 
-(* let global = 
-   let a = Array.make 10 0 in
-   a.(0) <- Mlvalues.val_long (251 + 256 * 10);
-   Mlvalues.val_ptr (# a) *)
-
-let global = ref (Mlvalues.make_block 0 10)
-
 let trap_sp = ref 0
 
 let pop_stack () =
@@ -285,24 +278,24 @@ let interp code =
         push_stack !Mlvalues.acc;
         Mlvalues.acc := Mlvalues.val_long (Mlvalues.long_val !Mlvalues.env + n)
       | 53 (* GETGLOBAL *) -> let n = take_argument code in
-        Mlvalues.acc := (Mlvalues.get_field (!global) n)
+        Mlvalues.acc := (Mlvalues.get_global n)
       | 54 (* PUSHGETGLOBAL *) -> push_stack (!Mlvalues.acc);
         let n = take_argument code in
-        Mlvalues.acc := (Mlvalues.get_field (!global) n)
+        Mlvalues.acc := (Mlvalues.get_global n)
       | 55 (* GETGLOBALFIELD *) -> let n = take_argument code in
         let p = take_argument code in
-        let g = Mlvalues.get_field (!global) n in
+        let g = Mlvalues.get_global n in
         Mlvalues.acc := Mlvalues.get_field g p
 
       | 56 (* PUSHGETGLOBALFIELD *) -> push_stack (!Mlvalues.acc);
         let n = take_argument code in
         let p = take_argument code in
-        let g = Mlvalues.get_field (!global) n in
+        let g = Mlvalues.get_global n in
         Mlvalues.acc := Mlvalues.get_field g p
 
 
       | 57 (* SETGLOBAL *) -> let n = take_argument code in
-        Mlvalues.set_field (!global) n (!Mlvalues.acc);
+        Mlvalues.set_global n (!Mlvalues.acc);
         Mlvalues.acc := Mlvalues.unit
 
       | 58 (* ATOM0 *) -> Mlvalues.acc := Mlvalues.make_block 0 0
