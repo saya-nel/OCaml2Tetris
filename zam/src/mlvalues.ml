@@ -2,9 +2,8 @@
 
 let heap_size = 100
 
-let from_space = Array.make heap_size 0
-let to_space = Array.make heap_size 0
-
+let from_space = ref (Array.make heap_size 0)
+let to_space = ref (Array.make heap_size 0)
 let heap_top = ref 0
 
 
@@ -40,11 +39,11 @@ let is_ptr (v : value) : bool =
 
 let size (b : ptr) = 
   (* a priori, problème si le bloc a taille >= 128 *)
-  to_space.(b) / 256
+  (!from_space).(b) / 256
 
 let tag (b : ptr) = 
   (* a priori, problème si le bloc a taille >= 128 *)
-  to_space.(b) land 255
+  (!from_space).(b) land 255
 
 let unit = 0
 
@@ -52,17 +51,17 @@ let make_header (tag : long) (sz : long) =
   val_long (tag + 256 * sz)
 
 let get_field (v : value) (i : int) =
-  to_space.((ptr_val v) + i + 1)
+  (!from_space).((ptr_val v) + i + 1)
 
 let set_field (v : value) (i : int) (x : value) = 
-  to_space.((ptr_val v) + i + 1) <- x
+  (!from_space).((ptr_val v) + i + 1) <- x
 
 let get_bytes (v : value) (i : int) = 
-  (* ici, on place un char par mot *)
-  to_space.((ptr_val v) + i + 1)
+  (* ici, on place  un char par mot *)
+  (!from_space).((ptr_val v) + i + 1)
 
 let set_bytes (v : value) (i : int) (x : value) =  (* cf get_bytes. *)
-  to_space.((ptr_val v) + i + 1) <- x
+  (!from_space).((ptr_val v) + i + 1) <- x
 
 let closure_tag = 247
 let env_tag = 250 (* quel est le bon numéro ??? *)
@@ -79,6 +78,7 @@ let val_codeptr o = val_long o (* ??? *)
 
 (* registres de interp *)
 let stack_size = 1024
+let sp = ref 0
 let stack = Array.make stack_size (val_long 0)
 
 let acc = ref (val_long 0)
@@ -103,8 +103,9 @@ let heap_can_alloc size =
 
 (* lance le gc *)
 let run_gc () =
-  print_string "lancement gc";
-  print_newline ()
+  print_string "lancement gc";()
+(* on parcours les éléments de la pile *)
+
 
 
 (* Alloue si possible, sinon lance le GC puis alloue *)
@@ -146,7 +147,7 @@ let alloc size =
 let make_block (tag : long) (sz : long) =
   let sz = if sz = 0 then 1 else sz in
   let a = alloc (sz + 1) in
-  to_space.(a) <- val_long (tag + 256 * sz);
+  (!from_space).(a) <- val_long (tag + 256 * sz);
   val_ptr a
 
 let make_closure pc size =
