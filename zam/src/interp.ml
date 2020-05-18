@@ -77,7 +77,7 @@ let debug_print_state () =
       print_string ", extra args: ";
       print_int (!extra_args);
       print_newline ();
-      debug_print_arr !Mlvalues.to_space (!Mlvalues.heap_top - 1) "to_space"
+      debug_print_arr !Mlvalues.from_space (!Mlvalues.heap_top - 1) "from_space"
     end
 (* print_string " global: ";
    if Mlvalues.is_ptr (!global) then
