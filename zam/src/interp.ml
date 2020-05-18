@@ -38,17 +38,18 @@ let rec debug_print_block block =
       print_newline ()
     end
 
-let debug_print_stack () =
+let debug_print_arr arr arr_end name =
   if debug then 
     begin
       print_newline ();
-      print_string "stack :";
+      print_string name;
+      print_string " :";
       print_newline ();
-      for i = 0 to !Mlvalues.sp - 1 do  
-        if Mlvalues.is_ptr Mlvalues.stack.(i) then 
-          debug_print_block (Mlvalues.stack.(i))
+      for i = 0 to arr_end do  
+        if Mlvalues.is_ptr arr.(i) then 
+          debug_print_block (arr.(i))
         else begin
-          print_int (Mlvalues.long_val Mlvalues.stack.(i)) 
+          print_int (Mlvalues.long_val arr.(i)) 
         end;
         print_string " | " 
       done;
@@ -75,7 +76,8 @@ let debug_print_state () =
       print_int (!Mlvalues.sp);
       print_string ", extra args: ";
       print_int (!extra_args);
-      print_newline ()
+      print_newline ();
+      debug_print_arr !Mlvalues.to_space (!Mlvalues.heap_top - 1) "to_space"
     end
 (* print_string " global: ";
    if Mlvalues.is_ptr (!global) then
