@@ -1,24 +1,22 @@
 (* alloc définitions *)
 
-let global_size = 10  (* taille du segment des variables globales *)
-let heap_size = 100   (* taille d'un semi-space *)
+let heap_size = 100
 
-(* la mémoire est un grand tableau *)
-
-let ram = Array.make (global_size + heap_size * 2) 0
-
-(* segments mémoire *)
-
-let global_start = 0
-let from_space_start = ref global_size
-let to_space_start = ref (global_size + heap_size)
+let from_space = ref (Array.make heap_size 0)
+let to_space = ref (Array.make heap_size 0)
 let heap_top = ref 0
+
+
 
 (* mlvalues sauf makeblock / makeclosure *)
 
 type value = int 
 type long = int
 type ptr = int
+
+let global_size = 10
+let global_start = 0
+let global = Array.make (global_size) 0
 
 (* ************************************* *)
 (* blk = [|TAG;COLOR;F1;F2;...|]         *)
@@ -44,37 +42,35 @@ let is_ptr (v : value) : bool =
 
 let size (b : ptr) = 
   (* a priori, problème si le bloc a taille >= 128 *)
-  ram.(!from_space_start+b) / 256
+  (!from_space).(b) / 256
 
 let tag (b : ptr) = 
   (* a priori, problème si le bloc a taille >= 128 *)
-  ram.(!from_space_start+b) land 255
+  (!from_space).(b) land 255
 
 let unit = 0
+
+let get_global (i : int) =
+  global.(global_start + i)
+
+let set_global (i : int) (x: value) =
+  global.(global_start + i) <- x
 
 let make_header (tag : long) (sz : long) =
   val_long (tag + 256 * sz)
 
 let get_field (v : value) (i : int) =
-  ram.(!from_space_start + ptr_val v + i + 1)
+  (!from_space).((ptr_val v) + i + 1)
 
 let set_field (v : value) (i : int) (x : value) = 
-  ram.(!from_space_start + ptr_val v + i + 1) <- x
+  (!from_space).((ptr_val v) + i + 1) <- x
 
 let get_bytes (v : value) (i : int) = 
   (* ici, on place  un char par mot *)
-  ram.(!from_space_start + ptr_val v + i + 1)
+  (!from_space).((ptr_val v) + i + 1)
 
 let set_bytes (v : value) (i : int) (x : value) =  (* cf get_bytes. *)
-  ram.(!from_space_start + ptr_val v + i + 1) <- x
-
-let get_global (i : int) =
-  ram.(global_start + i)
-
-let set_global (i : int) (x : value) = 
-  ram.(global_start + i) <- x
-
-
+  (!from_space).((ptr_val v) + i + 1) <- x
 
 let closure_tag = 247
 let env_tag = 250 (* quel est le bon numéro ??? *)
@@ -98,32 +94,75 @@ let acc = ref (val_long 0)
 let env = ref (val_long 0)
 
 
-
 (* ALLOC fonctions *)
-
-let swap_semispace () =
-  let tmp = !from_space_start in
-  from_space_start := !to_space_start;
-  to_space_start := tmp
 
 let heap_can_alloc size =
   (!heap_top) + size <= heap_size
 
-(* let move_addr value =
-   if is_ptr (!value) then (* val pointe vers un bloc *)
-    if tag (!value) == fwd_ptr_tag then (* le bloc pointé est un fwd *)
-      value := 
-    else 
+
+let next = ref 0 (* premiere pos disponible dans to_space lors de la copie *)
+
+(* 
+  Traite le déplacement d'un bloc de to_space vers from_space si nécéssaire, 
+  sinon suit le fwd_ptr
+  value est le mlvalue pointeur vers le bloc, 
+  is_array dis si la source est un tableau ou pas : true si pile/tas , faux si env/acc
+  source_reg est le registre qui contient value si is_array est false (acc, env)
+  source_arr est le tableau contenant value a la pos pos_arr si is_array est true (pile, tas)
+*)
+let move_addr value is_array source_reg source_arr pos_arr =
+  if is_ptr value then (* val pointe vers un bloc *)
+    if tag value == fwd_ptr_tag then (* le bloc pointé est un fwd_ptr *)
+      (* on fais pointé value sur la nouvelle destination *)
+      if is_array then source_arr.(pos_arr) <- get_field value 0
+      else source_reg := get_field value 0
+    else (* le bloc n'a pas été déplacé, on le copie *)
       begin
-        ()
+        let old = !next in (* sauvegarde de l'endroit où on va copier dans to_space *)
+        (* on copie tout le bloc, header compris dans to_space *)
+        (!to_space).(old) <- get_field value (-1); (* copie le header *)
+        for j = 0 to (size value) - 1 do (* copie tout les fields *)
+          (!to_space).(old + j + 1) <- get_field value j
+        done;
+        next := (size value) + 1; (* prochaine pos dispo dans to_space *)
+        (* on change le tag du bloc en fwd_ptr car il a été déplacé  *)
+        set_field value (-1) (make_header fwd_ptr_tag (size value));
+        (* ajoute le fwd_ptr dans from_space vers la nouvelle position dans to_space *)
+        set_field value 0 (val_ptr old);
+        (* on fait pointé value vers le nouveau bloc dans to_sapce *)
+        if is_array then source_arr.(pos_arr) <- val_ptr old
+        else source_reg := val_ptr old
       end
-   else () *)
+  else ()
 
 (* lance le gc *)
 let run_gc () =
-  print_string "lancement gc";()
-(* on parcours les éléments de la pile *)
+  print_string "lancement gc";
+  (* on parcours les éléments de la pile *)
+  for i = 0 to !sp - 1 do
+    let value = stack.(i) in
+    move_addr value true (ref 0) stack i
+  done;
 
+  (* on traite l'accu *)
+  move_addr !acc false acc stack (-1);
+  (* on traite l'env *)
+  move_addr !env false env stack (-1);
+
+  (* maintenant on parcours les fields de tout les objets
+     qu'on a bougé dans to_space *)
+  let i = ref 0 in
+  while !i < !next do (* parcours les headers *)
+    for j = !i + 1 to size (!to_space).(!i) do (* parcours les fields du bloc courant *)
+      let value = (!to_space).(!i) in
+      move_addr value true (ref 0) !to_space !i
+    done;
+    i := !i + size (!to_space).(!i) + 1 (* passe au header du bloc suivant dans to_space *)
+  done;
+  (* on echange from_space et to_space *)
+  let tmp = !from_space in
+  from_space := !to_space;
+  to_space := tmp
 
 
 (* Alloue si possible, sinon lance le GC puis alloue *)
@@ -165,7 +204,7 @@ let alloc size =
 let make_block (tag : long) (sz : long) =
   let sz = if sz = 0 then 1 else sz in
   let a = alloc (sz + 1) in
-  ram.(!from_space_start + a) <- val_long (tag + 256 * sz);
+  (!from_space).(a) <- val_long (tag + 256 * sz);
   val_ptr a
 
 let make_closure pc size =
