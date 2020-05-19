@@ -1,3 +1,5 @@
+let debug = true
+
 (* alloc définitions *)
 
 let heap_size = ref 1
@@ -104,16 +106,10 @@ let next = ref 0 (* premiere pos disponible dans to_space lors de la copie *)
 
 let resize_spaces size =
   (* on traite le redimensionnement des semi spaces si nécéssaire *)
-
   let half = !heap_size / 2 in (* nombre d'éléments a la moitié d'un semi space *)
   let quarter = half / 2 in (* nombre d'élements au quart d'un semi space *)
   (* définition de la nouvelle taille *)
   let old_size = !heap_size in
-  print_int !heap_top;
-  print_string " / ";
-  print_int size;
-  print_string " / ";
-  print_int !heap_size;
   (* si il n'y a pas assez de place pour l'allocation
      on redimensionne en rajoutant a la taille la place de l'allocation
      puis multiplie le tout par deux *)
@@ -129,11 +125,15 @@ let resize_spaces size =
   (* si la taille à changée *)
   if old_size != !heap_size then
     begin
-      print_string "resize spaces, old size : ";
-      print_int old_size;
-      print_string ", new size : ";
-      print_int !heap_size;
-      print_newline ();
+      if debug then
+        begin
+          print_string "resize spaces, old size : ";
+          print_int old_size;
+          print_string ", new size : ";
+          print_int !heap_size;
+          print_newline ();
+        end
+      else ();
       (* création du nouveau from_space à la bonne taille *)
       let new_from_space = Array.make !heap_size 0 in
       (* copie de l'ancien from_space dans le nouveau *)
@@ -157,46 +157,23 @@ let resize_spaces size =
   source_arr est le tableau contenant value a la pos pos_arr si is_array est true (pile, tas)
 *)
 let move_addr value is_array source_reg source_arr pos_arr =
-  (* print_string "move_addr : ";
-     print_int value;
-     print_newline (); *)
   if is_ptr value then (* val pointe vers un bloc *)
     begin
-      (* print_string "is_ptr\n"; *)
       if tag (ptr_val value) == fwd_ptr_tag then (* le bloc pointé est un fwd_ptr *)
         (* on fais pointé value sur la nouvelle destination *)
         begin
-          (* print_string "is_fwd\n"; *)
           if is_array then source_arr.(pos_arr) <- get_field value 0
           else source_reg := get_field value 0
         end
       else (* le bloc n'a pas été déplacé, on le copie *)
         begin
-          (* print_string "isnt_fwd\n"; *)
           let old = !next in (* sauvegarde de l'endroit où on va copier dans to_space *)
-          (* print_string "old : ";
-             print_int old;
-             print_newline (); *)
           (* on copie tout le bloc, header compris dans to_space *)
           (!to_space).(old) <- get_field value (-1); (* copie le header *)
           for j = 0 to (size (val_ptr value)) - 1 do (* copie tout les fields *)
             (!to_space).(old + j + 1) <- get_field value j
           done;
-          (* print_string "copie : \n";
-             for i = 0 to (size (val_ptr value)) do
-             print_string "(o : ";
-             print_int (get_field value (i-1));
-             print_string ", n :";
-             print_int ((!to_space).(old + i));
-             print_string ") ";
-             done;
-             print_newline (); *)
-
           next := (size (val_ptr value)) + 1; (* prochaine pos dispo dans to_space *)
-          (* print_string "next : ";
-             print_int !next;
-             print_newline (); *)
-
           (* on change le tag du bloc en fwd_ptr car il a été déplacé  *)
           set_field value (-1) (make_header fwd_ptr_tag (size (ptr_val value)));
           (* ajoute le fwd_ptr dans from_space vers la nouvelle position dans to_space *)
@@ -206,44 +183,32 @@ let move_addr value is_array source_reg source_arr pos_arr =
           else source_reg := val_ptr old
         end
     end
-  else 
-    (* print_string "isnt ptr\n"; *)
-    ()
+  else ()
 
 (* lance le gc *)
 let run_gc size =
-  print_string "lancement gc\n";
+  if debug then print_string "lancement gc\n" else ();
   (* on parcours les éléments de la pile *)
-  (* print_string "sp : ";
-     print_int !sp;
-     print_newline (); *)
   for i = 0 to !sp - 1 do
     let value = stack.(i) in
     move_addr value true (ref 0) stack i;
   done;
-  (* print_string "fin pile\n"; *)
 
   (* on traite l'accu *)
   move_addr !acc false acc stack (-1);
-  (* print_string "fin acc\n"; *)
   (* on traite l'env *)
   move_addr !env false env stack (-1);
-  (* print_string "fin env\n"; *)
 
   (* maintenant on parcours les fields de tout les objets qu'on a bougé dans to_space *)
-  (* print_string "debut to_space\n"; *)
   let i = ref 0 in
   while !i < !next do (* parcours les headers *)
-    (* print_string "size : ";  *)
     let size = (!to_space).(!i) / 256 in
-    (* print_int size; *)
     for j = !i + 1 to size do (* parcours les fields du bloc courant *)
       let value = (!to_space).(!i) in
       move_addr value true (ref 0) !to_space !i
     done;
     i := !i + size + 1 (* passe au header du bloc suivant dans to_space *)
   done;
-  (* print_string "fin to_space\n"; *)
 
   (* on echange from_space et to_space *)
   let tmp = !from_space in
@@ -254,15 +219,20 @@ let run_gc size =
   (* on redimensionne les espaces si nécéssaire *)
   resize_spaces size;
 
-  print_string "fin gc";
+  if debug then print_string "fin gc" else ();
   print_newline ()
 
 
 (* Alloue si possible, sinon lance le GC puis alloue *)
 let alloc size = 
-  print_string "try alloc ";
-  print_int size;
-  print_newline ();
+  if debug then
+    begin
+      print_newline ();
+      print_string "try alloc ";
+      print_int size;
+      print_newline ()
+    end
+  else ();
   if heap_can_alloc size then
     begin
       print_string "can alloc";
@@ -273,8 +243,12 @@ let alloc size =
     end
   else 
     begin
-      print_string "cant alloc";
-      print_newline ();
+      if debug then 
+        begin
+          print_string "cant alloc";
+          print_newline ()
+        end 
+      else ();
       run_gc size;
       if heap_can_alloc size then 
         begin
@@ -284,8 +258,12 @@ let alloc size =
         end
       else 
         begin
-          print_string "plus de mémoire";
-          print_newline ();
+          if debug then 
+            begin
+              print_string "plus de mémoire";
+              print_newline ()
+            end 
+          else ();
           -1
         end
     end

@@ -428,15 +428,16 @@ let interp code =
         (* (match p with ...) *)
         (match p with
          | _ -> (* Array.make *)
-                let n = Mlvalues.long_val !Mlvalues.acc in
-                let a = Mlvalues.make_block 0 n in (* tag 0 *)
-                for i = 0 to n - 1 do
-                  Mlvalues.set_field a i x 
-                done;
-                pop_stack ();
-                push_stack a
+           let n = Mlvalues.long_val !Mlvalues.acc in
+           let a = Mlvalues.make_block 0 n in (* tag 0 *)
+           for i = 0 to n - 1 do
+             Mlvalues.set_field a i x 
+           done;
+           pop_stack ();
+           pop_stack();
+           push_stack a
         )
-        
+
       | 95 (* C-CALL3 *) ->
         let p = take_argument code in
         let x1 = pop_stack () in
