@@ -65,6 +65,9 @@ module PrimTypes = struct
     let a,b = v (), v() in 
     Tarrow(Tproduct(a,b),b)
 
+  let ty_internal_free = 
+    let a,b = v (), v() in 
+    Tarrow(Tarray(a),Tunit)
 
   let ty_exit = 
     ty_internal_exit
@@ -172,6 +175,7 @@ let primitives =
      ("Internal.make_pair",        "Internal.make_pair",          ty_internal_pair); 
      ("Internal.fst",              "Internal.left",               ty_fst);
      ("Internal.snd",              "Internal.right",              ty_snd);
+     ("Internal.free",             "Internal.free",               ty_internal_free);
      ("Internal.obj_magic",        "Internal.obj_magic",          ty_obj_magic);
      ("Obj.magic",                 "Internal.obj_magic",          ty_obj_magic)] in
   let openned_ml_pervasives =
@@ -192,5 +196,6 @@ let primitives =
      ("abs",              "Pervasives.abs",              ty_abs);
      ("(^)",              "Pervasives.(^)",              ty_concat);
      ("string_of_int",    "Pervasives.string_of_int",    ty_string_of_int);
-     ("int_of_char",      "Pervasives.int_of_char",      ty_int_of_char)] in
+     ("int_of_char",      "Pervasives.int_of_char",      ty_int_of_char);
+     ("ignore",           "Pervasives.ignore",           ty_internal_free)] in
   openned_ml_pervasives @ ml_internal

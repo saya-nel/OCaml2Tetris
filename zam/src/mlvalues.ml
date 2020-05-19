@@ -104,6 +104,10 @@ let heap_can_alloc size =
 let next = ref 0 (* premiere pos disponible dans to_space lors de la copie *)
 
 
+(* OCaml a un gc : la fonction ignore ne fait rien. *)
+(* mini-ml n'a pas de gc : la fonction ignore libère un bloc mémoire *)
+let free a = ignore a 
+
 let resize_spaces size =
   (* on traite le redimensionnement des semi spaces si nécéssaire *)
   let half = !heap_size / 2 in (* nombre d'éléments a la moitié d'un semi space *)
@@ -123,7 +127,7 @@ let resize_spaces size =
       else ()
     end;
   (* si la taille à changée *)
-  if old_size != !heap_size then
+  if old_size <> !heap_size then
     begin
       if debug then
         begin
@@ -131,14 +135,14 @@ let resize_spaces size =
           print_int old_size;
           print_string ", new size : ";
           print_int !heap_size;
-          print_newline ();
+          print_newline ()
         end
       else ();
       (* création du nouveau from_space à la bonne taille *)
       let new_from_space = Array.make !heap_size 0 in
       (* copie de l'ancien from_space dans le nouveau *)
       for i = 0 to !heap_top - 1 do
-        new_from_space.(i) <- !from_space.(i)
+        new_from_space.(i) <- (!from_space).(i)
       done;
       (* free from_space *)
       from_space := new_from_space;
@@ -148,18 +152,17 @@ let resize_spaces size =
   else ()
 
 
-(* 
-  Traite le déplacement d'un bloc de to_space vers from_space si nécéssaire, 
-  sinon suit le fwd_ptr
-  value est le mlvalue pointeur vers le bloc, 
-  is_array dis si la source est un tableau ou pas : true si pile/tas , faux si env/acc
-  source_reg est le registre qui contient value si is_array est false (acc, env)
-  source_arr est le tableau contenant value a la pos pos_arr si is_array est true (pile, tas)
-*)
+(* Traite le déplacement d'un bloc de to_space vers from_space si nécéssaire,                  *)
+(* sinon suit le fwd_ptr                                                                       *)
+(* value est le mlvalue pointeur vers le bloc,                                                 *)
+(* is_array dis si la source est un tableau ou pas : true si pile/tas , faux si env/acc        *)
+(* source_reg est le registre qui contient value si is_array est false (acc, env)              *)
+(* source_arr est le tableau contenant value a la pos pos_arr si is_array est true (pile, tas) *)
+
 let move_addr value is_array source_reg source_arr pos_arr =
   if is_ptr value then (* val pointe vers un bloc *)
     begin
-      if tag (ptr_val value) == fwd_ptr_tag then (* le bloc pointé est un fwd_ptr *)
+      if tag (ptr_val value) = fwd_ptr_tag then (* le bloc pointé est un fwd_ptr *)
         (* on fais pointé value sur la nouvelle destination *)
         begin
           if is_array then source_arr.(pos_arr) <- get_field value 0
@@ -191,7 +194,7 @@ let run_gc size =
   (* on parcours les éléments de la pile *)
   for i = 0 to !sp - 1 do
     let value = stack.(i) in
-    move_addr value true (ref 0) stack i;
+    move_addr value true (ref 0) stack i
   done;
 
   (* on traite l'accu *)
