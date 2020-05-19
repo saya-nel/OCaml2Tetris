@@ -21,20 +21,19 @@ let take_argument code =
 let rec debug_print_block block =
   if debug then 
     begin
-      print_string "(block, size : ";
+      print_string "<< (block, size : ";
       print_int (Mlvalues.size (Mlvalues.ptr_val block));
       print_string ", tag : ";
       print_int (Mlvalues.long_val (Mlvalues.tag (Mlvalues.ptr_val block)));
-      print_string ") ";
+      print_string ") : ";
       for i = 0 to Mlvalues.size (Mlvalues.ptr_val block) - 1 do
-        print_string "<";
         if Mlvalues.is_ptr (Mlvalues.get_field block i) then
           debug_print_block (Mlvalues.get_field block i)
         else
           print_int (Mlvalues.long_val (Mlvalues.get_field block i));
-        print_string ">";
-        print_string " | "
+        print_string " / "
       done;
+      print_string ">>";
       print_newline ()
     end
 
@@ -72,7 +71,7 @@ let debug_print_state () =
         debug_print_block (!Mlvalues.env)
       else 
         print_int (Mlvalues.long_val (!Mlvalues.env));
-      print_string ", Mlvalues.sp: "; 
+      print_string ", sp: "; 
       print_int (!Mlvalues.sp);
       print_string ", extra args: ";
       print_int (!extra_args);

@@ -1,6 +1,6 @@
 (* alloc définitions *)
 
-let heap_size = 100
+let heap_size = 5
 
 let from_space = ref (Array.make heap_size 0)
 let to_space = ref (Array.make heap_size 0)
@@ -15,7 +15,6 @@ type long = int
 type ptr = int
 
 let global_size = 10
-let global_start = 0
 let global = Array.make (global_size) 0
 
 (* ************************************* *)
@@ -51,10 +50,10 @@ let tag (b : ptr) =
 let unit = 0
 
 let get_global (i : int) =
-  global.(global_start + i)
+  global.(i)
 
 let set_global (i : int) (x: value) =
-  global.(global_start + i) <- x
+  global.(i) <- x
 
 let make_header (tag : long) (sz : long) =
   val_long (tag + 256 * sz)
@@ -111,58 +110,103 @@ let next = ref 0 (* premiere pos disponible dans to_space lors de la copie *)
   source_arr est le tableau contenant value a la pos pos_arr si is_array est true (pile, tas)
 *)
 let move_addr value is_array source_reg source_arr pos_arr =
+  (* print_string "move_addr : ";
+     print_int value;
+     print_newline (); *)
   if is_ptr value then (* val pointe vers un bloc *)
-    if tag value == fwd_ptr_tag then (* le bloc pointé est un fwd_ptr *)
-      (* on fais pointé value sur la nouvelle destination *)
-      if is_array then source_arr.(pos_arr) <- get_field value 0
-      else source_reg := get_field value 0
-    else (* le bloc n'a pas été déplacé, on le copie *)
-      begin
-        let old = !next in (* sauvegarde de l'endroit où on va copier dans to_space *)
-        (* on copie tout le bloc, header compris dans to_space *)
-        (!to_space).(old) <- get_field value (-1); (* copie le header *)
-        for j = 0 to (size value) - 1 do (* copie tout les fields *)
-          (!to_space).(old + j + 1) <- get_field value j
-        done;
-        next := (size value) + 1; (* prochaine pos dispo dans to_space *)
-        (* on change le tag du bloc en fwd_ptr car il a été déplacé  *)
-        set_field value (-1) (make_header fwd_ptr_tag (size value));
-        (* ajoute le fwd_ptr dans from_space vers la nouvelle position dans to_space *)
-        set_field value 0 (val_ptr old);
-        (* on fait pointé value vers le nouveau bloc dans to_sapce *)
-        if is_array then source_arr.(pos_arr) <- val_ptr old
-        else source_reg := val_ptr old
-      end
-  else ()
+    begin
+      (* print_string "is_ptr\n"; *)
+      if tag (ptr_val value) == fwd_ptr_tag then (* le bloc pointé est un fwd_ptr *)
+        (* on fais pointé value sur la nouvelle destination *)
+        begin
+          (* print_string "is_fwd\n"; *)
+          if is_array then source_arr.(pos_arr) <- get_field value 0
+          else source_reg := get_field value 0
+        end
+      else (* le bloc n'a pas été déplacé, on le copie *)
+        begin
+          (* print_string "isnt_fwd\n"; *)
+          let old = !next in (* sauvegarde de l'endroit où on va copier dans to_space *)
+          (* print_string "old : ";
+             print_int old;
+             print_newline (); *)
+          (* on copie tout le bloc, header compris dans to_space *)
+          (!to_space).(old) <- get_field value (-1); (* copie le header *)
+          for j = 0 to (size (val_ptr value)) - 1 do (* copie tout les fields *)
+            (!to_space).(old + j + 1) <- get_field value j
+          done;
+          (* print_string "copie : \n";
+             for i = 0 to (size (val_ptr value)) do
+             print_string "(o : ";
+             print_int (get_field value (i-1));
+             print_string ", n :";
+             print_int ((!to_space).(old + i));
+             print_string ") ";
+             done;
+             print_newline (); *)
+
+          next := (size (val_ptr value)) + 1; (* prochaine pos dispo dans to_space *)
+          (* print_string "next : ";
+             print_int !next;
+             print_newline (); *)
+
+          (* on change le tag du bloc en fwd_ptr car il a été déplacé  *)
+          set_field value (-1) (make_header fwd_ptr_tag (size (ptr_val value)));
+          (* ajoute le fwd_ptr dans from_space vers la nouvelle position dans to_space *)
+          set_field value 0 (val_ptr old);
+          (* on fait pointé value vers le nouveau bloc dans to_sapce *)
+          if is_array then source_arr.(pos_arr) <- val_ptr old
+          else source_reg := val_ptr old
+        end
+    end
+  else 
+    (* print_string "isnt ptr\n"; *)
+    ()
 
 (* lance le gc *)
 let run_gc () =
-  print_string "lancement gc";
+  print_string "lancement gc\n";
   (* on parcours les éléments de la pile *)
+  (* print_string "sp : ";
+     print_int !sp;
+     print_newline (); *)
   for i = 0 to !sp - 1 do
     let value = stack.(i) in
-    move_addr value true (ref 0) stack i
+    move_addr value true (ref 0) stack i;
   done;
+  (* print_string "fin pile\n"; *)
 
   (* on traite l'accu *)
   move_addr !acc false acc stack (-1);
+  (* print_string "fin acc\n"; *)
   (* on traite l'env *)
   move_addr !env false env stack (-1);
+  (* print_string "fin env\n"; *)
 
   (* maintenant on parcours les fields de tout les objets
      qu'on a bougé dans to_space *)
+  (* print_string "debut to_space\n"; *)
   let i = ref 0 in
   while !i < !next do (* parcours les headers *)
-    for j = !i + 1 to size (!to_space).(!i) do (* parcours les fields du bloc courant *)
+    (* print_string "size : ";  *)
+    let size = (!to_space).(!i) / 256 in
+    (* print_int size; *)
+    for j = !i + 1 to size do (* parcours les fields du bloc courant *)
       let value = (!to_space).(!i) in
       move_addr value true (ref 0) !to_space !i
     done;
-    i := !i + size (!to_space).(!i) + 1 (* passe au header du bloc suivant dans to_space *)
+    i := !i + size + 1 (* passe au header du bloc suivant dans to_space *)
   done;
+  (* print_string "fin to_space\n"; *)
+
   (* on echange from_space et to_space *)
   let tmp = !from_space in
   from_space := !to_space;
-  to_space := tmp
+  to_space := tmp;
+  heap_top := !next;
+  next := 0;
+  print_string "fin gc";
+  print_newline ()
 
 
 (* Alloue si possible, sinon lance le GC puis alloue *)
@@ -174,9 +218,9 @@ let alloc size =
     begin
       print_string "can alloc";
       print_newline ();
-      let res = heap_top in
+      let res = !heap_top in
       heap_top := (!heap_top) + size;
-      !res  
+      res  
     end
   else 
     begin
@@ -185,9 +229,9 @@ let alloc size =
       run_gc ();
       if heap_can_alloc size then 
         begin
-          let res = heap_top in
+          let res = !heap_top in
           heap_top := (!heap_top) + size;
-          !res  
+          res  
         end
       else 
         begin
