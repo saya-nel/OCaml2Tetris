@@ -2,7 +2,7 @@ let debug = true
 
 (* alloc définitions *)
 
-let heap_size = ref 1
+let heap_size = ref 10
 
 let from_space = ref (Array.make !heap_size 0)
 let to_space = ref (Array.make !heap_size 0)
