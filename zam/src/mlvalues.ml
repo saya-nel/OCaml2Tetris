@@ -1,6 +1,6 @@
 (* alloc définitions *)
 
-let heap_size = 5
+let heap_size = 110
 
 let from_space = ref (Array.make heap_size 0)
 let to_space = ref (Array.make heap_size 0)

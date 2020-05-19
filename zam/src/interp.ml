@@ -21,19 +21,20 @@ let take_argument code =
 let rec debug_print_block block =
   if debug then 
     begin
-      print_string "<< (block, size : ";
+      print_string "(block, size : ";
       print_int (Mlvalues.size (Mlvalues.ptr_val block));
       print_string ", tag : ";
       print_int (Mlvalues.long_val (Mlvalues.tag (Mlvalues.ptr_val block)));
-      print_string ") : ";
+      print_string ") ";
       for i = 0 to Mlvalues.size (Mlvalues.ptr_val block) - 1 do
+        print_string "<";
         if Mlvalues.is_ptr (Mlvalues.get_field block i) then
           debug_print_block (Mlvalues.get_field block i)
         else
           print_int (Mlvalues.long_val (Mlvalues.get_field block i));
-        print_string " / "
+        print_string ">";
+        print_string " | "
       done;
-      print_string ">>";
       print_newline ()
     end
 
@@ -71,7 +72,7 @@ let debug_print_state () =
         debug_print_block (!Mlvalues.env)
       else 
         print_int (Mlvalues.long_val (!Mlvalues.env));
-      print_string ", sp: "; 
+      print_string ", Mlvalues.sp: "; 
       print_int (!Mlvalues.sp);
       print_string ", extra args: ";
       print_int (!extra_args);
@@ -421,10 +422,21 @@ let interp code =
         let _ = pop_stack () in ()
       | 94 (* C-CALL2 *) -> 
         let p = take_argument code in
+        print_string "primitive numéro " ; print_int p; print_newline () ;
         let x = pop_stack () in
         push_stack (!Mlvalues.env);
         (* (match p with ...) *)
-        for i = 0 to 2 do let _ = pop_stack () in () done
+        (match p with
+         | _ -> (* Array.make *)
+                let n = Mlvalues.long_val !Mlvalues.acc in
+                let a = Mlvalues.make_block 0 n in (* tag 0 *)
+                for i = 0 to n - 1 do
+                  Mlvalues.set_field a i x 
+                done;
+                pop_stack ();
+                push_stack a
+        )
+        
       | 95 (* C-CALL3 *) ->
         let p = take_argument code in
         let x1 = pop_stack () in
