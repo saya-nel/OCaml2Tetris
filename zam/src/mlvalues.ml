@@ -1,6 +1,6 @@
 (* alloc définitions *)
 
-let heap_size = ref 10
+let heap_size = ref 1
 
 let from_space = ref (Array.make !heap_size 0)
 let to_space = ref (Array.make !heap_size 0)
@@ -102,17 +102,27 @@ let heap_can_alloc size =
 let next = ref 0 (* premiere pos disponible dans to_space lors de la copie *)
 
 
-let resize_spaces() =
+let resize_spaces size =
   (* on traite le redimensionnement des semi spaces si nécéssaire *)
+
   let half = !heap_size / 2 in (* nombre d'éléments a la moitié d'un semi space *)
   let quarter = half / 2 in (* nombre d'élements au quart d'un semi space *)
   (* définition de la nouvelle taille *)
   let old_size = !heap_size in
-  if half < !heap_top then  (* si remplis à plus de 50% *)
-    heap_size := !heap_size * 2 
+  print_int !heap_top;
+  print_string " / ";
+  print_int size;
+  print_string " / ";
+  print_int !heap_size;
+  (* si il n'y a pas assez de place pour l'allocation
+     on redimensionne en rajoutant a la taille la place de l'allocation
+     puis multiplie le tout par deux *)
+  if !heap_top + size > !heap_size then
+    heap_size := (!heap_size + size) * 2
   else 
     begin
-      if quarter > !heap_top then (* si remplis à moins de 25% *)
+      (* si taille + allocation < 25% de la taille de base, on diminue la taille par deux *)
+      if quarter > (!heap_top + size) then (* si remplis à moins de 25% *)
         heap_size := !heap_size / 2
       else ()
     end;
@@ -201,7 +211,7 @@ let move_addr value is_array source_reg source_arr pos_arr =
     ()
 
 (* lance le gc *)
-let run_gc () =
+let run_gc size =
   print_string "lancement gc\n";
   (* on parcours les éléments de la pile *)
   (* print_string "sp : ";
@@ -242,7 +252,7 @@ let run_gc () =
   heap_top := !next;
   next := 0;
   (* on redimensionne les espaces si nécéssaire *)
-  resize_spaces ();
+  resize_spaces size;
 
   print_string "fin gc";
   print_newline ()
@@ -265,7 +275,7 @@ let alloc size =
     begin
       print_string "cant alloc";
       print_newline ();
-      run_gc ();
+      run_gc size;
       if heap_can_alloc size then 
         begin
           let res = !heap_top in
