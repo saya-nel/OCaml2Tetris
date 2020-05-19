@@ -1,4 +1,6 @@
+let f () = 
+  let a = Array.make 5 43 in
+  let b = Array.make 9 44 in
+  42 in
 
-let _ = Array.make 50 17
-let _ = Array.make 50 42
-let _ = Array.make 50 25
+f ()

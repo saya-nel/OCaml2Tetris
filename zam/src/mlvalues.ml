@@ -1,9 +1,9 @@
 (* alloc définitions *)
 
-let heap_size = 110
+let heap_size = ref 10
 
-let from_space = ref (Array.make heap_size 0)
-let to_space = ref (Array.make heap_size 0)
+let from_space = ref (Array.make !heap_size 0)
+let to_space = ref (Array.make !heap_size 0)
 let heap_top = ref 0
 
 
@@ -96,10 +96,47 @@ let env = ref (val_long 0)
 (* ALLOC fonctions *)
 
 let heap_can_alloc size =
-  (!heap_top) + size <= heap_size
+  (!heap_top) + size <= !heap_size
 
 
 let next = ref 0 (* premiere pos disponible dans to_space lors de la copie *)
+
+
+let resize_spaces() =
+  (* on traite le redimensionnement des semi spaces si nécéssaire *)
+  let half = !heap_size / 2 in (* nombre d'éléments a la moitié d'un semi space *)
+  let quarter = half / 2 in (* nombre d'élements au quart d'un semi space *)
+  (* définition de la nouvelle taille *)
+  let old_size = !heap_size in
+  if half < !heap_top then  (* si remplis à plus de 50% *)
+    heap_size := !heap_size * 2 
+  else 
+    begin
+      if quarter > !heap_top then (* si remplis à moins de 25% *)
+        heap_size := !heap_size / 2
+      else ()
+    end;
+  (* si la taille à changée *)
+  if old_size != !heap_size then
+    begin
+      print_string "resize spaces, old size : ";
+      print_int old_size;
+      print_string ", new size : ";
+      print_int !heap_size;
+      print_newline ();
+      (* création du nouveau from_space à la bonne taille *)
+      let new_from_space = Array.make !heap_size 0 in
+      (* copie de l'ancien from_space dans le nouveau *)
+      for i = 0 to !heap_top - 1 do
+        new_from_space.(i) <- !from_space.(i)
+      done;
+      (* free from_space *)
+      from_space := new_from_space;
+      (* free to_space *)
+      to_space := Array.make !heap_size 0
+    end
+  else ()
+
 
 (* 
   Traite le déplacement d'un bloc de to_space vers from_space si nécéssaire, 
@@ -154,7 +191,7 @@ let move_addr value is_array source_reg source_arr pos_arr =
           set_field value (-1) (make_header fwd_ptr_tag (size (ptr_val value)));
           (* ajoute le fwd_ptr dans from_space vers la nouvelle position dans to_space *)
           set_field value 0 (val_ptr old);
-          (* on fait pointé value vers le nouveau bloc dans to_sapce *)
+          (* on fait pointé value vers le nouveau bloc dans to_space *)
           if is_array then source_arr.(pos_arr) <- val_ptr old
           else source_reg := val_ptr old
         end
@@ -183,8 +220,7 @@ let run_gc () =
   move_addr !env false env stack (-1);
   (* print_string "fin env\n"; *)
 
-  (* maintenant on parcours les fields de tout les objets
-     qu'on a bougé dans to_space *)
+  (* maintenant on parcours les fields de tout les objets qu'on a bougé dans to_space *)
   (* print_string "debut to_space\n"; *)
   let i = ref 0 in
   while !i < !next do (* parcours les headers *)
@@ -205,6 +241,9 @@ let run_gc () =
   to_space := tmp;
   heap_top := !next;
   next := 0;
+  (* on redimensionne les espaces si nécéssaire *)
+  resize_spaces ();
+
   print_string "fin gc";
   print_newline ()
 
