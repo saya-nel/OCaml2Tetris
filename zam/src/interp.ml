@@ -62,7 +62,7 @@ let debug_print_state () =
   if debug then 
     begin
       print_newline ();
-      
+
       print_string " pc: "; 
       print_int (!pc);
       print_string " --------------------------------------";
@@ -82,7 +82,7 @@ let debug_print_state () =
       print_string ", extra args: ";
       print_int (!extra_args);
       print_newline ();
-      debug_print_arr Mlvalues.stack !Mlvalues.sp "stack";
+      debug_print_arr Mlvalues.stack (!Mlvalues.sp-1) "stack";
       (* debug_print_arr !Mlvalues.from_space (!Mlvalues.heap_top - 1) "from_space" *)
     end
 (* print_string " global: ";
@@ -109,13 +109,13 @@ let interp code =
         Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-1-n)
       | 9 (* PUSH *) -> push_stack (!Mlvalues.acc)
       | 10 (* PUSHACC0 *) -> push_stack (!Mlvalues.acc)
-      | 11 (* PUSHACC1 *) -> push_stack (!Mlvalues.acc); Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-2)
-      | 12 (* PUSHACC2 *) -> push_stack (!Mlvalues.acc); Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-3)
-      | 13 (* PUSHACC3 *) -> push_stack (!Mlvalues.acc); Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-4)
-      | 14 (* PUSHACC4 *) -> push_stack (!Mlvalues.acc); Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-5)
-      | 15 (* PUSHACC5 *) -> push_stack (!Mlvalues.acc); Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-6)
-      | 16 (* PUSHACC6 *) -> push_stack (!Mlvalues.acc); Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-7)
-      | 17 (* PUSHACC7 *) -> push_stack (!Mlvalues.acc); Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-8)
+      | 11 (* PUSHACC1 *) -> push_stack (!Mlvalues.acc); Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-3)
+      | 12 (* PUSHACC2 *) -> push_stack (!Mlvalues.acc); Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-4)
+      | 13 (* PUSHACC3 *) -> push_stack (!Mlvalues.acc); Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-5)
+      | 14 (* PUSHACC4 *) -> push_stack (!Mlvalues.acc); Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-6)
+      | 15 (* PUSHACC5 *) -> push_stack (!Mlvalues.acc); Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-7)
+      | 16 (* PUSHACC6 *) -> push_stack (!Mlvalues.acc); Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-8)
+      | 17 (* PUSHACC7 *) -> push_stack (!Mlvalues.acc); Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-9)
       | 18 (* PUSHACC *) -> let n = take_argument code in
         push_stack (!Mlvalues.acc); 
         Mlvalues.acc := Mlvalues.stack.((!Mlvalues.sp)-1-n)
@@ -262,7 +262,7 @@ let interp code =
         Mlvalues.set_field !Mlvalues.acc 0 o; (* (Mlvalues.val_ptr o) ?? *)
         push_stack !Mlvalues.acc;
         for i = 1 to f - 1 do
-          push_stack (Mlvalues.get_field (!Mlvalues.acc) (2 * i))
+          push_stack (Mlvalues.val_ptr (Mlvalues.get_field (!Mlvalues.acc) (2 * i)))
         done
       | 45 (* OFFSETCLOSUREM2 *) ->            
         Mlvalues.acc := Mlvalues.val_ptr (Mlvalues.ptr_val !Mlvalues.env - 2)

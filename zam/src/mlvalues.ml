@@ -39,7 +39,7 @@ let ptr_val (v : value) : ptr =
   (- (v + 16384))
 
 let is_ptr (v : value) : bool = 
-  v < (- 16384)
+  v <= (- 16384)
 
 let size (b : ptr) = 
   (* a priori, problème si le bloc a taille >= 128 *)
