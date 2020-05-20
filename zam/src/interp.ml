@@ -90,58 +90,92 @@ let debug_print_state () =
    debug_print_block (!global);
    print_newline (); *)
 
+let acc_n n = 
+  Domain.acc := Domain.stack.((!Domain.sp) - n - 1)
+
+let push () = 
+  push_stack (!Domain.acc)
+
+let push_acc_n n = 
+  push_stack (!Domain.acc); 
+  Domain.acc := Domain.stack.((!Domain.sp) - n - 1)
+
+let pop n =
+  Domain.sp := !Domain.sp - n
+
+let assign n =
+  Domain.stack.((!Domain.sp)-1-n) <- !Domain.acc; 
+  Domain.acc := Mlvalues.val_long 0
+
+let env_acc_n n = 
+  Domain.acc := Block.get_field (!Domain.env) n
+
+let push_env_acc_n n =
+  push_stack (!Domain.acc); 
+  Domain.acc := Block.get_field (!Domain.env) n
+
+let offsetclosure_n n =
+ Domain.acc := Mlvalues.val_ptr (Mlvalues.ptr_val !Domain.env + n)
+
+let pushoffsetclosure_n n =
+  push_stack !Domain.acc;
+  Domain.acc := Mlvalues.val_ptr (Mlvalues.ptr_val !Domain.env + n)
+
+let get_field_n n =
+  Domain.acc := Block.get_field (!Domain.acc) n
+
+let set_field_n n =
+  Block.set_field (!Domain.acc) n (pop_stack ()); Domain.acc := Block.unit 
+
+let const_n n =
+  Domain.acc := Mlvalues.val_long n
+
+let pushconst_n n =
+  push_stack (!Domain.acc);
+  Domain.acc := (Mlvalues.val_long n)
+
 let interp code =
   Domain.sp := 0;
   while !pc < Array.length code do
     debug_print_state ();
     begin
       match code.(!pc) with
-      | 0 (* ACC0 *) -> Domain.acc := Domain.stack.((!Domain.sp)-1)
-      | 1 (* ACC1 *) -> Domain.acc := Domain.stack.((!Domain.sp)-2)
-      | 2 (* ACC2 *) -> Domain.acc := Domain.stack.((!Domain.sp)-3)
-      | 3 (* ACC3 *) -> Domain.acc := Domain.stack.((!Domain.sp)-4)
-      | 4 (* ACC4 *) -> Domain.acc := Domain.stack.((!Domain.sp)-5)
-      | 5 (* ACC5 *) -> Domain.acc := Domain.stack.((!Domain.sp)-6)
-      | 6 (* ACC6 *) -> Domain.acc := Domain.stack.((!Domain.sp)-7)
-      | 7 (* ACC7 *) -> Domain.acc := Domain.stack.((!Domain.sp)-8)
-      | 8 (* ACC *) -> let n = take_argument code in
-                       assert (n < Array.length Domain.stack && n >= 0);
-                       Domain.acc := Domain.stack.((!Domain.sp)-1-n)
-      | 9 (* PUSH *) -> push_stack (!Domain.acc)
-      | 10 (* PUSHACC0 *) -> push_stack (!Domain.acc)
-      | 11 (* PUSHACC1 *) -> push_stack (!Domain.acc); Domain.acc := Domain.stack.((!Domain.sp)-2)
-      | 12 (* PUSHACC2 *) -> push_stack (!Domain.acc); Domain.acc := Domain.stack.((!Domain.sp)-3)
-      | 13 (* PUSHACC3 *) -> push_stack (!Domain.acc); Domain.acc := Domain.stack.((!Domain.sp)-4)
-      | 14 (* PUSHACC4 *) -> push_stack (!Domain.acc); Domain.acc := Domain.stack.((!Domain.sp)-5)
-      | 15 (* PUSHACC5 *) -> push_stack (!Domain.acc); Domain.acc := Domain.stack.((!Domain.sp)-6)
-      | 16 (* PUSHACC6 *) -> push_stack (!Domain.acc); Domain.acc := Domain.stack.((!Domain.sp)-7)
-      | 17 (* PUSHACC7 *) -> push_stack (!Domain.acc); Domain.acc := Domain.stack.((!Domain.sp)-8)
-      | 18 (* PUSHACC *) -> let n = take_argument code in
-                            push_stack (!Domain.acc); 
-                            Domain.acc := Domain.stack.((!Domain.sp)-1-n)
-      | 19 (* POP *) -> let n = take_argument code in 
-                        assert (n < Array.length Domain.stack && n >= 0);
-                        Domain.sp := !Domain.sp - n
-      | 20 (* ASSIGN *) -> let n = take_argument code in 
-                           assert (n < Array.length Domain.stack && n >= 0);
-                           (Domain.stack.((!Domain.sp)-1-n) <- !Domain.acc; Domain.acc := (Mlvalues.val_long 0))
-      | 21 (* ENVACC1 *) -> Domain.acc := Block.get_field (!Domain.env) 1
-      | 22 (* ENVACC2 *) -> Domain.acc := Block.get_field (!Domain.env) 2
-      | 23 (* ENVACC3 *) -> Domain.acc := Block.get_field (!Domain.env) 3
-      | 24 (* ENVACC4 *) -> Domain.acc := Block.get_field (!Domain.env) 4
-      | 25 (* ENVACC *) -> let n = take_argument code in Domain.acc := Block.get_field (!Domain.env) n
-      | 26 (* PUSHENVACC1 *) -> push_stack (!Domain.acc); Domain.acc := Block.get_field (!Domain.env) 1
-      | 27 (* PUSHENVACC2 *) -> push_stack (!Domain.acc); Domain.acc := Block.get_field (!Domain.env) 2
-      | 28 (* PUSHENVACC3 *) -> push_stack (!Domain.acc); Domain.acc := Block.get_field (!Domain.env) 3
-      | 29 (* PUSHENVACC4 *) -> push_stack (!Domain.acc); Domain.acc := Block.get_field (!Domain.env) 4
-      | 30 (* PUSHENVACC *) -> let n = take_argument code in (* Equivalent to PUSH then ENVACC *)
-                               push_stack (!Domain.acc);
-                               Domain.acc := Block.get_field (!Domain.env) n
+      | 0 (* ACC0 *) -> acc_n 0
+      | 1 (* ACC1 *) -> acc_n 1
+      | 2 (* ACC2 *) -> acc_n 2
+      | 3 (* ACC3 *) -> acc_n 3
+      | 4 (* ACC4 *) -> acc_n 4
+      | 5 (* ACC5 *) -> acc_n 5
+      | 6 (* ACC6 *) -> acc_n 6
+      | 7 (* ACC7 *) -> acc_n 7
+      | 8 (* ACC *) -> acc_n (take_argument code)
+      | 9 (* PUSH *) -> push ()
+      | 10 (* PUSHACC0 *) -> push ()
+      | 11 (* PUSHACC1 *) -> push_acc_n 1
+      | 12 (* PUSHACC2 *) -> push_acc_n 2
+      | 13 (* PUSHACC3 *) -> push_acc_n 3
+      | 14 (* PUSHACC4 *) -> push_acc_n 4
+      | 15 (* PUSHACC5 *) -> push_acc_n 5
+      | 16 (* PUSHACC6 *) -> push_acc_n 6
+      | 17 (* PUSHACC7 *) -> push_acc_n 7
+      | 18 (* PUSHACC *) -> push_acc_n (take_argument code)
+      | 19 (* POP *) -> pop (take_argument code)
+      | 20 (* ASSIGN *) -> assign (take_argument code)
+      | 21 (* ENVACC1 *) -> env_acc_n 1
+      | 22 (* ENVACC2 *) -> env_acc_n 2
+      | 23 (* ENVACC3 *) -> env_acc_n 3
+      | 24 (* ENVACC4 *) -> env_acc_n 4
+      | 25 (* ENVACC *) -> env_acc_n (take_argument code)
+      | 26 (* PUSHENVACC1 *) -> push_env_acc_n 1
+      | 27 (* PUSHENVACC2 *) -> push_env_acc_n 2
+      | 28 (* PUSHENVACC3 *) -> push_env_acc_n 3
+      | 29 (* PUSHENVACC4 *) -> push_env_acc_n 4
+      | 30 (* PUSHENVACC *) -> push_env_acc_n (take_argument code)
       | 31 (* PUSH-RETADDR *) -> let ofs = take_argument code in
                                  push_stack (Mlvalues.val_long (!extra_args));
                                  push_stack (!Domain.env);
                                  push_stack (Mlvalues.val_long ofs)
-      | 32 (* APPLY *) -> let args = take_argument code in 
+      | 32 (* APPLY *) -> let args = take_argument code in
                           extra_args := args - 1;
                           pc := Mlvalues.long_val (Block.get_field !Domain.acc 0) - 1; (* -1 pour enlever incrémentation d'apres *)
                           Domain.env := !Domain.acc
@@ -181,19 +215,19 @@ let interp code =
                               Domain.stack.((!Domain.sp) - s + i) <- Domain.stack.((!Domain.sp) - n + i)
                             done;
                             Domain.sp := (!Domain.sp) - (s - n);             
-                            pc := (Mlvalues.long_val (Block.addr_closure (!Domain.acc))) - 1;
+                            pc := Mlvalues.long_val (Block.get_field !Domain.acc 0) - 1;
                             Domain.env := !Domain.acc;
                             extra_args := (!extra_args) + n - 1
       | 37 (* APPTERM1 *) -> let s = take_argument code in 
                              Domain.stack.((!Domain.sp) - s + 0) <- Domain.stack.((!Domain.sp) - 1 + 0);
                              Domain.sp := (!Domain.sp) - (s - 1);             
-                             pc := (Mlvalues.long_val (Block.addr_closure (!Domain.acc))) - 1;
+                             pc := Mlvalues.long_val (Block.get_field !Domain.acc 0) - 1;
                              Domain.env := !Domain.acc
       | 38 (* APPTERM2 *) -> let s = take_argument code in 
                              Domain.stack.((!Domain.sp) - s + 0) <- Domain.stack.((!Domain.sp) - 2 + 0);
                              Domain.stack.((!Domain.sp) - s + 1) <- Domain.stack.((!Domain.sp) - 2 + 1);
                              Domain.sp := (!Domain.sp) - (s - 1);             
-                             pc := (Mlvalues.long_val (Block.addr_closure (!Domain.acc))) - 1;
+                             pc := Mlvalues.long_val (Block.get_field !Domain.acc 0) - 1;
                              Domain.env := !Domain.acc;
                              incr extra_args
       | 39 (* APPTERM3 *) -> let s = take_argument code in 
@@ -201,7 +235,7 @@ let interp code =
                              Domain.stack.((!Domain.sp) - s + 1) <- Domain.stack.((!Domain.sp) - 3 + 1);
                              Domain.stack.((!Domain.sp) - s + 1) <- Domain.stack.((!Domain.sp) - 3 + 2);
                              Domain.sp := (!Domain.sp) - (s - 1);          
-                             pc := (Mlvalues.long_val (Block.addr_closure (!Domain.acc))) - 1;
+                             pc := Mlvalues.long_val (Block.get_field !Domain.acc 0) - 1;
                              Domain.env := !Domain.acc;
                              extra_args := (!extra_args) + 2
       | 40 (* RETURN *) -> let n = take_argument code in
@@ -216,7 +250,7 @@ let interp code =
                            else 
                              begin
                                decr extra_args;
-                               pc := (Mlvalues.long_val (Block.addr_closure (!Domain.acc)) - 1);
+                               pc := (Mlvalues.long_val (Block.addr_closure (!Domain.acc)) - 1); (* à vérifier *)
                                Domain.env := !Domain.acc
                              end
       | 41 (* RESTART *) ->
@@ -267,28 +301,14 @@ let interp code =
          for i = 1 to f - 1 do
            push_stack (Mlvalues.val_ptr ((Mlvalues.ptr_val !Domain.acc) + (2 * i)))
          done
-      | 45 (* OFFSETCLOSUREM2 *) ->            
-         Domain.acc := Mlvalues.val_ptr (Mlvalues.ptr_val !Domain.env - 2)
-      | 46 (* OFFSETCLOSURE0 *) -> 
-         Domain.acc := Mlvalues.val_ptr (Mlvalues.ptr_val !Domain.env) (* à simplifier *)
-      | 47 (* OFFSETCLOSURE2 *) -> 
-         Domain.acc := Mlvalues.val_ptr (Mlvalues.ptr_val !Domain.env + 2)
-      | 48 (* OFFSETCLOSURE *) -> 
-         let n = take_argument code in
-         Domain.acc := Mlvalues.val_ptr (Mlvalues.ptr_val !Domain.env + n)
-      | 49 (* PUSHOFFSETCLOSUREM2 *) -> 
-         push_stack !Domain.acc;
-         Domain.acc := Mlvalues.val_ptr (Mlvalues.ptr_val !Domain.env - 2)
-      | 50 (* PUSHOFFSETCLOSURE0 *) -> 
-         push_stack !Domain.acc;
-         Domain.acc := Mlvalues.val_ptr (Mlvalues.ptr_val !Domain.env) (* à simplifier *)
-      | 51 (* PUSHOFFSETCLOSURE2 *) ->
-         push_stack !Domain.acc;
-         Domain.acc := Mlvalues.val_ptr (Mlvalues.ptr_val !Domain.env + 2)
-      | 52 (* PUSHOFFSETCLOSURE *) -> 
-         let n = take_argument code in
-         push_stack !Domain.acc;
-         Domain.acc := Mlvalues.val_ptr (Mlvalues.ptr_val !Domain.env + n)
+      | 45 (* OFFSETCLOSUREM2 *) -> offsetclosure_n (-2)
+      | 46 (* OFFSETCLOSURE0 *) -> offsetclosure_n 0
+      | 47 (* OFFSETCLOSURE2 *) -> offsetclosure_n 2
+      | 48 (* OFFSETCLOSURE *) -> offsetclosure_n (take_argument code)
+      | 49 (* PUSHOFFSETCLOSUREM2 *) -> pushoffsetclosure_n (-2)
+      | 50 (* PUSHOFFSETCLOSURE0 *) -> pushoffsetclosure_n 0
+      | 51 (* PUSHOFFSETCLOSURE2 *) -> pushoffsetclosure_n 2
+      | 52 (* PUSHOFFSETCLOSURE *) -> pushoffsetclosure_n (take_argument code)
       | 53 (* GETGLOBAL *) -> let n = take_argument code in
                               Domain.acc := (Block.get_global n)
       | 54 (* PUSHGETGLOBAL *) -> push_stack (!Domain.acc);
@@ -344,22 +364,19 @@ let interp code =
 
       (* 66 MAKEFLOATBLOCK *)
 
-      | 67 (* GETFIELD0 *) -> Domain.acc := Block.get_field (!Domain.acc) 0
-      | 68 (* GETFIELD1 *) -> Domain.acc := Block.get_field (!Domain.acc) 1
-      | 69 (* GETFIELD2 *) -> Domain.acc := Block.get_field (!Domain.acc) 2 
-      | 70 (* GETFIELD3 *) -> Domain.acc := Block.get_field (!Domain.acc) 3
-      | 71 (* GETFIELD *) -> let n = take_argument code in 
-                             Domain.acc := Block.get_field (!Domain.acc) n
+      | 67 (* GETFIELD0 *) -> get_field_n 0
+      | 68 (* GETFIELD1 *) -> get_field_n 1
+      | 69 (* GETFIELD2 *) -> get_field_n 2
+      | 70 (* GETFIELD3 *) -> get_field_n 3
+      | 71 (* GETFIELD *) -> get_field_n (take_argument code)
 
       (* GETFLOATFIELD (opInput.code: 72) *)
 
-      | 73 (* SETFIELD0 *) -> Block.set_field (!Domain.acc) 0 (pop_stack ()); Domain.acc := Block.unit 
-      | 74 (* SETFIELD1 *) -> Block.set_field (!Domain.acc) 1 (pop_stack ()); Domain.acc := Block.unit 
-      | 75 (* SETFIELD2 *) -> Block.set_field (!Domain.acc) 2 (pop_stack ()); Domain.acc := Block.unit  
-      | 76 (* SETFIELD3 *) -> Block.set_field (!Domain.acc) 3 (pop_stack ()); Domain.acc := Block.unit 
-      | 77 (* SETFIELD *) -> let n = take_argument code in 
-                             Block.set_field (!Domain.acc) n (pop_stack ());
-                             Domain.acc := Block.unit 
+      | 73 (* SETFIELD0 *) -> set_field_n 0
+      | 74 (* SETFIELD1 *) -> set_field_n 1
+      | 75 (* SETFIELD2 *) -> set_field_n 2
+      | 76 (* SETFIELD3 *) -> set_field_n 3
+      | 77 (* SETFIELD *) -> set_field_n (take_argument code)
 
       (* 78 SETFLOATFIELD *)
 
@@ -470,24 +487,16 @@ let interp code =
          (* (match p with ...) *)      
          for i = 0 to 4 do let _ = pop_stack () in () done
       | 98 (* C-CALLN *) -> (* TODO *) ()
-      | 99  (* CONST0 *) -> Domain.acc := Mlvalues.val_long 0
-      | 100 (* CONST1 *) -> Domain.acc := Mlvalues.val_long 1
-      | 101 (* CONST2 *) -> Domain.acc := Mlvalues.val_long 2
-      | 102 (* CONST3 *) -> Domain.acc := Mlvalues.val_long 3
-      | 103 (* CONSTINT *) -> 
-         let n = take_argument code in 
-         Domain.acc := Mlvalues.val_long n
-      | 104 (* PUSHCONST0 *) -> push_stack (!Domain.acc);
-                                Domain.acc := (Mlvalues.val_long 0)
-      | 105 (* PUSHCONST1 *) -> push_stack (!Domain.acc);
-                                Domain.acc := (Mlvalues.val_long 1)
-      | 106 (* PUSHCONST2 *) -> push_stack (!Domain.acc);
-                                Domain.acc := (Mlvalues.val_long 2)
-      | 107 (* PUSHCONST3 *) -> push_stack (!Domain.acc);
-                                Domain.acc := (Mlvalues.val_long 3)
-      | 108 (* PUSHCONSTINT *) -> let n = take_argument code in
-                                  push_stack (!Domain.acc);
-                                  Domain.acc := (Mlvalues.val_long n)
+      | 99  (* CONST0 *) -> const_n 0
+      | 100 (* CONST1 *) -> const_n 1
+      | 101 (* CONST2 *) -> const_n 2
+      | 102 (* CONST3 *) -> const_n 3
+      | 103 (* CONSTINT *) -> const_n (take_argument code)
+      | 104 (* PUSHCONST0 *) -> pushconst_n 0
+      | 105 (* PUSHCONST1 *) -> pushconst_n 1
+      | 106 (* PUSHCONST2 *) -> pushconst_n 2
+      | 107 (* PUSHCONST3 *) -> pushconst_n 3
+      | 108 (* PUSHCONSTINT *) -> pushconst_n (take_argument code)
       | 109 (* NEGINT *) -> Domain.acc := Mlvalues.val_long (Prims.negint (Mlvalues.long_val !Domain.acc))
       | 110 (* ADDINT *) -> Domain.acc := Mlvalues.val_long (Prims.addint (Mlvalues.long_val !Domain.acc) (Mlvalues.long_val (pop_stack ())))
       | 111 (* SUBINT *) -> Domain.acc := Mlvalues.val_long (Prims.subint (Mlvalues.long_val !Domain.acc) (Mlvalues.long_val (pop_stack ())))
@@ -555,7 +564,7 @@ let interp code =
       | 143 (* STOP *) -> pc := Array.length code
 
       (* EVENT *)
-      (* BREAk *)
+      (* BREAK *)
 
       | _ -> assert false
     end;
