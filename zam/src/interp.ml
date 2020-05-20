@@ -28,7 +28,7 @@ let rec debug_print_block block =
       print_string ", tag : ";
       print_int (Mlvalues.long_val (Mlvalues.tag (Mlvalues.ptr_val block)));
       print_string ") ";
-      for i = 0 to Mlvalues.size (Mlvalues.ptr_val block) - 1 do
+      (* for i = 0 to Mlvalues.size (Mlvalues.ptr_val block) - 1 do
         print_string "<";
         if Mlvalues.is_ptr (Mlvalues.get_field block i) then
           debug_print_block (Mlvalues.get_field block i)
@@ -36,7 +36,7 @@ let rec debug_print_block block =
           print_int (Mlvalues.long_val (Mlvalues.get_field block i));
         print_string ">";
         print_string " | "
-      done;
+      done;*)
       print_newline ()
     end
 
@@ -65,7 +65,7 @@ let debug_print_state () =
 
       print_string " pc: "; 
       print_int (!pc);
-      (* print_string " --------------------------------------";
+      print_string " --------------------------------------";
       print_newline ();
       print_string "acc: "; 
       if Mlvalues.is_ptr (!Mlvalues.acc) then 
@@ -82,7 +82,7 @@ let debug_print_state () =
       print_string ", extra args: ";
       print_int (!extra_args);
       print_newline ();
-      debug_print_arr Mlvalues.stack (!Mlvalues.sp-1) "stack"; *)
+      debug_print_arr Mlvalues.stack (!Mlvalues.sp-1) "stack";
       (* debug_print_arr !Mlvalues.from_space (!Mlvalues.heap_top - 1) "from_space" *)
     end
 (* print_string " global: ";
