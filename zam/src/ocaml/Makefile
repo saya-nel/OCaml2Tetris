@@ -4,10 +4,13 @@ EXE=zam
 all:
 	$(CC) -c ../mlvalues.ml
 	$(CC) -c ../prims.ml
+	$(CC) -c ../domain.ml
+	$(CC) -c ../block.ml
+	$(CC) -c ../gc.ml
+	$(CC) -c ../alloc.ml
 	$(CC) -c ../interp.ml
 	$(CC) -c ../../input.ml
 	$(CC) -c ../main.ml
-	$(CC) -o $(EXE) ../mlvalues.cmo ../prims.cmo interp.cmo input.cmo main.cmo
+	$(CC) -o $(EXE) ../mlvalues.cmo ../prims.cmo ../domain.cmo ../block.cmo ../gc.cmo ../alloc.cmo interp.cmo input.cmo main.cmo
 clean:
-	rm -f $(EXE) ../mlvalues.cmo ../prims.cmo ../interp.cmo ../../input.cmo ../main.cmo \
-	../mlvalues.cmi prims.cmi ../interp.cmi ../../input.cmi ../main.cmi
+	rm -f $(EXE) ../*.cm[oi]

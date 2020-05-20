@@ -29,8 +29,8 @@ let div v1 v2 = div_aux v1 v2 0
 
 let divint v1 v2 =
   if v2 = 0 then failwith "divint" else
-  if v1 >= 0 then (if v2 >= 0 then div v1 v2 else - (div v1 (- v2)))
-  else (if v2 >= 0 then - (div (- v1) v2) else (div (- v1) (- v2)))
+    if v1 >= 0 then (if v2 >= 0 then div v1 v2 else - (div v1 (- v2)))
+    else (if v2 >= 0 then - (div (- v1) v2) else (div (- v1) (- v2)))
 
 (*** modulo d'après la doc OCaml : `((mod) x y) < 0` si et seulement si `x < 0` ***)
 (*** (mod) 11 3        ~>  2 *)
@@ -44,7 +44,7 @@ let rec modulo v1 v2 =
 
 let rec modint v1 v2 = (* dans un premier temps, on suppose que v2 >= 0 ***)
   if v2 = 0 then failwith "modint" else
-  if v1 < 0 then - (modulo (- v1) (abs v2)) else (modulo v1 (abs v2))
+    if v1 < 0 then - (modulo (- v1) (abs v2)) else (modulo v1 (abs v2))
 
 
 (*** opérations logiques ***)
