@@ -8,4 +8,7 @@ and f2 x = b + (f3 x)
 and f3 x = if x = 0 then c else a + (f1 (x-1))
 and f4 x = d + e + (f2 x)
 in 
-f1 10
+f1 4;
+f2 4;
+f3 4;
+f4 4
