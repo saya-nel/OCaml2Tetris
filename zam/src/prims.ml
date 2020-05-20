@@ -5,7 +5,7 @@
 (***********************************************)
 
 let isint v = 
-  if v >= (- 16384) then 1 else 0
+  if Mlvalues.is_ptr v then 0 else 1
 
 (*** opérations arithmétiques ***)
 

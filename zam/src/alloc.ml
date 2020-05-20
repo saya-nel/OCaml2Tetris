@@ -8,5 +8,5 @@ let make_block tag sz =
 
 let make_closure pc size =
   let res = make_block Block.closure_tag size in
-  Block.set_field res 0 pc;
+  Block.set_field res 0 (Mlvalues.val_long pc);
   res

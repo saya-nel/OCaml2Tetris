@@ -1,3 +1,5 @@
+external print_int : int -> unit = "fake" ;;
+
 let a = 42 in
 let b = 17 in
 let c = 25 in
@@ -8,4 +10,4 @@ and f2 x = b + (f3 x)
 and f3 x = if x = 0 then c else a + (f1 (x-1))
 and f4 x = d + e + (f2 x)
 in 
-  f2 4
+  print_int (f2 4)

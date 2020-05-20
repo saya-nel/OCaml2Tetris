@@ -1,4 +1,4 @@
-let debug = true
+let debug = false
 
 (* ALLOC fonctions *)
 
@@ -44,7 +44,7 @@ let resize_spaces size =
         end
       else ();
       (* création du nouveau from_space à la bonne taille *)
-      let new_from_space = Array.make !Domain.heap_size 0 in
+      let new_from_space = Array.make !Domain.heap_size (Mlvalues.val_long 0) in
       (* copie de l'ancien from_space dans le nouveau *)
       for i = 0 to !Domain.heap_top - 1 do
         new_from_space.(i) <- (!Domain.from_space).(i)
@@ -52,7 +52,7 @@ let resize_spaces size =
       Pervasives.ignore !Domain.from_space;
       Domain.from_space := new_from_space;
       Pervasives.ignore !Domain.to_space;
-      Domain.to_space := Array.make !Domain.heap_size 0
+      Domain.to_space := Array.make !Domain.heap_size (Mlvalues.val_long 0) 
     end
   else ()
 
@@ -78,10 +78,10 @@ let move_addr value is_array source_reg source_arr pos_arr =
           let old = !next in (* sauvegarde de l'endroit où on va copier dans to_space *)
           (* on copie tout le bloc, header compris dans to_space *)
           (!Domain.to_space).(old) <- Block.get_field value (-1); (* copie le header *)
-          for j = 0 to (Block.size (Mlvalues.val_ptr value)) - 1 do (* copie tout les fields *)
+          for j = 0 to (Block.size (Mlvalues.ptr_val value)) - 1 do (* copie tout les fields *)
             (!Domain.to_space).(old + j + 1) <- Block.get_field value j
           done;
-          next := (Block.size (Mlvalues.val_ptr value)) + 1; (* prochaine pos dispo dans to_space *)
+          next := (Block.size (Mlvalues.ptr_val value)) + 1; (* prochaine pos dispo dans to_space *)
           (* on change le tag du bloc en fwd_ptr car il a été déplacé  *)
           Block.set_field value (-1) (Block.make_header Block.fwd_ptr_tag (Block.size (Mlvalues.ptr_val value)));
           (* ajoute le fwd_ptr dans from_space vers la nouvelle position dans to_space *)
@@ -99,7 +99,7 @@ let run_gc size =
   (* on parcours les éléments de la pile *)
   for i = 0 to !Domain.sp - 1 do
     let value = Domain.stack.(i) in
-    move_addr value true (ref 0) Domain.stack i
+    move_addr value true (ref (Mlvalues.val_long 0)) Domain.stack i
   done;
 
   (* on traite l'accu *)
@@ -110,10 +110,10 @@ let run_gc size =
   (* maintenant on parcours les fields de tout les objets qu'on a bougé dans to_space *)
   let i = ref 0 in
   while !i < !next do (* parcours les headers *)
-    let size = (!Domain.from_space).(!i) / 256 in
+    let size = (Mlvalues.long_val (!Domain.from_space).(!i)) / 256 in
     for j = !i + 1 to size do (* parcours les fields du bloc courant *)
       let value = (!Domain.from_space).(!i) in
-      move_addr value true (ref 0) !Domain.from_space !i
+      move_addr value true (ref (Mlvalues.val_long 0)) !Domain.from_space !i
     done;
     i := !i + size + 1 (* passe au header du bloc suivant dans to_space *)
   done;
@@ -143,8 +143,8 @@ let alloc size =
   else ();
   if heap_can_alloc size then
     begin
-      print_string "can alloc";
-      print_newline ();
+      if debug then (print_string "can alloc"; print_newline ()) else ();
+
       let res = !Domain.heap_top in
       Domain.heap_top := (!Domain.heap_top) + size;
       res  
@@ -153,7 +153,7 @@ let alloc size =
     begin
       if debug then 
         begin
-          print_string "cant alloc";
+          print_string "cannot alloc";
           print_newline ()
         end 
       else ();

@@ -1,13 +1,13 @@
 
 let size ptr = 
   (* a priori, problème si le bloc a taille >= 128 *)
-  (!Domain.from_space).(ptr) / 256
+  (Mlvalues.long_val (!Domain.from_space).(ptr)) / 256
 
 let tag ptr = 
   (* a priori, problème si le bloc a taille >= 128 *)
-  (!Domain.from_space).(ptr) land 255
+  (Mlvalues.long_val (!Domain.from_space).(ptr)) land 255
 
-let unit = 0
+let unit = Mlvalues.val_long 0 
 
 let get_global i =
   Domain.global.(i)
