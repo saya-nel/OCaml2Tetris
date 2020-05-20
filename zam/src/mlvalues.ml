@@ -2,7 +2,7 @@ let debug = true
 
 (* alloc définitions *)
 
-let heap_size = ref 10
+let heap_size = ref 1000
 
 let from_space = ref (Array.make !heap_size 0)
 let to_space = ref (Array.make !heap_size 0)
@@ -79,7 +79,7 @@ let infix_tag = 249
 let fwd_ptr_tag = 248
 
 let addr_closure (c : value) = get_field c 0
-let env_closure (c : value) = val_long ((long_val c) + 2)
+let env_closure (c : value) = val_ptr ((ptr_val c) + 2)
 
 let val_codeptr o = val_long o (* ??? *)
 
