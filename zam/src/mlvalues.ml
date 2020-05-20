@@ -144,9 +144,9 @@ let resize_spaces size =
       for i = 0 to !heap_top - 1 do
         new_from_space.(i) <- (!from_space).(i)
       done;
-      (* free from_space *)
+      Pervasives.ignore from_space;
       from_space := new_from_space;
-      (* free to_space *)
+      Pervasives.ignore to_space;
       to_space := Array.make !heap_size 0
     end
   else ()
