@@ -1,4 +1,4 @@
-external print_int : int -> unit = "fake" ;;
+external print_int : int -> unit = "caml_print_int" ;;
 
 let a = 42 in
 let b = 17 in

@@ -11,6 +11,9 @@ let pop_stack () =
   decr Domain.sp;
   v
 
+let pop_stack_ignore n =
+  Domain.sp := !Domain.sp - n
+
 let push_stack v =
   Domain.stack.(!Domain.sp) <- v; incr Domain.sp
 
@@ -19,7 +22,6 @@ let take_argument code =
   code.(!pc)
 
 let rec debug_print_block block =
-  if debug then 
     begin
       print_string "(block[";
       print_int (Mlvalues.ptr_val block);
@@ -41,54 +43,49 @@ let rec debug_print_block block =
     end
 
 let debug_print_arr arr arr_end name =
-  if debug then 
-    begin
-      print_newline ();
-      print_string name;
-      print_string " :";
-      print_newline ();
-      for i = 0 to arr_end do  
-        if Mlvalues.is_ptr arr.(i) then 
-          debug_print_block (arr.(i))
-        else begin
-            print_int (Mlvalues.long_val arr.(i)) 
-          end;
-        print_string " | " 
-      done;
-      print_newline ()
-    end
+  begin
+    print_newline ();
+    print_string name;
+    print_string " :";
+    print_newline ();
+    for i = 0 to arr_end do  
+      if Mlvalues.is_ptr arr.(i) then 
+        debug_print_block (arr.(i))
+      else begin
+          print_int (Mlvalues.long_val arr.(i)) 
+        end;
+      print_string " | " 
+    done;
+    print_newline ()
+  end
 
 let debug_print_state () = 
-  if debug then 
-    begin
-      print_newline ();
-
-      print_string " pc: "; 
-      print_int (!pc);
-      print_string " --------------------------------------";
-      print_newline ();
-      print_string "acc: "; 
-      if Mlvalues.is_ptr (!Domain.acc) then 
-        debug_print_block (!Domain.acc)
-      else 
-        print_int (Mlvalues.long_val (!Domain.acc));
-      print_string ", env: ";
-      if Mlvalues.is_ptr (!Domain.env) then
-        debug_print_block (!Domain.env)
-      else 
-        print_int (Mlvalues.long_val (!Domain.env));
-      print_string ", Domain.sp: "; 
-      print_int (!Domain.sp);
-      print_string ", extra args: ";
-      print_int (!extra_args);
-      print_newline ();
-      debug_print_arr Domain.stack (!Domain.sp-1) "stack"
-                      (* debug_print_arr !Mlvalues.from_space (!Mlvalues.heap_top - 1) "from_space" *)
-    end
+  begin
+    print_newline ();
+    print_string "pc: "; 
+    print_int (!pc);
+    print_string ", acc: "; 
+    if Mlvalues.is_ptr (!Domain.acc) then 
+      debug_print_block (!Domain.acc)
+    else 
+      print_int (Mlvalues.long_val (!Domain.acc));
+    print_string ", env: ";
+    if Mlvalues.is_ptr (!Domain.env) then
+      debug_print_block (!Domain.env)
+    else 
+      print_int (Mlvalues.long_val (!Domain.env));
+    print_string ", Domain.sp: "; 
+    print_int (!Domain.sp);
+    print_string ", extra args: ";
+    print_int (!extra_args);
+    print_newline ()
+    (* debug_print_arr Domain.stack (!Domain.sp-1) "stack"
+       debug_print_arr !Mlvalues.from_space (!Mlvalues.heap_top - 1) "from_space" *)
+  end
 (* print_string " global: ";
-   if Mlvalues.is_ptr (!global) then
-   debug_print_block (!global);
-   print_newline (); *)
+ if Mlvalues.is_ptr (!global) then
+ debug_print_block (!global);
+ print_newline (); *)
 
 let acc_n n = 
   Domain.acc := Domain.stack.((!Domain.sp) - n - 1)
@@ -100,7 +97,7 @@ let push_acc_n n =
   push_stack (!Domain.acc); 
   Domain.acc := Domain.stack.((!Domain.sp) - n - 1)
 
-let pop n =
+let pop_n n =
   Domain.sp := !Domain.sp - n
 
 let assign n =
@@ -137,7 +134,7 @@ let pushconst_n n =
 let interp code =
   Domain.sp := 0;
   while !pc < Array.length code do
-    debug_print_state ();
+    if debug then debug_print_state ();
     begin
       match code.(!pc) with
       | 0 (* ACC0 *) -> acc_n 0
@@ -159,7 +156,7 @@ let interp code =
       | 16 (* PUSHACC6 *) -> push_acc_n 6
       | 17 (* PUSHACC7 *) -> push_acc_n 7
       | 18 (* PUSHACC *) -> push_acc_n (take_argument code)
-      | 19 (* POP *) -> pop (take_argument code)
+      | 19 (* POP *) -> pop_n (take_argument code)
       | 20 (* ASSIGN *) -> assign (take_argument code)
       | 21 (* ENVACC1 *) -> env_acc_n 1
       | 22 (* ENVACC2 *) -> env_acc_n 2
@@ -419,10 +416,9 @@ let interp code =
                              push_stack (Mlvalues.val_long (!pc - 1 + ofs)); (* -1 car on a prit un argument *)
                              trap_sp := !Domain.sp
       | 90 (* POPTRAP *) -> 
-         let _ = pop_stack () in
+         pop_stack_ignore 1;
          trap_sp := Mlvalues.long_val (pop_stack ());
-         let _ = pop_stack () in
-         let _ = pop_stack () in ()
+         pop_stack_ignore 2
       | 91 (* RAISE *) -> 
          if !trap_sp = 0 then begin 
              print_string "Exception, acc = ";
@@ -438,54 +434,51 @@ let interp code =
       | 92 (* CHECK-SIGNALS *) -> ()
       | 93 (* C-CALL1 *) ->
          let p = take_argument code in
-         push_stack (!Domain.env);
-         (match p with
-          | 0 -> print_int (Mlvalues.long_val !Domain.acc); push_stack Block.unit
-         (* indice de la primitive -> code de la primitive *)
-         );
-         let _ = pop_stack () in ()
+         push_stack (!Domain.env); 
+         Domain.acc := (match p with
+                        | 0 -> Call.caml_print_int_code     !Domain.acc
+                        | 1 -> Call.caml_print_newline_code !Domain.acc
+                        | 2 -> Call.caml_array_length_code  !Domain.acc
+                        | _ -> Call.not_available ());
+         pop_stack_ignore 1
       | 94 (* C-CALL2 *) -> 
          let p = take_argument code in
-         print_string "primitive numéro " ; print_int p; print_newline () ;
-         let x = pop_stack () in
-         push_stack (!Domain.env);
-         (* (match p with ...) *)
-         (match p with
-          | _ -> (* Array.make *)
-             let n = Mlvalues.long_val !Domain.acc in
-             let a = Alloc.make_block 0 n in (* tag 0 *)
-             for i = 0 to n - 1 do
-               Block.set_field a i x 
-             done;
-             let _ = pop_stack () in
-             let _ = pop_stack () in
-             push_stack a
-         )
-
+         let v = pop_stack () in
+         push_stack (!Domain.env); 
+         Domain.acc := (match p with
+                        | 0 -> Call.caml_array_make_code !Domain.acc v
+                        | 1 -> Call.caml_array_get_code !Domain.acc v
+                        | _ -> Call.not_available ());
+         pop_stack_ignore 1
       | 95 (* C-CALL3 *) ->
          let p = take_argument code in
-         let x1 = pop_stack () in
-         let x2 = pop_stack () in   
-         push_stack (!Domain.env);
-         (* (match p with ...) *)      
-         for i = 0 to 3 do let _ = pop_stack () in () done
+         let v1 = pop_stack () in
+         let v2 = pop_stack () in
+         push_stack (!Domain.env); 
+         Domain.acc := (match p with
+                        | 0 -> Call.caml_array_set_code !Domain.acc v1 v2
+                        | 1 -> Call.caml_array_sub_code !Domain.acc v1 v2
+                        | _ -> Call.not_available ());
+         pop_stack_ignore 1
       | 96 (* C-CALL4 *) -> 
          let p = take_argument code in
-         let x1 = pop_stack () in
-         let x2 = pop_stack () in 
-         let x3 = pop_stack () in   
-         push_stack (!Domain.env);
-         (* (match p with ...) *)      
-         for i = 0 to 4 do let _ = pop_stack () in () done
+         let v1 = pop_stack () in
+         let v2 = pop_stack () in
+         let v3 = pop_stack () in
+         push_stack (!Domain.env); 
+         Domain.acc := (match p with
+                        | _ -> Call.not_available ());
+         pop_stack_ignore 1
       | 97 (* C-CALL5 *) -> 
          let p = take_argument code in
-         let x1 = pop_stack () in
-         let x2 = pop_stack () in 
-         let x3 = pop_stack () in   
-         let x4 = pop_stack () in   
-         push_stack (!Domain.env);
-         (* (match p with ...) *)      
-         for i = 0 to 4 do let _ = pop_stack () in () done
+         let v1 = pop_stack () in
+         let v2 = pop_stack () in
+         let v3 = pop_stack () in
+         let v4 = pop_stack () in
+         push_stack (!Domain.env); 
+         Domain.acc := (match p with
+                        | _ -> Call.not_available ());
+         pop_stack_ignore 1
       | 98 (* C-CALLN *) -> (* TODO *) ()
       | 99  (* CONST0 *) -> const_n 0
       | 100 (* CONST1 *) -> const_n 1
@@ -569,12 +562,4 @@ let interp code =
       | _ -> assert false
     end;
     incr pc
-  done;
-  print_newline ();
-  print_string "fin programme :";
-  print_newline ();
-  debug_print_state ();
-  (* debug_print_stack (); *)
-  print_newline ()
-
-
+  done

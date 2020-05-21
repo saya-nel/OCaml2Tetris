@@ -12,7 +12,7 @@ STDLIB="stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml"
 ZAM_INPUT="../zam/input.ml"
 ZAM_SRC=" ../zam/src/mlvalues.ml ../zam/src/prims.ml \
          ../zam/src/domain.ml ../zam/src/block.ml ../zam/src/gc.ml ../zam/src/alloc.ml \
-         ../zam/src/interp.ml ../zam/src/main.ml"
+         ../zam/src/call.ml $ZAM_INPUT ../zam/src/interp.ml ../zam/src/main.ml"
 
 if [ $# -eq 0 ]
   then # Si il n'y a pas d'arg, on lance la vm
@@ -20,7 +20,7 @@ if [ $# -eq 0 ]
     mkdir -p $ZAM_BIN
     cd $MINI_ML
     make
-    ./compile -assert -typecheck -dst=$ROOT$ZAM_BIN $STDLIB $ZAM_INPUT $ZAM_SRC
+    ./compile -assert -typecheck -dst=$ROOT$ZAM_BIN $STDLIB $ZAM_SRC
     cd $ROOT 
 
     # ouverture de la VM nand2tetris
@@ -48,7 +48,7 @@ if [ $# -eq 0 ]
     # lancement compilation vers mini-ml
     mkdir -p $ZAM_BIN
     cd $MINI_ML
-    ./compile -assert -typecheck -dst=../$ZAM_BIN $STDLIB $ZAM_INPUT $ZAM_SRC
+    ./compile -assert -typecheck -dst=../$ZAM_BIN $STDLIB $ZAM_SRC
     cd $ROOT
 
     # ouverture de la VM nand2tetris
