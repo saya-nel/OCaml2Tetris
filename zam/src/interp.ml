@@ -78,9 +78,9 @@ let debug_print_state () =
     print_int (!Domain.sp);
     print_string ", extra args: ";
     print_int (!extra_args);
-    print_newline ()
-    (* debug_print_arr Domain.stack (!Domain.sp-1) "stack"
-       debug_print_arr !Mlvalues.from_space (!Mlvalues.heap_top - 1) "from_space" *)
+    print_newline ();
+    debug_print_arr Domain.stack (!Domain.sp-1) "stack";
+    debug_print_arr !Domain.from_space (!Domain.heap_top - 1) "from_space"
   end
 (* print_string " global: ";
  if Mlvalues.is_ptr (!global) then
@@ -179,7 +179,7 @@ let interp code =
       | 33 (* APPLY1 *) -> let arg = pop_stack () in
                            push_stack (Mlvalues.val_long (!extra_args));
                            push_stack (!Domain.env);
-                           push_stack (Mlvalues.val_long ((!pc) + 1));
+                           push_stack (Mlvalues.val_long (!pc));
                            push_stack arg;
                            pc := Mlvalues.long_val (Block.get_field !Domain.acc 0) - 1;
                            Domain.env := !Domain.acc;
@@ -188,7 +188,7 @@ let interp code =
                            let arg2 = pop_stack () in
                            push_stack (Mlvalues.val_long (!extra_args));
                            push_stack (!Domain.env);
-                           push_stack (Mlvalues.val_long ((!pc) + 1));
+                           push_stack (Mlvalues.val_long (!pc));
                            push_stack arg2;
                            push_stack arg1;
                            pc := Mlvalues.long_val (Block.get_field !Domain.acc 0) - 1;
@@ -199,7 +199,7 @@ let interp code =
                            let arg3 = pop_stack () in
                            push_stack (Mlvalues.val_long (!extra_args));
                            push_stack (!Domain.env);
-                           push_stack (Mlvalues.val_long ((!pc) + 1));
+                           push_stack (Mlvalues.val_long (!pc));
                            push_stack arg3;
                            push_stack arg2;
                            push_stack arg1;
@@ -240,7 +240,7 @@ let interp code =
                            if (!extra_args) <= 0 
                            then 
                              begin
-                               pc := (Mlvalues.long_val (pop_stack ())) - 1;
+                               pc := (Mlvalues.long_val (pop_stack ()));
                                Domain.env := pop_stack ();
                                extra_args := Mlvalues.long_val (pop_stack ())
                              end
@@ -251,31 +251,32 @@ let interp code =
                                Domain.env := !Domain.acc
                              end
       | 41 (* RESTART *) ->
-         let size = Block.size (Mlvalues.ptr_val (!Domain.env)) in
-         for i = 1 to size - 2 do 
+         let size = Block.size (Mlvalues.ptr_val (!Domain.env)) - 2 in
+         for i = 2 to size do 
            push_stack (Block.get_field (!Domain.env) (size-i))
          done;
          Domain.env := Block.get_field (!Domain.env) 1;
-         extra_args := !extra_args + size - 2
+         extra_args := !extra_args + size
       | 42 (* GRAB *) -> let n = take_argument code in
                          if !extra_args >= n 
                          then extra_args := !extra_args - n
                          else 
                            begin 
-                             Domain.acc := Alloc.make_closure (!pc - 4) (!extra_args + 3);
+                             Domain.acc := Alloc.make_block Block.closure_tag (!extra_args + 3);
+                             Block.set_field !Domain.acc 0 (!pc - 3);
                              Block.set_field !Domain.acc 1 !Domain.env;
-                             for i = 2 to !extra_args do
-                               Block.set_field !Domain.acc i (pop_stack ())
+                             for i = 0 to !extra_args do
+                               Block.set_field !Domain.acc (i+2) (pop_stack ())
                              done;
-                             pc := Mlvalues.long_val (pop_stack ()) - 1;
+                             pc := Mlvalues.long_val (pop_stack ());
                              Domain.env := pop_stack();
                              extra_args := Mlvalues.long_val (pop_stack ())
                            end
       | 43 (* CLOSURE *) -> let n = take_argument code in
-                            if n > 0 then push_stack (!Domain.acc);
                             let addr = take_argument code in
-                            Domain.acc := Alloc.make_closure addr (n + 1);
-                            for i = 1 to n - 1 do
+                            if n > 0 then push_stack (!Domain.acc);
+                            Domain.acc := Alloc.make_closure addr (n+1);
+                            for i = 1 to n do
                               Block.set_field !Domain.acc i (pop_stack ())
                             done
       | 44 (* CLOSUREREC *) -> 
