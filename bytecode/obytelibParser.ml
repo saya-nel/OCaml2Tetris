@@ -252,7 +252,7 @@ let replace_label_index (instrs : string list) (instr : string) : string = match
   | "CLOSURE"
   | "BEQ"
   | "BNEQ"
-  | "BLINT"
+  | "BLTINT"
   | "BLEINT"
   | "BGTINT"
   | "BGEINT"
