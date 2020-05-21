@@ -21,13 +21,13 @@ let caml_array_length_code a =
 
 (* ************************ CALL2 ***************************** *)
 
-(* [array_make z x] renvoie un bloc (tableau) de taille z *)
+(* [caml_make_vect z x] renvoie un bloc (tableau) de taille z *)
 (* dont tout les champs sont initialisé à x *)
-let caml_array_make = 0
+let caml_make_vect = 0
 
-let caml_array_make_code sz init =
+let caml_make_vect_code sz init =
   let n = Mlvalues.long_val sz in
-  if sz < 0 then failwith "caml_array_make" else
+  if sz < 0 then failwith "caml_make_vect" else
   let arr = Alloc.make_block 0 n in (* array : tag 0 *)
   for i = 0 to n - 1 do
     Block.set_field arr i init
@@ -35,17 +35,17 @@ let caml_array_make_code sz init =
   arr
 
 (* [array_get a n] renvoie le n-ième élement du tableau a *)
-let caml_array_get = 1
+let caml_array_get_addr = 1
 
-let caml_array_get_code a v =
+let caml_array_get_addr_code a v =
     Block.get_field a (Mlvalues.long_val v)
 
 (* ************************ CALL3 ***************************** *)
 
 (* [array_get a n x] affecte x au n-ième élement du tableau a *)
-let caml_array_set = 0
+let caml_array_set_addr = 0
 
-let caml_array_set_code a v x =
+let caml_array_set_addr_code a v x =
     Block.set_field a (Mlvalues.long_val v) x; 
     Block.unit
 

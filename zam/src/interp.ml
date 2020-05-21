@@ -252,8 +252,8 @@ let interp code =
                              end
       | 41 (* RESTART *) ->
          let size = Block.size (Mlvalues.ptr_val (!Domain.env)) - 2 in
-         for i = 2 to size do 
-           push_stack (Block.get_field (!Domain.env) (size-i))
+         for i = 0 to size - 1 do 
+           push_stack (Block.get_field (!Domain.env) (i+2))
          done;
          Domain.env := Block.get_field (!Domain.env) 1;
          extra_args := !extra_args + size
@@ -263,7 +263,7 @@ let interp code =
                          else 
                            begin 
                              Domain.acc := Alloc.make_block Block.closure_tag (!extra_args + 3);
-                             Block.set_field !Domain.acc 0 (!pc - 3);
+                             Block.set_field !Domain.acc 0 (!pc - 2);
                              Block.set_field !Domain.acc 1 !Domain.env;
                              for i = 0 to !extra_args do
                                Block.set_field !Domain.acc (i+2) (pop_stack ())
@@ -447,8 +447,8 @@ let interp code =
          let v = pop_stack () in
          push_stack (!Domain.env); 
          Domain.acc := (match p with
-                        | 0 -> Call.caml_array_make_code !Domain.acc v
-                        | 1 -> Call.caml_array_get_code !Domain.acc v
+                        | 0 -> Call.caml_make_vect_code !Domain.acc v
+                        | 1 -> Call.caml_array_get_addr_code !Domain.acc v
                         | _ -> Call.not_available ());
          pop_stack_ignore 1
       | 95 (* C-CALL3 *) ->
@@ -457,7 +457,7 @@ let interp code =
          let v2 = pop_stack () in
          push_stack (!Domain.env); 
          Domain.acc := (match p with
-                        | 0 -> Call.caml_array_set_code !Domain.acc v1 v2
+                        | 0 -> Call.caml_array_set_addr_code !Domain.acc v1 v2
                         | 1 -> Call.caml_array_sub_code !Domain.acc v1 v2
                         | _ -> Call.not_available ());
          pop_stack_ignore 1
@@ -526,7 +526,7 @@ let interp code =
       | 132 (* BNEQ *) -> 
          let v = take_argument code in
          let ofs = take_argument code in
-         if Prims.compare_imm v (Mlvalues.long_val !Domain.acc) <> 0 then pc := ofs - 1 (* pc := (!pc) + ofs - 1 *)
+         if Prims.compare_imm v (Mlvalues.long_val !Domain.acc) <> 0 then pc := ofs - 1
       | 133 (* BLTINT *) ->
          let v = take_argument code in
          let ofs = take_argument code in
