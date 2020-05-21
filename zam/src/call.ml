@@ -45,7 +45,8 @@ let caml_array_get_code a v =
 let caml_array_set = 0
 
 let caml_array_set_code a v x =
-    Block.set_field a (Mlvalues.long_val v) x;  Block.unit
+    Block.set_field a (Mlvalues.long_val v) x; 
+    Block.unit
 
 (* [array_sub a ofs len] ... *)
 let caml_array_sub = 1

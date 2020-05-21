@@ -1,0 +1,27 @@
+Introduction
+
+1) chaîne de compilation nand2tetris 
+
+2) compilation d'un langage fonctionnel
+2.1) micro-ml (lambda-calcul + récursion locale + ifZero + entiers)
+2.1.1) shémas de compilation
+2.1.2) typage
+2.2) mini-ml (micro-ml + traits impératifs + fonctions et variables globales + compilation séparée)
+2.2.1) structure du compilateur
+2.2.2) optimisations de code
+3) ZAM et bibliothèque d'execution
+3.1) spécification 
+3.2) structure du programme
+3.3) parser Obytelib pour produire un tableau d'entiers à partir d'un cmo
+3.4) représentation des valeurs
+3.5) closurerec
+3.6) gc stop&copy
+3.7) externals
+
+3) Travaux futurs
+3.1) amméliorer le simulateur nand2tetris (le réécrire en OCaml)
+3.2) bootstrap 
+3.3) gc mark&sweep et générationnel 
+
+
+Conclusion

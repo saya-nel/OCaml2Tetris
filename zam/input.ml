@@ -1,1 +1,1 @@
-let code = [|103; 42; 108; 10; 94; Call.caml_array_make; 108; 4; 107; 12; 95; Call.caml_array_sub; 108; 17; 106; 12; 95; Call.caml_array_set; 1; 93; Call.caml_array_length; 93; Call.caml_print_int; 99; 93; Call.caml_print_newline; 101; 11; 94; Call.caml_array_get; 93; Call.caml_print_int; 99; 93; Call.caml_print_newline; 0; 93; Call.caml_array_length; 93; Call.caml_print_int; 19; 2; 58; 57; 0|]
+let code = [|84; 18; 0; 131; 0; 15; 0; 127; -1; 50; 33; 11; 112; 40; 1; 100; 40; 1; 44; 1; 0; 2; 103; 6; 11; 33; 93; Call.caml_print_int; 19; 1; 58; 57; 0|]

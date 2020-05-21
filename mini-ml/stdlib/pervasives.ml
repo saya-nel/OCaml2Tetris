@@ -91,3 +91,5 @@ let int_of_char (n : char) : int = (# n)
 
 let compare x y = if x < y then -1 else if x = y then 0 else 1
 
+
+let output_char oc c = print_char c 

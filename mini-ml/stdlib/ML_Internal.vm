@@ -136,7 +136,6 @@ function ML_Internal.right 0
 	add
 	call Memory.peek 1
 	return
-// val free : 'a array -> unit
 function ML_Internal.free 0
 	push argument 0
     call Memory.deAlloc 1 
