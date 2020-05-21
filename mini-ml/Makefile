@@ -16,6 +16,7 @@ all:
 	$(CC) -c ast_inline.ml
 	$(CC) -c ast_fold.ml
 	$(CC) -c ast_globz.ml
+	$(CC) -c ast_smpvar.ml
 	$(CC) -c freevr.ml
 	$(CC) -c ast_lift.ml
 	$(CC) -c ast_closure.ml
@@ -33,8 +34,8 @@ all:
 	$(CC) -c main.ml
 	$(CC) -o $(EXE) parseutils.cmo lexer.cmo types.cmo past.cmo gensym.cmo \
 	past_print.cmo ast_print.cmo ast.cmo past2ast.cmo ast_inline.cmo \
-	ast_fold.cmo ast_globz.cmo freevr.cmo  ast_lift.cmo  runtime.cmo  \
-	ast_closure.cmo ast_tailrec.cmo typing.cmo  kast.cmo ast2kast.cmo \
+	ast_fold.cmo ast_globz.cmo ast_smpvar.cmo freevr.cmo  ast_lift.cmo  runtime.cmo  \
+	ast_closure.cmo ast_tailrec.cmo typing.cmo kast.cmo ast2kast.cmo \
 	bc.cmo kast2bc.cmo bc_print.cmo bc_fold.cmo parser.cmo main.cmo
 
 test:	test/assert.ml	./compile
@@ -46,7 +47,7 @@ test2: 	./compile
 
 bootstrap:	./compile
 	./compile -typecheck -assert -printpast -noglobalize -nofolding -inline=0 bootstrap/stdlib-full/pervasives.ml bootstrap/stdlib-full/array.ml \
-	bootstrap/stdlib-full/string.ml bootstrap/stdlib-full/list.ml gensym.ml ast.ml freevr.ml kast.ml ast_lift.ml  ast_globz.ml \
+	bootstrap/stdlib-full/string.ml bootstrap/stdlib-full/list.ml gensym.ml ast.ml freevr.ml kast.ml ast_lift.ml  ast_globz.ml ast_smpvar.ml \
 	 ast_closure.ml  bc.ml bc_print.ml kast2bc.ml bootstrap/main_bootstrap.ml # ast2kast.ml # 
 
 clean:

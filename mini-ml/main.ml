@@ -8,6 +8,7 @@ let print_past = ref false
 let globalize = ref true
 let lifting = ref true
 and folding = ref true
+and nosmpvar = ref true
 
 let add_file f = inputs := !inputs @ [f] 
 let source_dir = ref ""
@@ -27,6 +28,8 @@ let () =
        " : désactive la globalisation des valeurs immutables allouées.");
       ("-nofolding", Arg.Clear folding,
        " : désactive la propagation des constantes");
+      ("-nosmpvar", Arg.Clear nosmpvar,
+       " : désactive la réécriture des variables globales de la forme [let x = constante] en fonction d'arité 0");
       ("-src", Arg.Set_string source_dir,
        " : spécifie où chercher les fichiers sources à compiler");
       ("-dst", Arg.Set_string destination_dir, 
@@ -72,7 +75,7 @@ let compile cstrenv genv (mdl : Past.tmodule) =
 
     (* propagation de constantes *)
     let mdl = if !folding then Ast_fold.rewrite mdl else mdl in
-
+    let mdl = if !nosmpvar then Ast_smpvar.rewrite mdl else mdl in
     let mdl = Ast_closure.rewrite mdl in
     let mdl = Ast_tailrec.rewrite mdl in
     if !print_ast then print_string @@ Ast_print.sprint_module 0 mdl;

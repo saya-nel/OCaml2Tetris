@@ -8,7 +8,7 @@ MINI_ML="mini-ml"
 
 # chemins relatif depuis mini-ml
 ROOT="../"
-STDLIB="stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml"
+STDLIB="stdlib/pervasives.ml stdlib/array.ml"
 ZAM_INPUT="../zam/input.ml"
 ZAM_SRC=" ../zam/src/mlvalues.ml ../zam/src/prims.ml \
          ../zam/src/domain.ml ../zam/src/block.ml ../zam/src/gc.ml ../zam/src/alloc.ml \

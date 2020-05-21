@@ -40,7 +40,7 @@ let rec rw_exp e =
 let rw_fundecs l = 
   List.map (fun d -> match d with | Ast.DF (name,args,e) -> Ast.DF (name,args,rw_exp e)) l 
 
-let rw_decl d = 
+let rec rw_decl d = 
  match d with
   | Ast.DefVar(v,e) -> Ast.DefVar(v,rw_exp e)
   | Ast.DefFun(l) -> Ast.DefFun (rw_fundecs l)

@@ -3,6 +3,7 @@ let not_available () = failwith "The external function is not available"
 (* ************************ CALL1 ***************************** *)
 
 let caml_print_int = 0
+
 let caml_print_int_code v = 
 	Pervasives.print_int (Mlvalues.long_val v); 
 	Block.unit

@@ -14,7 +14,7 @@ let mv f dst =
 
 let link_test_file dir = 
   let oc = open_out (Filename.concat dir ("Main.tst")) in
-  Printf.fprintf oc "%s\n" "load; repeat 2500000 { vmstep; }"; (*, output-file Main.out, output-list RAM[12]%D1.6.1; *)
+  Printf.fprintf oc "%s\n" "load; repeat 25000000 { vmstep; }"; (*, output-file Main.out, output-list RAM[12]%D1.6.1; *)
   close_out oc
 
 let link_runtime dir = 
