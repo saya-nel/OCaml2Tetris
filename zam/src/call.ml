@@ -13,11 +13,27 @@ let caml_print_newline_code _ =
 	Pervasives.print_newline (); 
 	Block.unit
 
+let caml_print_char = 2
+let caml_print_char_code v = 
+  Pervasives.print_char (Obj.magic (Mlvalues.long_val v)); 
+  Block.unit
+
+let caml_print_string = 3
+let caml_print_string_code v = 
+  let z = Block.size (Mlvalues.ptr_val v) in
+  for i = 0 to z - 1 do
+    Pervasives.print_char (Obj.magic (Mlvalues.long_val (Block.get_bytes v i)))
+  done; 
+  Block.unit
+
 (* [array_leng a] renvoie la taille du tableau a *)
-let caml_array_length = 2
+let caml_array_length = 4
 
 let caml_array_length_code a =
   Mlvalues.val_long (Block.size (Mlvalues.ptr_val a))
+
+let caml_fresh_oo_id = 5 (* définition d'exception *)
+let caml_fresh_oo_id_code _ = Block.unit
 
 (* ************************ CALL2 ***************************** *)
 

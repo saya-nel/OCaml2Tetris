@@ -385,17 +385,14 @@ let interp code =
       | 81 (* SETVECTITEM *) -> assert ((!Domain.sp) > 1);
                                 let n = pop_stack () in
                                 let v = pop_stack () in
-                                Block.set_field (!Domain.acc) (Mlvalues.long_val n) v;
+                                Block.set_bytes (!Domain.acc) (Mlvalues.long_val n) v;
                                 Domain.acc := Block.unit
 
-      | 82 (* GETSTRINGCHAR *) -> (* parfois appele GETBYTESCHAR *)
-         assert (!Domain.sp > 0);
-         (* let n = pop_stack () in *)
-         () (* Mlvalues.get_bytes (!Domain.acc) (Mlvalues.long_val n) *) (* à revoir, résultat va dans l'acc ? *)
-      | 83 (* SETBYTESCHAR *) -> assert ((!Domain.sp) > 1);
-                                 let n = pop_stack () in
+      | 82 (* GETSTRINGCHAR *) -> let n = pop_stack () in
+                                  Domain.acc := Block.get_bytes (!Domain.acc) n
+      | 83 (* SETBYTESCHAR *) -> let n = pop_stack () in
                                  let v = pop_stack () in
-                                 Block.set_bytes (!Domain.acc) (Mlvalues.long_val n) v;
+                                 Block.set_bytes (!Domain.acc) n (pop_stack ());
                                  Domain.acc := Block.unit
       | 84 (* BRANCH *) -> let n = take_argument code in 
                            (* assert (n < Array.length code); *)
@@ -438,8 +435,11 @@ let interp code =
          push_stack (!Domain.env); 
          Domain.acc := (match p with
                         | 0 -> Call.caml_print_int_code     !Domain.acc
-                        | 1 -> Call.caml_print_newline_code !Domain.acc
-                        | 2 -> Call.caml_array_length_code  !Domain.acc
+                        | 1 -> Call.caml_print_char_code    !Domain.acc
+                        | 2 -> Call.caml_print_string_code  !Domain.acc
+                        | 3 -> Call.caml_print_newline_code !Domain.acc
+                        | 4 -> Call.caml_array_length_code  !Domain.acc
+                        | 5 -> Call.caml_fresh_oo_id_code   !Domain.acc
                         | _ -> Call.not_available ());
          pop_stack_ignore 1
       | 94 (* C-CALL2 *) -> 

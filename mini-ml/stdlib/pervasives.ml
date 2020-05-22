@@ -34,6 +34,7 @@ let print_int (n : int) : unit =
 
 let print_char (c : char) : unit = 
 	Internal.print_char c
+  
 let print_newline (u : unit) : unit = 
 	Internal.print_newline u
 

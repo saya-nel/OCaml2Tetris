@@ -24,12 +24,11 @@ let get_field v i =
 let set_field v i vx = 
   (!Domain.from_space).((Mlvalues.ptr_val v) + i + 1) <- vx
 
-let get_bytes v i = 
-  (* ici, on place  un char par mot *)
-  (!Domain.from_space).((Mlvalues.ptr_val v) + i + 1)
+let get_bytes v i = (* ici, on place un char par mot *)
+  get_field v i
 
 let set_bytes v i vx =  (* cf get_bytes. *)
-  (!Domain.from_space).((Mlvalues.ptr_val v) + i + 1) <- vx
+  set_field v i vx
 
 let closure_tag = 247
 let env_tag = 250 (* quel est le bon numéro ??? *)
