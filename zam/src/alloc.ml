@@ -3,7 +3,7 @@
 let make_block tag sz =
   let sz = if sz = 0 then 1 else sz in
   let a = Gc.alloc (sz + 1) in
-  (!Domain.from_space).(a) <- Mlvalues.val_long (tag + 256 * sz);
+  (!Domain.from_space).(a-Domain.heap_start) <- Block.make_header tag sz;
   Mlvalues.val_ptr a
 
 let make_closure pc size =

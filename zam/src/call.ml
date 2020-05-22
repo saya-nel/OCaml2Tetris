@@ -20,9 +20,11 @@ let n2t_print_char_code v =
 
 let n2t_print_string = 3
 let n2t_print_string_code v = 
-  let z = Block.size (Mlvalues.ptr_val v) in
+  let p = Mlvalues.ptr_val v in
+  let z = Block.size p in
   for i = 0 to z - 1 do
-    Pervasives.print_char (Obj.magic (Mlvalues.long_val (Block.get_bytes v i)))
+
+    Pervasives.print_char (Obj.magic (Mlvalues.long_val (Block.get (p+i+1))))
   done; 
   Block.unit
 

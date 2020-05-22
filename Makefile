@@ -35,7 +35,7 @@ clean-miniML:
 
 cmo:
 	echo $(foreach f,$(MLFILES),$(INTEROP)$(f))
-	make MLFILES=$(foreach f,$(MLFILES),../$(f)) -C $(INTEROP)
+	make MLFILES="$(foreach f,$(MLFILES),../$(f))" -C $(INTEROP)
 
 obytelib:
 	dune build bytecode/obytelibParser.exe

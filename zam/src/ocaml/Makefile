@@ -13,7 +13,7 @@ all:
 	$(CC) -c ../../input.ml
 	$(CC) -c ../main.ml
 	$(CC) -o $(EXE) ../mlvalues.cmo ../prims.cmo ../domain.cmo ../block.cmo \
-	../gc.cmo ../alloc.cmo  ../call.cmo ../interp.cmo ../../input.cmo \
+	../gc.cmo ../alloc.cmo  ../call.cmo ../../input.cmo ../interp.cmo  \
 	../main.cmo
 clean:
 	rm -f $(EXE) ../*.cm[oi]

@@ -199,6 +199,16 @@ let instr_string_with_args (prim : string array) (instrs : Instr.t array) : stri
   let res = aux (Array.to_list instrs) in
   List.map (fun s -> String.trim s) res
 
+(* Renvoie un nouveau bytecode dont les offsets des variables globales sont données en position absolu,
+  en prenant compte les [ofs] variables globales déjà defines dans de précédentes unités de compilation *) 
+let set_global_data_ofs (ofs : int) (instrs : Instr.t array) = 
+  let rewrite = function
+  | Instr.GETGLOBAL n -> Instr.GETGLOBAL (n+ofs)
+  | Instr.SETGLOBAL n -> Instr.SETGLOBAL (n+ofs)
+  | Instr.PUSHGETGLOBAL n -> Instr.PUSHGETGLOBAL (n+ofs)
+  | ins -> ins 
+  in
+  Array.map rewrite instrs
 
 (* 
   Renvoie le nombre d'arguments se situant avant une instruction d'index donnée dans la liste d'instructions
@@ -283,13 +293,23 @@ let replace_labels_indexes ?(start=0) (instrs : string list) : string list =
   in aux instrs
 
 (* écrit le tableau d'instructions dans un nouveau fichier src/zam/interp.ml *)
-let write_instr_array ?(dst="./zam/input.ml") (instr_array : string) : unit =
+let write_instr_array ?(dst="./zam/input.ml") data (instr_array : string) : unit =
   let oc = open_out dst in
-  fprintf oc "let code = %s\n" instr_array;
+  fprintf oc "let _ = %s\n\nlet code = %s\n" data instr_array;
   close_out oc
 
+let string_of_value v =
+   let open Value in
+  match v with
+  | Int n -> Printf.sprintf "Block.make_global_long %d" n
+  | String s -> Printf.sprintf "Block.data_string \"%s\"" s
+  | _ -> failwith "not implemented"
+ (* | Block       of int * t array *)
 
-let process ?(start=0) inpath = 
+let list_string_of_data data =
+   List.map string_of_value (Array.to_list data)
+
+let process ?(global_ofs=0) ?(start=0) inpath = 
 
   (* résultats de obytelib *)
   let cmofile = 
@@ -298,11 +318,13 @@ let process ?(start=0) inpath =
   (* on récupère les champs *)
   let data, symb, prim, code = Cmofile.reloc cmofile in
 
+  let code' = set_global_data_ofs global_ofs code in
+
   (* on va traiter la partie code *)
   (* serialize le code sous forme ["instr1 arg1 arg2"; "instr2"; "instr3 arg1"] etc *)
-  let with_args = instr_string_with_args prim code in
+  let with_args = instr_string_with_args prim code' in
   (* List.iter (Printf.printf "%s\n") with_args; *)
-  
+
   (* met à jour les indexs des labels *)
   let replaced = replace_labels_indexes ~start with_args in
 
@@ -311,14 +333,16 @@ let process ?(start=0) inpath =
   Code.print data symb prim stdout code;
 
   (* met les instructions sous la forme ["instr1"; "arg1"; "arg2"; "instr2"] ect *)
-  String.split_on_char ' ' (String.concat " " replaced) 
+  let to_send = String.split_on_char ' ' (String.concat " " replaced) in
+  
+  (list_string_of_data data, to_send)
 
 let process_all inpaths =
-  let rec aux acc = function
-  | [] -> acc
-  | m::ms -> let m' = process ~start:(List.length acc) m in
-             aux (acc @ m') ms 
-  in aux [] inpaths
+  let rec aux acc_data acc_instrs = function
+  | [] -> (acc_data,acc_instrs)
+  | m::ms -> let data,m' = process ~global_ofs:(List.length acc_data) ~start:(List.length acc_instrs) m in
+             aux (acc_data @ data) (acc_instrs @ m') ms 
+  in aux [] [] inpaths
 
 let main () =
 (* chemin du fichier .cmo *)
@@ -327,12 +351,13 @@ let main () =
     | _::inpaths -> inpaths
     | _ -> assert false in
 
-  let to_send = process_all inpaths in
+  let data,to_send = process_all inpaths in
+  let serial_data = String.concat ";\n  " data in
   (* on recupère le tableau serializé, avec instructions remplacés par op codes *)
   let serial = string_list_to_string to_send in
 
-  (* on écrit dans le fichier ../zam/input.ml le tableau d'instructions *)
-  write_instr_array ~dst:"zam/input.ml" serial
+  (* on écrit dans le fichier zam/input.ml le tableau d'instructions *)
+  write_instr_array ~dst:"zam/input.ml" serial_data serial
 
 (* MAIN *)
 let () = main ()

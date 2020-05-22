@@ -3,10 +3,10 @@ COMPFLAGS= -i
 MLFILES= # foo.ml
 CFILES=primitives.c
 EXE=a.out
-
+II=$(foreach f,$(MLFILES),-I $(dir $(f)))
 
 all: n2t.ml $(MLFILES)
-	$(CAMLC) -custom -o $(EXE) $(CFILES) n2t.ml $(MLFILES) 
+	$(CAMLC) $(II) -custom -o $(EXE) $(CFILES) n2t.ml $(MLFILES) 
 
 bytecode:	clean-all all clean
 
@@ -17,10 +17,10 @@ bytecode:	clean-all all clean
 .c.o:
 	cc -c -I`ocamlc -where` $<
 .ml.cmo:
-	$(CAMLC)$(FLAGS) $(COMPFLAGS) -c $<
+	$(CAMLC) $(II) $(FLAGS) $(COMPFLAGS) -c $<
 
 .mli.cmi:
-	$(CAMLC) $(FLAGS) $(COMPFLAGS) -c $<
+	$(CAMLC) $(II) $(FLAGS) $(COMPFLAGS) -c $<
 
 clean:
 	rm -rf  *~ *.cm[ix] *.o $(EXE)
