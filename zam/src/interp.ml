@@ -434,12 +434,12 @@ let interp code =
          let p = take_argument code in
          push_stack (!Domain.env); 
          Domain.acc := (match p with
-                        | 0 -> Call.caml_print_int_code     !Domain.acc
-                        | 1 -> Call.caml_print_char_code    !Domain.acc
-                        | 2 -> Call.caml_print_string_code  !Domain.acc
-                        | 3 -> Call.caml_print_newline_code !Domain.acc
-                        | 4 -> Call.caml_array_length_code  !Domain.acc
-                        | 5 -> Call.caml_fresh_oo_id_code   !Domain.acc
+                        | 0 -> Call.n2t_print_int_code     !Domain.acc
+                        | 1 -> Call.n2t_print_char_code    !Domain.acc
+                        | 2 -> Call.n2t_print_string_code  !Domain.acc
+                        | 3 -> Call.n2t_print_newline_code !Domain.acc
+                        | 4 -> Call.n2t_array_length_code  !Domain.acc
+                        | 5 -> Call.n2t_fresh_oo_id_code   !Domain.acc
                         | _ -> Call.not_available ());
          pop_stack_ignore 1
       | 94 (* C-CALL2 *) -> 
@@ -447,8 +447,8 @@ let interp code =
          let v = pop_stack () in
          push_stack (!Domain.env); 
          Domain.acc := (match p with
-                        | 0 -> Call.caml_make_vect_code !Domain.acc v
-                        | 1 -> Call.caml_array_get_addr_code !Domain.acc v
+                        | 0 -> Call.n2t_make_vect_code !Domain.acc v
+                        | 1 -> Call.n2t_array_get_addr_code !Domain.acc v
                         | _ -> Call.not_available ());
          pop_stack_ignore 1
       | 95 (* C-CALL3 *) ->
@@ -457,8 +457,8 @@ let interp code =
          let v2 = pop_stack () in
          push_stack (!Domain.env); 
          Domain.acc := (match p with
-                        | 0 -> Call.caml_array_set_addr_code !Domain.acc v1 v2
-                        | 1 -> Call.caml_array_sub_code !Domain.acc v1 v2
+                        | 0 -> Call.n2t_array_set_addr_code !Domain.acc v1 v2
+                        | 1 -> Call.n2t_array_sub_code !Domain.acc v1 v2
                         | _ -> Call.not_available ());
          pop_stack_ignore 1
       | 96 (* C-CALL4 *) -> 

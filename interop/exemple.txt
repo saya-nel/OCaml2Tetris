@@ -1,0 +1,5 @@
+$ make bytecode FLAGS="-I ../samples/rec/" MLFILES="../samples/rec/fact.ml"
+rm -rf  *~ *.cm[ix] *.o a.out
+rm -rf *.cmo
+ocamlc -I ../samples/rec/ -custom -o a.out primitives.c ../samples/rec/fact.ml 
+$
