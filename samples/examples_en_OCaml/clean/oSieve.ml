@@ -39,6 +39,8 @@ let rec do_list f l = match l with
        []   -> ()
   |  (a::q) -> f a; do_list f q
 ;;
- for i = 1 to 10 do 
-do_list (fun n -> N2t.print_int n; N2t.print_string " ") (sieve 2500);
+
+
+for i = 1 to 10 do 
+do_list (fun n -> N2t.print_int n; N2t.print_string " ") (sieve 13);
 N2t.print_string "\n" done;;

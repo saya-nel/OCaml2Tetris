@@ -1,5 +1,6 @@
 let debug = false
 let debug_opcode = false
+let debug_pc = false
 let debug_data = false
 
 let pc = ref 0
@@ -62,7 +63,11 @@ let debug_print_arr arr arr_end name =
   end
 
 let debug_print_state () = 
-  begin
+  (if debug_pc then begin print_newline ();
+                          print_string "pc: "; 
+                          print_int (!pc) ; 
+                          print_newline () end);
+  (if debug then begin
     print_newline ();
     print_string "pc: "; 
     print_int (!pc);
@@ -82,10 +87,11 @@ let debug_print_state () =
     print_int (!extra_args);
     print_newline ();
     debug_print_arr Domain.stack (!Domain.sp-1) "stack";
-    debug_print_arr !Domain.from_space (!Domain.heap_top - 1 - Domain.heap_start) "from_space";
-    if debug_data then begin debug_print_arr Domain.global (!Domain.global_top - 1) "global";
-                             debug_print_arr Domain.data (!Domain.data_top - 1) "data" end
-  end
+    debug_print_arr !Domain.from_space (!Domain.heap_top - 1 - Domain.heap_start) "from_space"
+  end);
+  if debug_data then begin debug_print_arr Domain.global (!Domain.global_top - 1) "global";
+                           debug_print_arr Domain.data (!Domain.data_top - 1) "data" end
+  
 (* print_string " global: ";
  if Mlvalues.is_ptr (!global) then
  debug_print_block (!global);
@@ -135,11 +141,20 @@ let pushconst_n n =
   push_stack (!Domain.acc);
   Domain.acc := (Mlvalues.val_long n)
 
+let appterm nargs n =
+  for i = 0 to nargs - 1 do
+    Domain.stack.(!Domain.sp - n + i) <- Domain.stack.(!Domain.sp - nargs + i) 
+  done;
+  pop_stack_ignore (n-nargs);
+  pc := Mlvalues.long_val (Block.get_field !Domain.acc 0) - 1;
+  Domain.env := !Domain.acc;
+  extra_args := !extra_args + nargs - 1
+
 let interp code =
   Domain.sp := 0;
   while !pc < Array.length code do
     begin if debug_opcode then begin print_string "opcode : " ; print_int code.(!pc) ; print_newline () end end;
-    begin if debug then debug_print_state () end;
+    begin debug_print_state () end;
     begin
       match code.(!pc) with
       | 0 (* ACC0 *) -> acc_n 0
@@ -202,47 +217,24 @@ let interp code =
       | 35 (* APPLY3 *) -> let arg1 = pop_stack () in
                            let arg2 = pop_stack () in
                            let arg3 = pop_stack () in
-                           push_stack (Mlvalues.val_long (!extra_args));
-                           push_stack (!Domain.env);
-                           push_stack (Mlvalues.val_long (!pc));
+                           push_stack (Mlvalues.val_long !extra_args);
+                           push_stack !Domain.env;
+                           push_stack (Mlvalues.val_long !pc);
                            push_stack arg3;
                            push_stack arg2;
                            push_stack arg1;
                            pc := Mlvalues.long_val (Block.get_field !Domain.acc 0) - 1;
                            Domain.env := !Domain.acc;
                            extra_args := 2
-      | 36 (* APPTERM *) -> let n = take_argument code in
-                            let s = take_argument code in
-                            for i = 0 to n - 1 do
-                              Domain.stack.((!Domain.sp) - s + i) <- Domain.stack.((!Domain.sp) - n + i)
-                            done;
-                            Domain.sp := (!Domain.sp) - (s - n);             
-                            pc := Mlvalues.long_val (Block.get_field !Domain.acc 0) - 1;
-                            Domain.env := !Domain.acc;
-                            extra_args := (!extra_args) + n - 1
-      | 37 (* APPTERM1 *) -> let s = take_argument code in 
-                             Domain.stack.((!Domain.sp) - s + 0) <- Domain.stack.((!Domain.sp) - 1 + 0);
-                             Domain.sp := (!Domain.sp) - (s - 1);             
-                             pc := Mlvalues.long_val (Block.get_field !Domain.acc 0) - 1;
-                             Domain.env := !Domain.acc
-      | 38 (* APPTERM2 *) -> let s = take_argument code in 
-                             Domain.stack.((!Domain.sp) - s + 0) <- Domain.stack.((!Domain.sp) - 2 + 0);
-                             Domain.stack.((!Domain.sp) - s + 1) <- Domain.stack.((!Domain.sp) - 2 + 1);
-                             Domain.sp := (!Domain.sp) - (s - 1);             
-                             pc := Mlvalues.long_val (Block.get_field !Domain.acc 0) - 1;
-                             Domain.env := !Domain.acc;
-                             incr extra_args
-      | 39 (* APPTERM3 *) -> let s = take_argument code in 
-                             Domain.stack.((!Domain.sp) - s + 0) <- Domain.stack.((!Domain.sp) - 3 + 0);
-                             Domain.stack.((!Domain.sp) - s + 1) <- Domain.stack.((!Domain.sp) - 3 + 1);
-                             Domain.stack.((!Domain.sp) - s + 1) <- Domain.stack.((!Domain.sp) - 3 + 2);
-                             Domain.sp := (!Domain.sp) - (s - 1);          
-                             pc := Mlvalues.long_val (Block.get_field !Domain.acc 0) - 1;
-                             Domain.env := !Domain.acc;
-                             extra_args := (!extra_args) + 2
+      | 36 (* APPTERM *) -> let nbargs = take_argument code in 
+                            let n = take_argument code in 
+                            appterm nbargs n
+      | 37 (* APPTERM1 *) -> appterm 1 (take_argument code) 
+      | 38 (* APPTERM2 *) -> appterm 2 (take_argument code)
+      | 39 (* APPTERM3 *) -> appterm 3 (take_argument code)
       | 40 (* RETURN *) -> let n = take_argument code in
-                           Domain.sp := (!Domain.sp) - n; 
-                           if (!extra_args) <= 0 
+                           Domain.sp := !Domain.sp - n; 
+                           if !extra_args <= 0 
                            then 
                              begin
                                pc := (Mlvalues.long_val (pop_stack ()));

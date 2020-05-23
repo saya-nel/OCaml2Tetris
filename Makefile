@@ -58,5 +58,7 @@ zam-ocaml-run:	zam-ocaml
 clean:	clean-miniML
 	rm -rf $(ZAM_BIN)
 	rm -rf $(ZAM_INPUT)
+	make clean -C $(INTEROP)
+	make clean -C zam/src/ocaml
 
 

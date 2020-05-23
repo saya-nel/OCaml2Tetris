@@ -7,4 +7,4 @@ let rec iter f = function
 
 iter N2t.print_int l;;
 
-(* plante. problème avec APPTERM ? *)
+(* ~> 12345 *)

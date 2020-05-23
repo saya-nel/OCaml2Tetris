@@ -29,7 +29,6 @@ let resize_spaces size =
       (* si taille + allocation < 25% de la taille de base, on diminue la taille par deux *)
       if quarter > (!Domain.heap_top + size) then (* si remplis à moins de 25% *)
         Domain.heap_size := !Domain.heap_size / 2
-      else ()
     end;
   (* si la taille à changée *)
   if old_size <> !Domain.heap_size then
@@ -41,8 +40,7 @@ let resize_spaces size =
           print_string ", new size : ";
           print_int !Domain.heap_size;
           print_newline ()
-        end
-      else ();
+        end;
       (* création du nouveau from_space à la bonne taille *)
       let new_from_space = Array.make !Domain.heap_size (Mlvalues.val_long 0) in
       (* copie de l'ancien from_space dans le nouveau *)
@@ -54,8 +52,6 @@ let resize_spaces size =
       Pervasives.ignore !Domain.to_space;
       Domain.to_space := Array.make !Domain.heap_size (Mlvalues.val_long 0) 
     end
-  else ()
-
 
 (* Traite le déplacement d'un bloc de to_space vers from_space si nécéssaire,                  *)
 (* sinon suit le fwd_ptr                                                                       *)
@@ -91,11 +87,10 @@ let move_addr value is_array source_reg source_arr pos_arr =
           else source_reg := Mlvalues.val_ptr old
         end
     end
-  else ()
 
 (* lance le gc *)
 let run_gc size =
-  if debug then print_string "lancement gc\n" else ();
+  if debug then print_string "lancement gc\n";
   (* on parcours les éléments de la pile *)
   for i = 0 to !Domain.sp - 1 do
     let value = Domain.stack.(i) in
@@ -127,7 +122,7 @@ let run_gc size =
   (* on redimensionne les espaces si nécéssaire *)
   resize_spaces size;
 
-  if debug then print_string "fin gc" else ();
+  if debug then print_string "fin gc";
   print_newline ()
 
 
@@ -139,12 +134,10 @@ let alloc size =
       print_string "try alloc ";
       print_int size;
       print_newline ()
-    end
-  else ();
+    end;
   if heap_can_alloc size then
     begin
-      if debug then (print_string "can alloc"; print_newline ()) else ();
-
+      if debug then (print_string "can alloc"; print_newline ());
       let res = !Domain.heap_top in
       Domain.heap_top := (!Domain.heap_top) + size;
       res  
@@ -155,8 +148,7 @@ let alloc size =
         begin
           print_string "cannot alloc";
           print_newline ()
-        end 
-      else ();
+        end;
       run_gc size;
       if heap_can_alloc size then 
         begin
@@ -170,8 +162,7 @@ let alloc size =
             begin
               print_string "plus de mémoire";
               print_newline ()
-            end 
-          else ();
-          -1
+            end; 
+          exit 0
         end
     end

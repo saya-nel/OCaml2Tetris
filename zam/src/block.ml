@@ -46,11 +46,8 @@ let set_bytes v i vx =  (* cf get_bytes. *)
 let no_scan_tag = 251
 let string_tag = 252
 let closure_tag = 247
-let env_tag = 250 (* quel est le bon numéro ??? *)
 let infix_tag = 249
 let fwd_ptr_tag = 248
 
 let addr_closure cv = get_field cv 0
 let env_closure cv = Mlvalues.val_ptr ((Mlvalues.ptr_val cv) + 2)
-
-let val_codeptr o = Mlvalues.val_long o (* ??? *)
