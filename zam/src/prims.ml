@@ -91,7 +91,7 @@ let leint v1 v2 =
   if v1 <= v2 then 1 else 0
 
 let gtint v1 v2 = 
-  if v1 < v2 then 1 else 0
+  if v1 > v2 then 1 else 0
 
 let geint v1 v2 = 
   if v1 >= v2 then 1 else 0
