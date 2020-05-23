@@ -280,6 +280,16 @@ let replace_label_index (start : int) (instrs : string list) (instr : string) : 
       res := !res ^ " " ^ (string_of_int new_val)
     done;
     !res
+  | "SWITCH" -> 
+    let n = int_of_string (get_arg_nth instr 1) in
+    let size_long = n land 0xFFFF in
+    let res = ref ((get_instr instr) ^ " " ^ (get_arg_nth instr 1)) in
+    for i = 1 to size_long do
+      let old_val = int_of_string (get_arg_nth instr i) in
+      let new_val = old_val + start + nb_args_before_ind instrs (old_val) in
+      res := !res ^ " " ^ (string_of_int new_val);
+    done;
+    !res
   | _ -> instr
 
 (* 
@@ -295,7 +305,8 @@ let replace_labels_indexes ?(start=0) (instrs : string list) : string list =
 (* écrit le tableau d'instructions dans un nouveau fichier src/zam/interp.ml *)
 let write_instr_array ?(dst="./zam/input.ml") data (instr_array : string) : unit =
   let oc = open_out dst in
-  fprintf oc "let _ = %s\n\nlet code = %s\n" data instr_array;
+  let sdata = if data = "" then "" else "let _ = " ^ data ^ "\n\n" in
+  fprintf oc "%slet code = %s\n" sdata instr_array;
   close_out oc
 
 let string_of_value v =
@@ -314,7 +325,7 @@ let process ?(global_ofs=0) ?(start=0) inpath =
   (* résultats de obytelib *)
   let cmofile = 
     Cmofile.read inpath in
-
+  
   (* on récupère les champs *)
   let data, symb, prim, code = Cmofile.reloc cmofile in
 

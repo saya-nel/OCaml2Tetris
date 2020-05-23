@@ -1,4 +1,5 @@
 let debug = false
+let debug_opcode = false
 
 let pc = ref 0
 
@@ -136,7 +137,8 @@ let pushconst_n n =
 let interp code =
   Domain.sp := 0;
   while !pc < Array.length code do
-    if debug then debug_print_state ();
+    begin if debug_opcode then begin print_string "opcode : " ; print_int code.(!pc) ; print_newline () end end;
+    begin if debug then debug_print_state () end;
     begin
       match code.(!pc) with
       | 0 (* ACC0 *) -> acc_n 0
@@ -403,7 +405,13 @@ let interp code =
                                 (* assert (n < Array.length code); *)
                                 if Mlvalues.long_val (!Domain.acc) = 0 then pc := n - 1 (* (!pc) + n - 3 *) (* - 2 pour enlever incr d'apres + take_argument incr*) (* -3 ?? *)
 
-      (* SWITCH *)
+      | 87 (* SWITCH *) ->   
+          let n = take_argument code in 
+          if Mlvalues.is_ptr !Domain.acc 
+          then pc := let idx = Block.tag !Domain.acc in
+                     let ofs = 2 * (n + idx) + 1 in
+                     ofs - 1
+          else pc := Mlvalues.long_val !Domain.acc
 
       | 88 (* BOOLNOT *) -> Domain.acc := Mlvalues.val_long (Prims.bnot (Mlvalues.long_val (!Domain.acc)))
       | 89 (* PUSHTRAP *) -> let ofs = take_argument code in

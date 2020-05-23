@@ -1,8 +1,8 @@
 # variante run.sh
 
 # usage :
-# make I=samples/test1.cmo        # prépare le cmo, compile la zam et lance le simulateur
-# make short I=samples/test1.cmo  # prépare le cmo et compile la zam 
+# make zam-miniML-run MLFILES="f1.ml f2.ml f3.ml" 
+# make zam-ocaml-run MLFILES="f1.ml f2.ml f3.ml"
 
 MLFILES= # foo.ml, sources à executer par la zam
 DIR=  # relatif !!

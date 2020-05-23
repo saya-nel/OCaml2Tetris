@@ -13,9 +13,8 @@ let print_end () =
   print_newline ()
 
 let _ = 
-  print_start ();
   Interp.interp Input.code;
-  print_end ()
+  if Interp.debug then print_end ()
   
 
 

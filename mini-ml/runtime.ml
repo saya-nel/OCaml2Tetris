@@ -9,7 +9,7 @@ let load_file f =
 let mv f dst =
   let s = load_file f in 
   let oc = open_out dst in
-  Printf.fprintf oc "%s" s;
+  Printf.fprintf oc "%s" (Bytes.to_string s);
   close_out oc
 
 let link_test_file dir = 

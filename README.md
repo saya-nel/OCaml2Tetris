@@ -17,8 +17,14 @@ un fichier "Main.tst" sera généré dans zam/bin, ce fichier devra être interp
 On ouvrira Main.tst avec **file -> load script**, on poura enlever les animations pour rendre la vm plus rapide : **animate -> no animation**, puis on cliquera sur run (bouton double flèche bleu).
 
 ---
+## Alternative
 
-## Alternative avec *Make*
+## Installation
+```bash
+$ opam switch create ocaml-base-compiler.4.07.1
+$ opam install dune
+$ opam install obytelib
+```
 
 ### compilation de la ZAM
 - `make zam-miniML MLFILES=samples/rec/fact.ml` compile en mini-ml notre implémentation de la ZAM. Les executables sont dans `zam/bin`
