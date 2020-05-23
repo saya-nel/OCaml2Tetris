@@ -18,5 +18,5 @@ let ptr_val (v : value) : ptr =
 
 let is_ptr (v : value) : bool = 
   v <= (- 16384)
-
          
+let free (ptr : 'a array) = Internal.free ptr

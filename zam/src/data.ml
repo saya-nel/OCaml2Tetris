@@ -6,24 +6,18 @@ let add_long n =
 
 let alloc tag sz =
   let p = !Domain.data_top in
-  Domain.data.(p) <- Mlvalues.val_long (Block.make_header tag sz);
+  Domain.data.(p) <- (Block.make_header tag sz);
   Domain.data_top := p + sz + 1;
   p
 
 let set_data addr i v =
   Domain.data.(addr+i+1) <- v
 
-let set_data_long addr i n =
-  set_data addr i (Mlvalues.val_long n)
-
-let set_data_ptr addr i ptr =
-  set_data addr i (Mlvalues.val_ptr ptr)
-
 let add_string s =
   let z = String.length s in
   let p = alloc Block.string_tag z in
   for i = 0 to z - 1 do
-    set_data_long p i (Obj.magic (String.get s i))
+    set_data p i (Mlvalues.val_long (Obj.magic (String.get s i)))
   done;
    Mlvalues.val_ptr p
 

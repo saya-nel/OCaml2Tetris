@@ -1,8 +1,9 @@
 CC=ocamlc -I ../ -I ../../
 EXE=zam
+MLVALUES=mlvalues.ml
 
 all:
-	$(CC) -c ../mlvalues.ml
+	$(CC) -c $(MLVALUES)
 	$(CC) -c ../prims.ml
 	$(CC) -c ../domain.ml
 	$(CC) -c ../block.ml
@@ -13,7 +14,7 @@ all:
 	$(CC) -c ../interp.ml
 	$(CC) -c ../../input.ml
 	$(CC) -c ../main.ml
-	$(CC) -o $(EXE) ../mlvalues.cmo ../prims.cmo ../domain.cmo ../block.cmo \
+	$(CC) -o $(EXE) $(MLVALUES:.ml=.cmo) ../prims.cmo ../domain.cmo ../block.cmo \
 	../data.cmo ../gc.cmo ../alloc.cmo  ../call.cmo ../../input.cmo ../interp.cmo  \
 	../main.cmo
 clean:

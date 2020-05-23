@@ -46,9 +46,7 @@ let failwith (msg : string) : unit =
     print_newline (); 
     exit 1
 
-(* attention, la sémantique n'est pas la même quand OCaml *)
-(* (ignore a) libère (free) le tableau a                  *)
-let ignore a = Internal.free a
+let ignore a = (Obj.magic a)
 
 let abs (n : int) : int = if n >= 0 then n else - n
 

@@ -3,26 +3,26 @@ let debug = false
 (* ALLOC fonctions *)
 
 let heap_can_alloc size =
-  (!Domain.heap_top) + size <= !Domain.heap_size
+  !Domain.heap_top + size < !Domain.heap_size
 
 
-let next = ref 0 (* premiere pos disponible dans to_space lors de la copie *)
+let next = ref 0 (* premiere position disponible dans to_space lors de la copie *)
 
-
-(* OCaml a un gc : la fonction ignore ne fait rien. *)
-(* mini-ml n'a pas de gc : la fonction ignore libère un bloc mémoire *)
-let free a = ignore a 
+(* libération des semi-spaces lors du redimensionnement  *) 
+(* implantation en OCaml : la fonction free ne fait rien (le gc se charge de libérer les objets) *)
+(* implantation en mini-ml la fonction free libère le pointeur passé en argument *)
+let free a = Mlvalues.free a 
 
 let resize_spaces size =
-  (* on traite le redimensionnement des semi spaces si nécéssaire *)
-  let half = !Domain.heap_size / 2 in (* nombre d'éléments a la moitié d'un semi space *)
+  (* on traite le redimensionnement des semi spaces si nécessaire *)
+  let half = !Domain.heap_size / 2 in (* nombre d'éléments à la moitié d'un semi space *)
   let quarter = half / 2 in (* nombre d'élements au quart d'un semi space *)
   (* définition de la nouvelle taille *)
   let old_size = !Domain.heap_size in
   (* si il n'y a pas assez de place pour l'allocation
      on redimensionne en rajoutant a la taille la place de l'allocation
      puis multiplie le tout par deux *)
-  if !Domain.heap_top + size > !Domain.heap_size then
+  if !Domain.heap_top + size >= !Domain.heap_size then
     Domain.heap_size := (!Domain.heap_size + size) * 2
   else 
     begin
@@ -47,9 +47,9 @@ let resize_spaces size =
       for i = 0 to !Domain.heap_top - 1 do
         new_from_space.(i) <- (!Domain.from_space).(i)
       done;
-      Pervasives.ignore !Domain.from_space;
+      free !Domain.from_space;
       Domain.from_space := new_from_space;
-      Pervasives.ignore !Domain.to_space;
+      free !Domain.to_space;
       Domain.to_space := Array.make !Domain.heap_size (Mlvalues.val_long 0) 
     end
 
@@ -63,8 +63,10 @@ let resize_spaces size =
 let move_addr value is_array source_reg source_arr pos_arr =
   if Mlvalues.is_ptr value then (* val pointe vers un bloc *)
     begin
-      if Block.tag (Mlvalues.ptr_val value) = Block.fwd_ptr_tag then (* le bloc pointé est un fwd_ptr *)
-        (* on fais pointé value sur la nouvelle destination *)
+      if Mlvalues.ptr_val value < Domain.global_start || Block.tag (Mlvalues.ptr_val value) >= Block.no_scan_tag
+      then () (* c'est une valeur dans le segment data, qui ne pointe vers aucune valeur allouée *)
+      else if Block.tag (Mlvalues.ptr_val value) = Block.fwd_ptr_tag then (* le bloc pointé est un fwd_ptr *)
+        (* on fait pointer value sur la nouvelle destination *)
         begin
           if is_array then source_arr.(pos_arr) <- Block.get_field value 0
           else source_reg := Block.get_field value 0
@@ -102,6 +104,12 @@ let run_gc size =
   (* on traite l'env *)
   move_addr !Domain.env false Domain.env Domain.stack (-1);
 
+  (* on parcours les variables globales *)
+  for i = 0 to !Domain.global_top - 1 do
+    let value = Domain.global.(i) in
+    move_addr value true (ref (Mlvalues.val_long 0)) Domain.global i
+  done;
+
   (* maintenant on parcours les fields de tout les objets qu'on a bougé dans to_space *)
   let i = ref 0 in
   while !i < !next do (* parcours les headers *)
@@ -114,8 +122,8 @@ let run_gc size =
   done;
 
   (* on echange from_space et to_space *)
-  let tmp = !Domain.from_space in
-  Domain.from_space := !Domain.from_space;
+  let tmp = !Domain.to_space in
+  Domain.to_space := !Domain.from_space;
   Domain.from_space := tmp;
   Domain.heap_top := !next;
   next := 0;
@@ -138,9 +146,9 @@ let alloc size =
   if heap_can_alloc size then
     begin
       if debug then (print_string "can alloc"; print_newline ());
-      let res = !Domain.heap_top in
+      let ptr = Domain.heap_start + (!Domain.heap_top) in
       Domain.heap_top := (!Domain.heap_top) + size;
-      res  
+      ptr  
     end
   else 
     begin
@@ -152,9 +160,9 @@ let alloc size =
       run_gc size;
       if heap_can_alloc size then 
         begin
-          let res = !Domain.heap_top in
+          let ptr = Domain.heap_start + (!Domain.heap_top) in
           Domain.heap_top := (!Domain.heap_top) + size;
-          res  
+          ptr  
         end
       else 
         begin

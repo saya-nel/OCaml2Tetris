@@ -1,6 +1,6 @@
 (* version de mlvalue pour l'implantation de la zam en ocaml, 
    qui distingue les entiers et les pointeurs par deux constructeurs dédiés,
-   cela garantie par typage qu'on ne confond pas immédiat et pointeur quelque part. *)
+   cela garantit par typage qu'on ne confond pas immédiat et pointeur quelque part. *)
 
 type value = Long of long | Ptr of ptr
 and long = int
@@ -13,7 +13,7 @@ let val_long (n : long) : value = Long n
 let long_val (v : value) : long = 
 	match v with
 	| Long n -> n
-	| Ptr _ -> assert false
+	| Ptr n -> n (* cast *)
 
 (* transforme un pointeur en mlvalue *)
 let val_ptr (p : ptr) : value = Ptr p
@@ -22,7 +22,7 @@ let val_ptr (p : ptr) : value = Ptr p
 (* transforme un mlvalue en pointeur *)
 let ptr_val (v : value) : ptr =
 	match v with
-	| Long n -> assert false
+	| Long n -> n (* cast *)
 	| Ptr p -> p
 
 let is_ptr (v : value) : bool = 
@@ -30,4 +30,5 @@ let is_ptr (v : value) : bool =
 	| Long _ -> false
 	| Ptr _ -> true
 
-         
+
+let free (ptr : 'a array) = () 

@@ -309,20 +309,29 @@ let write_instr_array ?(dst="zam/input.ml") data (instr_array : string) : unit =
   fprintf oc "%slet code = %s\n" sdata instr_array;
   close_out oc
 
+
+
 let string_of_value v =
+
+  let compteur = ref 0 in
+  let gensym () = 
+    incr compteur;
+    "x" ^ string_of_int !compteur
+  in
   let open Value in
   let rec add_value v = match v with
-   | Int n -> string_of_int n
+   | Int n -> "Mlvalues.val_long " ^ string_of_int n
    | String s -> Printf.sprintf "Data.add_string \"%s\"" s
    | Block (tag,a) -> add_block tag a
    | _ -> failwith "not implemented"
 and add_block tag a =
+  let var = gensym () in
   let sz = Array.length a in
-  let r = Printf.sprintf "(let p = Data.alloc %d %d in\n" tag sz in
+  let r = Printf.sprintf "(let %s = Data.alloc %d %d in\n" var tag sz in
   let fill = String.concat ";" (Array.to_list (
               Array.mapi (fun i ci -> let s = add_value ci in 
-                           Printf.sprintf "Data.set_data p %d (%s)" i s) a)) in
-  r ^ fill ^ "; Mlvalues.val_ptr p)"
+                           Printf.sprintf "Data.set_data %s %d (%s)" var i s) a)) in
+  r ^ fill ^ (Printf.sprintf "; Mlvalues.val_ptr %s)" var)
   in 
   Printf.sprintf "Data.push_global (%s)" (add_value v)
 

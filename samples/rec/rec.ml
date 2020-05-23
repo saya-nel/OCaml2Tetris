@@ -8,4 +8,4 @@ and f2 x = b + (f3 x)
 and f3 x = if x = 0 then c else a + (f1 (x-1))
 and f4 x = d + e + (f2 x)
 in 
-  N2t.print_int (f2 2)
+  N2t.print_int (f2 1)

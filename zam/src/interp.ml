@@ -153,7 +153,7 @@ let appterm nargs n =
 let interp code =
   Domain.sp := 0;
   while !pc < Array.length code do
-    begin if debug_opcode then begin print_string "opcode : " ; print_int code.(!pc) ; print_newline () end end;
+    begin if debug_opcode then begin print_newline () ;print_string "opcode : " ; print_int code.(!pc)  end end;
     begin debug_print_state () end;
     begin
       match code.(!pc) with
@@ -260,7 +260,7 @@ let interp code =
                          else 
                            begin 
                              Domain.acc := Alloc.make_block Block.closure_tag (!extra_args + 3);
-                             Block.set_field !Domain.acc 0 (!pc - 2);
+                             Block.set_field !Domain.acc 0 (Mlvalues.val_long (!pc - 2));
                              Block.set_field !Domain.acc 1 !Domain.env;
                              for i = 0 to !extra_args do
                                Block.set_field !Domain.acc (i+2) (pop_stack ())
@@ -383,25 +383,21 @@ let interp code =
                                 Domain.acc := Block.unit
 
       | 82 (* GETSTRINGCHAR *) -> let n = pop_stack () in
-                                  Domain.acc := Block.get_bytes (!Domain.acc) n
+                                  Domain.acc := Block.get_bytes (!Domain.acc) (Mlvalues.long_val n)
       | 83 (* SETBYTESCHAR *) -> let n = pop_stack () in
                                  let v = pop_stack () in
-                                 Block.set_bytes (!Domain.acc) n (pop_stack ());
+                                 Block.set_bytes (!Domain.acc) (Mlvalues.long_val n) (pop_stack ());
                                  Domain.acc := Block.unit
       | 84 (* BRANCH *) -> let n = take_argument code in 
-                           (* assert (n < Array.length code); *)
-                           pc := n - 1 (* (!pc) + n - 2 *) (* - 2 pour enlever incr d'apres + take_argument incr*)
+                           pc := n - 1 
       | 85 (* BRANCHIF *) -> let n = take_argument code in 
-                             (* assert (n < Array.length code); *)
-                             if Mlvalues.long_val (!Domain.acc) = 1 then pc := n - 1 (* (!pc) + n - 2 *) (* - 2 pour enlever incr d'apres + take_argument incr*) (* -3 ?? *)
+                             if Mlvalues.long_val (!Domain.acc) = 1 then pc := n - 1
       | 86 (* BRANCHIFNOT *) -> let n = take_argument code in 
-                                (* assert (n < Array.length code); *)
-                                if Mlvalues.long_val (!Domain.acc) = 0 then pc := n - 1 (* (!pc) + n - 3 *) (* - 2 pour enlever incr d'apres + take_argument incr*) (* -3 ?? *)
-
+                                if Mlvalues.long_val (!Domain.acc) = 0 then pc := n - 1 
       | 87 (* SWITCH *) ->   
           let n = take_argument code in 
           if Mlvalues.is_ptr !Domain.acc 
-          then pc := let idx = Block.tag !Domain.acc in
+          then pc := let idx = Block.tag (Mlvalues.ptr_val !Domain.acc) in
                      let ofs = 2 * (n + idx) + 1 in
                      ofs - 1
           else pc := Mlvalues.long_val !Domain.acc
@@ -460,7 +456,7 @@ let interp code =
                         | 0 -> Call.n2t_array_set_addr_code !Domain.acc v1 v2
                         | 1 -> Call.n2t_array_sub_code !Domain.acc v1 v2
                         | _ -> Call.not_available ());
-         pop_stack_ignore 1
+         Domain.env := pop_stack ()
       | 96 (* C-CALL4 *) -> 
          let p = take_argument code in
          let v1 = pop_stack () in
@@ -469,7 +465,7 @@ let interp code =
          push_stack !Domain.env; 
          Domain.acc := (match p with
                         | _ -> Call.not_available ());
-         pop_stack_ignore 1
+         Domain.env := pop_stack ()
       | 97 (* C-CALL5 *) -> 
          let p = take_argument code in
          let v1 = pop_stack () in
@@ -479,7 +475,7 @@ let interp code =
          push_stack !Domain.env; 
          Domain.acc := (match p with
                         | _ -> Call.not_available ());
-         pop_stack_ignore 1
+         Domain.env := pop_stack ()
       | 98 (* C-CALLN *) -> (* TODO *) ()
       | 99  (* CONST0 *) -> const_n 0
       | 100 (* CONST1 *) -> const_n 1

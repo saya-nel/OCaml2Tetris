@@ -16,7 +16,7 @@ let destination_dir = ref "generated_files"
 
 let () =
   Arg.parse [
-      ("-printpast", Arg.Set print_past,
+      ("-printpast", Arg.Set print_past,         (* -printpast, -printast TODO *)
        " : affiche l'AST en syntaxe Caml");
       ("-printast", Arg.Set print_ast,
        " : affiche l'AST simplifié en syntaxe Caml (après typage et optimisation)");

@@ -45,7 +45,7 @@ let n2t_make_vect = 0
 
 let n2t_make_vect_code sz init =
   let n = Mlvalues.long_val sz in
-  if sz < 0 then failwith "n2t_make_vect" else
+  if n < 0 then failwith "n2t_make_vect" else
   let arr = Alloc.make_block 0 n in (* array : tag 0 *)
   for i = 0 to n - 1 do
     Block.set_field arr i init

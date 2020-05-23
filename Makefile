@@ -61,4 +61,27 @@ clean:	clean-miniML
 	make clean -C $(INTEROP)
 	make clean -C zam/src/ocaml
 
+test:
+	make zam-ocaml-run MLFILES=samples/clos/clos0.ml
+	make zam-ocaml-run MLFILES=samples/clos/clos1.ml
+	make zam-ocaml-run MLFILES=samples/clos/clos2.ml 
+	make zam-ocaml-run MLFILES=samples/rec/fact.ml
+	make zam-ocaml-run MLFILES=samples/rec/fib.ml
+	make zam-ocaml-run MLFILES=samples/appterm/fact.ml
+	make zam-ocaml-run MLFILES=samples/appterm/ackermann.ml
+	make zam-ocaml-run MLFILES=samples/grab/grab.ml
+	make zam-ocaml-run MLFILES=samples/grab/grab2.ml
+	make zam-ocaml-run MLFILES=samples/grab/f91.ml
+	make zam-ocaml-run MLFILES=samples/array/arr.ml
+	make zam-ocaml-run MLFILES=samples/alloc/alloc.ml
+	make zam-ocaml-run MLFILES=samples/alloc/alloc_array.ml
+	make zam-ocaml-run MLFILES="samples/segdata/m.ml samples/segdata/sstring.ml"
+	make zam-ocaml-run MLFILES="samples/modules/m1.ml samples/modules/m2.ml samples/modules/m3.ml"
+	make zam-ocaml-run MLFILES=samples/loop/for.ml
+	make zam-ocaml-run MLFILES=samples/variants/opt.ml
+	make zam-ocaml-run MLFILES=samples/variants/list_012345.ml
+	make zam-ocaml-run MLFILES=samples/variants/list.ml
+	make zam-ocaml-run MLFILES=samples/variants/list2.ml
+	make zam-ocaml-run MLFILES=samples/variants/list_iter.ml
+	make zam-ocaml-run MLFILES=samples/variants/list_append.ml
 

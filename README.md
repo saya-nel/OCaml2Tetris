@@ -41,3 +41,7 @@ $ opam install obytelib
 - `make cmo MLFILES="f1.ml f2.ml ..."` compile les sources avec ocamlc. édition des liens avec un fichier primitives.c qui définit l'équivalent OCaml des primitives C supportées par notre implémentation de la ZAM.
 
 - `make obytelib MLFILES="f1.cmo f2.cmo ..."` nettoie et fussionne des cmo, puis construit le tableau code `zam/input.ml`.
+
+### tests unitaires 
+
+- `make test` (seulement pour notre implémentation de la ZAM en OCaml). 
