@@ -20,7 +20,7 @@ ZAM_INPUT=zam/input.ml
 ROOT=../
 STDLIB=stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml
 ZAM_SRC=zam/src/mlvalues.ml zam/src/prims.ml \
-		zam/src/domain.ml zam/src/block.ml zam/src/gc.ml zam/src/alloc.ml\
+		zam/src/domain.ml zam/src/block.ml zam/src/data.ml zam/src/gc.ml zam/src/alloc.ml\
 		zam/src/call.ml $(ZAM_INPUT) zam/src/interp.ml zam/src/main.ml
 
 INTEROP=interop/

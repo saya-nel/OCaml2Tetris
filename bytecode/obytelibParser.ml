@@ -303,19 +303,28 @@ let replace_labels_indexes ?(start=0) (instrs : string list) : string list =
   in aux instrs
 
 (* écrit le tableau d'instructions dans un nouveau fichier src/zam/interp.ml *)
-let write_instr_array ?(dst="./zam/input.ml") data (instr_array : string) : unit =
+let write_instr_array ?(dst="zam/input.ml") data (instr_array : string) : unit =
   let oc = open_out dst in
-  let sdata = if data = "" then "" else "let _ = " ^ data ^ "\n\n" in
+  let sdata = if data = "" then "" else "let () = " ^ data ^ "\n\n" in
   fprintf oc "%slet code = %s\n" sdata instr_array;
   close_out oc
 
 let string_of_value v =
-   let open Value in
-  match v with
-  | Int n -> Printf.sprintf "Block.make_global_long %d" n
-  | String s -> Printf.sprintf "Block.data_string \"%s\"" s
-  | _ -> failwith "not implemented"
- (* | Block       of int * t array *)
+  let open Value in
+  let rec add_value v = match v with
+   | Int n -> string_of_int n
+   | String s -> Printf.sprintf "Data.add_string \"%s\"" s
+   | Block (tag,a) -> add_block tag a
+   | _ -> failwith "not implemented"
+and add_block tag a =
+  let sz = Array.length a in
+  let r = Printf.sprintf "(let p = Data.alloc %d %d in\n" tag sz in
+  let fill = String.concat ";" (Array.to_list (
+              Array.mapi (fun i ci -> let s = add_value ci in 
+                           Printf.sprintf "Data.set_data p %d (%s)" i s) a)) in
+  r ^ fill ^ "; Mlvalues.val_ptr p)"
+  in 
+  Printf.sprintf "Data.push_global (%s)" (add_value v)
 
 let list_string_of_data data =
    List.map string_of_value (Array.to_list data)

@@ -1,5 +1,6 @@
 let debug = false
 let debug_opcode = false
+let debug_data = false
 
 let pc = ref 0
 
@@ -81,9 +82,9 @@ let debug_print_state () =
     print_int (!extra_args);
     print_newline ();
     debug_print_arr Domain.stack (!Domain.sp-1) "stack";
-    debug_print_arr !Domain.from_space (!Domain.heap_top - 1 - Domain.heap_start) "from_space"
-    (* debug_print_arr Domain.global (!Domain.global_top - 1) "global";
-    debug_print_arr Domain.data (!Domain.data_top - 1) "data" *)
+    debug_print_arr !Domain.from_space (!Domain.heap_top - 1 - Domain.heap_start) "from_space";
+    if debug_data then begin debug_print_arr Domain.global (!Domain.global_top - 1) "global";
+                             debug_print_arr Domain.data (!Domain.data_top - 1) "data" end
   end
 (* print_string " global: ";
  if Mlvalues.is_ptr (!global) then

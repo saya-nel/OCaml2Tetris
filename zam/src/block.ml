@@ -54,29 +54,3 @@ let addr_closure cv = get_field cv 0
 let env_closure cv = Mlvalues.val_ptr ((Mlvalues.ptr_val cv) + 2)
 
 let val_codeptr o = Mlvalues.val_long o (* ??? *)
-
-let push_global v = 
-  Domain.global.(!Domain.global_top) <- v;
-  incr Domain.global_top
-
-let make_global_long n =
-  let p = !Domain.data_top in
-  Domain.data.(!Domain.data_top) <- Mlvalues.val_long n;
-  incr Domain.data_top;
-  push_global (Mlvalues.val_long p)
-
-let make_global_block tag sz =
-  let p = !Domain.data_top in
-  Domain.data.(p) <- Mlvalues.val_long (make_header tag sz);
-  Domain.data_top := p + sz + 1;
-  push_global (Mlvalues.val_ptr p)
-
-let data_string s =
-  let p = !Domain.data_top in
-  let z = String.length s in
-  make_global_block string_tag z;
-  for i = 0 to z - 1 do
-    Domain.data.(p+i+1) <- Mlvalues.val_long (Obj.magic (String.get s i))
-  done
-
- 
