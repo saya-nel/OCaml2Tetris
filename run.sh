@@ -2,17 +2,18 @@
 
 VMEMULATOR="nand2tetris/tools/VMEmulator.sh"
 
-ZAM_BIN="zam/bin/"
-
 MINI_ML="mini-ml"
 
 # chemins relatif depuis mini-ml
 ROOT="../"
 STDLIB="stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml"
-ZAM_INPUT="../zam/input.ml"
-ZAM_SRC=" ../zam/src/mlvalues.ml ../zam/src/prims.ml \
-         ../zam/src/domain.ml ../zam/src/block.ml ../zam/src/data.ml ../zam/src/gc.ml ../zam/src/alloc.ml \
-         ../zam/src/call.ml $ZAM_INPUT ../zam/src/interp.ml ../zam/src/main.ml"
+ZAM_INPUT="../vm/zam-miniML/input.ml"
+ZAM_SRC=" ../vm/zam-miniML/src/mlvalues.ml ../vm/zam-miniML/src/prims.ml \
+         ../vm/zam-miniML/src/domain.ml ../vm/zam-miniML/src/block.ml \
+         ../vm/zam-miniML/src/data.ml ../vm/zam-miniML/src/gc.ml ../vm/zam-miniML/src/alloc.ml \
+         ../vm/zam-miniML/src/call.ml $ZAM_INPUT ../vm/zam-miniML/src/interp.ml ../vm/zam-miniML/src/main.ml"
+
+ZAM_BIN=vm/zam-miniML/bin
 
 if [ $# -eq 0 ]
   then # Si il n'y a pas d'arg, on lance la vm
@@ -37,13 +38,13 @@ if [ $# -eq 0 ]
     make -C $MINI_ML
 
     # lancement obytelibParser
-    dune build bytecode/obytelibParser.exe
+    dune build vm/bytecode/obytelibParser.exe
     cd samples
     ocamlc *.ml
     rm -f a.out
     rm -f *.cmi
     cd ..
-    ./_build/default/bytecode/obytelibParser.exe $@
+    ./_build/default/vm/bytecode/obytelibParser.exe $@
 
     # lancement compilation vers mini-ml
     mkdir -p $ZAM_BIN

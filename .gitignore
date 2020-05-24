@@ -2,6 +2,7 @@ compile
 zam/bin/
 nand2tetris/tools/bin/*
 mini-ml/generated_files
+obytelib.log
 
 *~
 *.annot
@@ -13,6 +14,7 @@ mini-ml/generated_files
 *.cmx
 *.cmxs
 *.cmxa
+*.exe
 .DS_Store
 # ocamlbuild working directory
 _build/
@@ -33,3 +35,5 @@ setup.log
 
 # Local OPAM switch
 _opam/
+
+

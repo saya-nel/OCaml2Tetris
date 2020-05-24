@@ -302,7 +302,7 @@ let replace_labels_indexes ?(start=0) (instrs : string list) : string list =
     | t::q -> (replace_label_index start instrs t)::(aux q)
   in aux instrs
 
-(* écrit le tableau d'instructions dans un nouveau fichier src/zam/interp.ml *)
+(* écrit le tableau d'instructions dans un nouveau fichier dst *)
 let write_instr_array ?(dst="zam/input.ml") data (instr_array : string) : unit =
   let oc = open_out dst in
   let sdata = if data = "" then "" else "let () = " ^ data ^ "\n\n" in
@@ -356,7 +356,7 @@ let process ?(global_ofs=0) ?(start=0) inpath =
 
   (* met à jour les indexs des labels *)
   let replaced = replace_labels_indexes ~start with_args in
-
+ 
   (* pour afficher le bytecode :  *)
   Printf.printf "\n======== %s ========\n" inpath;
   Code.print data symb prim stdout code;
@@ -385,8 +385,8 @@ let main () =
   (* on recupère le tableau serializé, avec instructions remplacés par op codes *)
   let serial = string_list_to_string to_send in
 
-  (* on écrit dans le fichier zam/input.ml le tableau d'instructions *)
-  write_instr_array ~dst:"zam/input.ml" serial_data serial
+  (* on écrit dans le fichier input.ml le tableau d'instructions *)
+  write_instr_array ~dst:"vm/zam-miniML/input.ml" serial_data serial
 
 (* MAIN *)
 let () = main ()
