@@ -54,7 +54,7 @@ $ opam install obytelib
 ├── vm
 │   ├── zam-miniML       # implantation de la ZAM en miniML
 │   │   ├── bin
-|   |   |   ├── Main.tst
+|   |   |   ├── Main.tst ;; exécutable
 │   │   │   └── *.vm  
 │   │   ├── input.ml
 │   │   └── src
@@ -69,14 +69,19 @@ $ opam install obytelib
 │   │       ├── interp.ml  
 │   │       └── main.ml  
 │   ├── zam-OCaml         # implantation de la ZAM en OCaml
+│   │   ├── zam.exe      ;; exécutable
 │   │   ├── mlvalues.ml
-│   │   ├── zam.exe
-│   │   └── Makefile
+│   │   └── Makefile     ;; le code source est identique à zam-miniML, excepté mlvalues.ml
+│   ├── stdlib
+│   │   ├── pervasives.ml
+│   │   ├── array.ml
+│   │   └── list.ml
 │   ├── bytecode          # préparation du bytecode
 │   │   └── obytelibParser.ml
-│   └── link              # déclaration d'externals et édition de liens
+│   ├── pack              # fusion de plusieurs .cmo en un seul
+│   │   └── Makefile
+│   └── link              # édition de liens, pour compatibilité avec ocamlrun
 │       ├── primitives.c
-│       ├── n2t.ml
 │       └── Makefile
 ├── mini-ml              # implantation en OCaml d'un compilateur (miniML -> Nand2Tetris)
 │   ├── README.md

@@ -13,8 +13,9 @@ MINIML-FLAGS=
 # chemins relatifs depuis mini-ml
 MINIML=mini-ml/
 ROOT=../
-STDLIB=stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml #pour mini-ml
+MINIML-STDLIB=stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml # pour mini-ml
 VM=vm/
+ZAM-STDLIB=$(VM)stdlib/
 ZAM-MINIML=$(VM)zam-miniML/
 ZAM-OCAML=$(VM)zam-OCaml/
 ZAM_INPUT=input.ml
@@ -39,13 +40,16 @@ clean-miniML:
 cmo:
 	make MLFILES="$(foreach f,$(MLFILES),../../$(f))" -C $(PACK) $(MKFLAGS)
 
+link:
+	make MLFILES="$(foreach f,$(MLFILES),../../$(f))" -C $(LINK) $(MKFLAGS)
+
 obytelib:
 	dune build $(VM)bytecode/obytelibParser.exe
 	./_build/default/$(VM)bytecode/obytelibParser.exe $(PACK)main.cmo >> obytelib.log
 
 zam-miniML:	clean miniML cmo obytelib
 	mkdir -p $(ZAM_BIN)
-	cd $(MINIML); ./compile $(ASSERT) $(MINIML-FLAGS) $(TYPECHECK) -dst=$(ROOT)$(ZAM_BIN) $(STDLIB) $(foreach f,$(ZAM_SRC),$(ROOT)$(ZAM-MINIML)$(f)); cd $(ROOT)
+	cd $(MINIML); ./compile $(ASSERT) $(MINIML-FLAGS) $(TYPECHECK) -dst=$(ROOT)$(ZAM_BIN) $(MINIML-STDLIB) $(foreach f,$(ZAM_SRC),$(ROOT)$(ZAM-MINIML)$(f)); cd $(ROOT)
 
 zam-ocaml:	 cmo obytelib
 	make -C $(ZAM-OCAML) $(MKFLAGS)
@@ -63,7 +67,7 @@ clean:	clean-miniML
 	rm -rf $(ZAM_INPUT)
 	make clean-all -C $(LINK)
 	make clean-all -C $(ZAM-OCAML)
-
+	rm -rf $(ZAM-STDLIB)*.cm[oi]
 
 test:
 	make zam-ocaml-run MLFILES=tests/clos/clos0.ml
@@ -76,9 +80,9 @@ test:
 	make zam-ocaml-run MLFILES=tests/grab/grab.ml
 	make zam-ocaml-run MLFILES=tests/grab/grab2.ml
 	make zam-ocaml-run MLFILES=tests/grab/f91.ml
-	make zam-ocaml-run MLFILES=tests/array/arr.ml
+	make zam-ocaml-run MLFILES="vm/stdlib/array.ml tests/array/arr.ml"
 	make zam-ocaml-run MLFILES=tests/alloc/alloc.ml
-	make zam-ocaml-run MLFILES=tests/alloc/alloc_array.ml
+	make zam-ocaml-run MLFILES="vm/stdlib/array.ml tests/alloc/alloc_array.ml"
 	make zam-ocaml-run MLFILES="tests/segdata/m.ml tests/segdata/sstring.ml"
 	make zam-ocaml-run MLFILES="tests/modules/m1.ml tests/modules/m2.ml tests/modules/m3.ml"
 	make zam-ocaml-run MLFILES=tests/loop/for.ml
@@ -88,4 +92,5 @@ test:
 	make zam-ocaml-run MLFILES=tests/variants/list2.ml
 	make zam-ocaml-run MLFILES=tests/variants/list_iter.ml
 	make zam-ocaml-run MLFILES=tests/variants/list_append.ml
+	make zam-ocaml-run MLFILES="tests/modules/m1.ml tests/modules/m2.ml tests/modules/m3.ml tests/modules/m4.ml"
 

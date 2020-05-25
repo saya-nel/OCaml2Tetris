@@ -1,9 +1,3 @@
-external print_int : int -> unit = "n2t_print_int" ;;
-external print_char : char -> unit = "n2t_print_char" ;;
-external print_string : string -> unit = "n2t_print_string" ;;
-external print_newline : unit -> unit = "n2t_print_newline" ;;
-let s = "ocaml"
-(*
 (* Loïc Sylvestre *)
 (* extrait du module Stdlib d'OCaml, destiné à tourner sur la plateforme  *)
 (* nand2tetris. *)
@@ -129,4 +123,3 @@ let rec ( @ ) l1 l2 =
   match l1 with
     [] -> l2
   | hd :: tl -> hd :: (tl @ l2)
-*)

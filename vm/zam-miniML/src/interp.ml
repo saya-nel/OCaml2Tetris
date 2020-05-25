@@ -33,7 +33,7 @@ let rec debug_print_block block =
       print_string ", tag : ";
       print_int (Block.tag (Mlvalues.ptr_val block));
       print_string ") ";
-      (* print_string "{";
+       print_string "{";
        for i = 0 to Block.size (Mlvalues.ptr_val block) - 1 do
         print_string "<";
         if Mlvalues.is_ptr (Block.get_field block i) then
@@ -43,7 +43,7 @@ let rec debug_print_block block =
         print_string ">";
         print_string " | "
       done;
-      print_string "}"; *)
+      print_string "}"; 
       print_newline ()
     end
 
@@ -421,9 +421,11 @@ let interp code =
       | 84 (* BRANCH *) -> let n = take_argument code in 
                            pc := n - 1 
       | 85 (* BRANCHIF *) -> let n = take_argument code in 
-                             if Mlvalues.long_val (!Domain.acc) = 1 then pc := n - 1
+                             if not (Mlvalues.is_ptr !Domain.acc) && Mlvalues.long_val (!Domain.acc) <> 0 
+                             then pc := n - 1 (* attnetion à l'addresse zéro *)
       | 86 (* BRANCHIFNOT *) -> let n = take_argument code in 
-                                if Mlvalues.long_val (!Domain.acc) = 0 then pc := n - 1 
+                                if not (Mlvalues.is_ptr !Domain.acc) && Mlvalues.long_val (!Domain.acc) = 0 
+                                then pc := n - 1  (* attnetion à l'addresse zéro *)
       | 87 (* SWITCH *) ->   
           let n = take_argument code in 
           if Mlvalues.is_ptr !Domain.acc 

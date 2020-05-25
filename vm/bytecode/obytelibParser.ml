@@ -252,14 +252,14 @@ let get_arg_nth (s : string) (i : int) : string =
   instrs est une liste de la forme ["INSTR1 arg1 arg2", "INSTR2"] etc
   instr est une instruction avec ses arguments, de la forme "INSTR1 arg1 arg2"
 *)
-let replace_label_index (start : int) (instrs : string list) (instr : string) : string = match (get_instr instr) with
+let replace_label_index (instrs : string list) (instr : string) : string = match (get_instr instr) with
   | "PUSH_RETADDR"
   | "BRANCH" 
   | "BRANCHIF"
   | "BRANCHIFNOT"
   | "PUSHTRAP" ->
     let old_val = int_of_string (get_arg_nth instr 1) in
-    let new_val = old_val + start + nb_args_before_ind instrs (old_val) in
+    let new_val = old_val + nb_args_before_ind instrs (old_val) in
     (get_instr instr) ^ " " ^ string_of_int new_val
   | "CLOSURE"
   | "BEQ"
@@ -271,14 +271,14 @@ let replace_label_index (start : int) (instrs : string list) (instr : string) : 
   | "BULTINT"
   | "BUGEINT" ->
     let old_val = int_of_string (get_arg_nth instr 2) in
-    let new_val = old_val + start + nb_args_before_ind instrs (old_val) in
+    let new_val = old_val + nb_args_before_ind instrs (old_val) in
     (get_instr instr) ^ " " ^ (get_arg_nth instr 1) ^ " " ^ string_of_int new_val 
   | "CLOSUREREC" -> 
     let nb_args = get_instr_nb_args instr in
     let res = ref ((get_instr instr) ^ " " ^ (get_arg_nth instr 1) ^ " " ^ (get_arg_nth instr 2)) in
     for i = 3 to nb_args do
       let old_val = int_of_string (get_arg_nth instr i) in
-      let new_val = old_val + start + nb_args_before_ind instrs (old_val) in
+      let new_val = old_val + nb_args_before_ind instrs (old_val) in
       res := !res ^ " " ^ (string_of_int new_val)
     done;
     !res
@@ -288,7 +288,7 @@ let replace_label_index (start : int) (instrs : string list) (instr : string) : 
     let res = ref ((get_instr instr) ^ " " ^ (get_arg_nth instr 1)) in
     for i = 1 to size_long do
       let old_val = int_of_string (get_arg_nth instr i) in
-      let new_val = old_val + start + nb_args_before_ind instrs (old_val) in
+      let new_val = old_val + nb_args_before_ind instrs (old_val) in
       res := !res ^ " " ^ (string_of_int new_val);
     done;
     !res
@@ -298,10 +298,10 @@ let replace_label_index (start : int) (instrs : string list) (instr : string) : 
   Met la valeur de tout les labels à jour
   instrs est une liste de la forme ["INSTR1 arg1 arg2", "INSTR2"] etc
 *)
-let replace_labels_indexes ?(start=0) (instrs : string list) : string list =
+let replace_labels_indexes (instrs : string list) : string list =
   let rec aux curr_instrs = match curr_instrs with
     | [] -> []
-    | t::q -> (replace_label_index start instrs t)::(aux q)
+    | t::q -> (replace_label_index instrs t)::(aux q)
   in aux instrs
 
 (* écrit le tableau d'instructions dans un nouveau fichier dst *)
@@ -310,7 +310,6 @@ let write_instr_array ?(dst="zam/input.ml") data (instr_array : string) : unit =
   let sdata = if data = "" then "" else "let () = " ^ data ^ "\n\n" in
   fprintf oc "%slet code = %s\n" sdata instr_array;
   close_out oc
-
 
 
 let string_of_value v =
@@ -338,9 +337,15 @@ and add_block tag a =
   Printf.sprintf "Data.push_global (%s)" (add_value v)
 
 let list_string_of_data data =
-   List.map string_of_value (Array.to_list data) (* @ [ "Data.push_global (Mlvalues.val_long 0)"] *)
+   List.map string_of_value (Array.to_list data)
 
-let process ?(global_ofs=0) ?(start=0) inpath = 
+
+let main () =
+  (* chemin du fichier .cmo *)
+  let inpath =
+    match Sys.argv with
+    | [| _; inpath |] -> inpath
+    | _ -> failwith "Erreur chemin fichier" in
 
   (* résultats de obytelib *)
   let cmofile = 
@@ -349,15 +354,13 @@ let process ?(global_ofs=0) ?(start=0) inpath =
   (* on récupère les champs *)
   let data, symb, prim, code = Cmofile.reloc cmofile in
 
-  let code' = set_global_data_ofs global_ofs code in
-
   (* on va traiter la partie code *)
   (* serialize le code sous forme ["instr1 arg1 arg2"; "instr2"; "instr3 arg1"] etc *)
-  let with_args = instr_string_with_args prim code' in
+  let with_args = instr_string_with_args prim code in
   (* List.iter (Printf.printf "%s\n") with_args; *)
 
   (* met à jour les indexs des labels *)
-  let replaced = replace_labels_indexes ~start with_args in
+  let replaced = replace_labels_indexes with_args in
  
   (* pour afficher le bytecode :  *)
   Printf.printf "\n======== %s ========\n" inpath;
@@ -365,24 +368,8 @@ let process ?(global_ofs=0) ?(start=0) inpath =
 
   (* met les instructions sous la forme ["instr1"; "arg1"; "arg2"; "instr2"] ect *)
   let to_send = String.split_on_char ' ' (String.concat " " replaced) in
+  let data = list_string_of_data data in
   
-  (list_string_of_data data, to_send)
-
-let process_all inpaths =
-  let rec aux acc_data acc_instrs = function
-  | [] -> (acc_data,acc_instrs)
-  | m::ms -> let data,m' = process ~global_ofs:(List.length acc_data) ~start:(List.length acc_instrs) m in
-             aux (acc_data @ data) (acc_instrs @ m') ms 
-  in aux [] [] inpaths
-
-let main () =
-(* chemin du fichier .cmo *)
-  let inpaths =
-    match Array.to_list Sys.argv with
-    | _::inpaths -> inpaths
-    | _ -> assert false in
-
-  let data,to_send = process_all inpaths in
   let serial_data = String.concat ";\n  " data in
   (* on recupère le tableau serializé, avec instructions remplacés par op codes *)
   let serial = string_list_to_string to_send in

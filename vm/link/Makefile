@@ -3,8 +3,8 @@ FLAGS= -nopervasives -no-alias-deps -open Pervasives
 MLFILES= # foo.ml
 CFILES=primitives.c
 EXE=a.out
-INCLUDES=-I stdlib $(foreach f,$(MLFILES),-I $(dir $(f)))
-STDLIB_SRC= pervasives.ml # stdlib/array.ml stdlib/list.ml
+INCLUDES=-I ../stdlib $(foreach f,$(MLFILES),-I $(dir $(f)))
+STDLIB_SRC= ../stdlib/pervasives.ml # stdlib/array.ml stdlib/list.ml
 OBJS= $(subst .ml,.cmo,$(STDLIB_SRC) $(MLFILES))
 
 all: clean-cmo $(OBJS)
@@ -19,7 +19,7 @@ bytecode:	clean-all all clean
 .c.o:
 	cc -c -I`ocamlc -where` $<
 
-pervasives.cmo:	pervasives.ml 
+../stdlib/pervasives.cmo:	../stdlib/pervasives.ml 
 	$(CAMLC) -nopervasives -no-alias-deps $(INCLUDES) -c $<
 
 .ml.cmo:

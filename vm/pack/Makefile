@@ -4,9 +4,9 @@ FLAGS=-open Pervasives
 CMO=main.cmo
 OBJS= $(subst .ml,.cmo,$(MLFILES))
 
-INCLUDES=-I stdlib $(foreach f,$(MLFILES),-I $(dir $(f)))
+INCLUDES=-I ../stdlib $(foreach f,$(MLFILES),-I $(dir $(f)))
 
-all: clean-cmo pervasives.cmo $(OBJS)
+all: clean-cmo ../stdlib/pervasives.cmo $(OBJS)
 	$(CAMLC) $(FLAGS)  $(INCLUDES) -pack $(OBJS) -o $(CMO)
 
 .SUFFIXES: .c .o .ml .mli .cmo .cmi .cmx
@@ -14,7 +14,7 @@ all: clean-cmo pervasives.cmo $(OBJS)
 .c.o:
 	cc -c -I`ocamlc -where` $<
 
-pervasives.cmo:	pervasives.ml
+../stdlib/pervasives.cmo:	../stdlib/pervasives.ml
 	$(CAMLC) $(INCLUDES) $(INCLUDES) -for-pack $(basename $(notdir $<)) -c $< 
 
 .ml.cmo:
