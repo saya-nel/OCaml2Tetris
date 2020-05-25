@@ -67,6 +67,8 @@ clean:	clean-miniML
 	rm -rf $(ZAM_INPUT)
 	make clean-all -C $(LINK)
 	make clean-all -C $(ZAM-OCAML)
+	rm -rf $(ZAM-MINIML)src/*.cm[oi]
+	rm -rf $(ZAM-OCAML)*.cm[oi]
 	rm -rf $(ZAM-STDLIB)*.cm[oi]
 
 test:

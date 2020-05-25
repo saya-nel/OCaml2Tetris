@@ -1,14 +1,18 @@
 let get ptr = 
   if ptr >= Domain.heap_start
   then (!Domain.from_space).(ptr-Domain.heap_start)
-  else if ptr >= Domain.global_start then (Domain.global).(ptr-Domain.global_start)
+  else
+    if ptr >= Domain.global_start
+    then (Domain.global).(ptr-Domain.global_start)
   else (Domain.data).(ptr)
 
 let set ptr x = 
   if ptr >= Domain.heap_start 
   then (!Domain.from_space).(ptr-Domain.heap_start) <- x
-  else if ptr >= Domain.global_start then (Domain.global).(ptr-Domain.global_start) <- x
-  else (Domain.data).(ptr) <- x
+  else
+    if ptr >= Domain.global_start
+    then (Domain.global).(ptr-Domain.global_start) <- x
+    else (Domain.data).(ptr) <- x (* NB : le programme n'est pas censé écrire dans data *)
 
 let size ptr = 
   let hd = get ptr in 
@@ -26,7 +30,6 @@ let get_global i =
   (Domain.global).(i)
 
 let set_global i vx =
-  (* Printf.printf "set_global %d %d\n" i (Mlvalues.long_val vx);  *)
   (Domain.global).(i) <- vx
 
 let make_header tag sz =

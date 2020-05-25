@@ -9,7 +9,7 @@ let print_end () =
 
 let _ = 
   Interp.interp Input.code;
-  if Interp.debug then print_end ()
+  if !Interp.debug then print_end ()
   
 
 

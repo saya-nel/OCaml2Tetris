@@ -92,5 +92,6 @@ rule token = parse
 
 
 and comment = parse 
-| "*)" { token lexbuf }
-| _    { comment lexbuf } 
+| "*)"    { token lexbuf }
+| ['\n']  { Lexing.new_line lexbuf; comment lexbuf } 
+| _       {comment lexbuf } 

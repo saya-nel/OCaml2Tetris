@@ -6,7 +6,7 @@ let add_long n =
 
 let alloc tag sz =
   let p = !Domain.data_top in
-  Domain.data.(p) <- (Block.make_header tag sz);
+  Domain.data.(p) <- Block.make_header tag sz;
   Domain.data_top := p + sz + 1;
   p
 
@@ -17,9 +17,9 @@ let add_string s =
   let z = String.length s in
   let p = alloc Block.string_tag z in
   for i = 0 to z - 1 do
-    set_data p i (Mlvalues.val_long (Obj.magic (String.get s i)))
+    set_data p i (Mlvalues.val_long @@ Obj.magic @@ String.get s i)
   done;
-   Mlvalues.val_ptr p
+  Mlvalues.val_ptr p
 
 
 let push_global v = 
