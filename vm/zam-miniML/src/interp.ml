@@ -1,7 +1,7 @@
-let debug = ref false
-let debug_opcode = ref false
-let debug_pc = ref false
-let debug_data = ref false
+let debug = false
+let debug_opcode = false
+let debug_pc = false
+let debug_data = false
 
 let pc = ref 0
 let extra_args = ref 0 
@@ -67,38 +67,38 @@ let debug_print_arr arr arr_end name =
   end
 
 let debug_print_state () = 
-  (if !debug_pc then
+  (if debug_pc then
      begin
        print_newline ();
        print_string "pc: "; 
        print_int (!pc) ; 
        print_newline ()
      end);
-  (if !debug then
+  (if debug then
      begin
        print_newline ();
        print_string "pc: "; 
        print_int (!pc);
        print_string ", acc: "; 
-       if Mlvalues.is_ptr (!Domain.acc) then 
-         debug_print_block (!Domain.acc)
+       if Mlvalues.is_ptr !Domain.acc then 
+         debug_print_block !Domain.acc
        else 
-         print_int (Mlvalues.long_val (!Domain.acc));
+         print_int (Mlvalues.long_val !Domain.acc);
        print_string ", env: ";
        if Mlvalues.is_ptr (!Domain.env) then
          debug_print_block (!Domain.env)
        else 
-         print_int (Mlvalues.long_val (!Domain.env));
+         print_int (Mlvalues.long_val !Domain.env);
        print_string ", Domain.sp: "; 
-       print_int (!Domain.sp);
+       print_int !Domain.sp;
        print_string ", extra args: ";
-       print_int (!extra_args);
+       print_int !extra_args;
        print_newline ();
        debug_print_arr Domain.stack (!Domain.sp-1) "stack";
        debug_print_arr !Domain.from_space
          (!Domain.heap_top - 1 - Domain.heap_start) "from_space"
      end);
-  if !debug_data
+  if debug_data
   then begin debug_print_arr Domain.global (!Domain.global_top - 1) "global";
              debug_print_arr Domain.data (!Domain.data_top - 1) "data"
        end
@@ -164,7 +164,7 @@ let appterm nargs n =
 let interp code =
   Domain.sp := 0;
   while !pc < Array.length code do
-    if !debug_opcode then (
+    if debug_opcode then (
       print_newline () ;
       print_string "opcode : " ; print_int code.(!pc)
     );
@@ -299,8 +299,9 @@ let interp code =
          let v = take_argument code in
          let o = take_argument code in
          if v > 0 then push_stack !Domain.acc;
-         let closure_size = (2 * f) - 1 + v in
-         Domain.acc := Alloc.make_block Block.closure_tag closure_size;
+         (* (print_string "TOTO";  print_int (f); print_int (v); print_string "TOTO"); *)
+         let closure_size = (2 * f) - 1 + v in  
+         Domain.acc := Alloc.make_block Block.closure_tag closure_size;  
          for i = 1 to f-1 do 
            Block.set_field !Domain.acc (2 * i - 1) (
                Block.make_header Block.infix_tag (2 * i)
@@ -396,7 +397,7 @@ let interp code =
                                 Domain.acc := Block.get_field !Domain.acc n
       | 81 (* SETVECTITEM *) -> let n = pop_stack () in
                                 let v = pop_stack () in
-                                Block.set_bytes (!Domain.acc) (Mlvalues.long_val n) v;
+                                Block.set_bytes !Domain.acc (Mlvalues.long_val n) v;
                                 Domain.acc := Block.unit
       | 82 (* GETSTRINGCHAR *) -> let n = pop_stack () in
                                   Domain.acc := Block.get_bytes
@@ -409,7 +410,7 @@ let interp code =
                                    );
                                  Domain.acc := Block.unit
       | 84 (* BRANCH *) -> let n = take_argument code in 
-                           pc := n - 1 
+                           pc := n - 1
       | 85 (* BRANCHIF *) -> let n = take_argument code in 
                              if not (Mlvalues.is_ptr !Domain.acc) &&
                                   Mlvalues.long_val !Domain.acc <> 0 
@@ -442,7 +443,7 @@ let interp code =
          if !trap_sp = 0 then begin 
              print_string "Exception, acc = ";
              print_int @@ Mlvalues.long_val !Domain.acc;
-             print_newline () end 
+             print_newline () end
          else begin
              Domain.sp := !trap_sp;
              pc := Mlvalues.long_val @@ pop_stack ();
@@ -475,8 +476,9 @@ let interp code =
                         | 1 -> Call.caml_array_get_addr_code !Domain.acc v
                         | 2 -> Call.caml_greaterequal_code !Domain.acc v
                         | 3 -> Call.caml_lessequal_code !Domain.acc v
-                        | 4 -> Call.caml_int_compare_code !Domain.acc v
-                        | 5 -> Call.caml_array_append_code !Domain.acc v                     
+                        | 4 -> Call.caml_lessthan_code !Domain.acc v
+                        | 5 -> Call.caml_int_compare_code !Domain.acc v
+                        | 6 -> Call.caml_array_append_code !Domain.acc v                     
                         | _ -> Call.not_available ());
          pop_stack_ignore 1
       | 95 (* C-CALL3 *) ->
@@ -614,8 +616,8 @@ let interp code =
                                                  (Mlvalues.long_val !Domain.acc)
                                                  ofs
       | 128 (* OFFSETREF *) -> let ofs = take_argument code in
-                               let old = Block.get_field (!Domain.acc) 0 in
-                               Block.set_field (!Domain.acc) 0
+                               let old = Block.get_field !Domain.acc 0 in
+                               Block.set_field !Domain.acc 0
                                  (Mlvalues.val_long @@
                                     Prims.addint (Mlvalues.long_val old) ofs);
                                Domain.acc := Block.unit

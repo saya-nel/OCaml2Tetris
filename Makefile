@@ -29,6 +29,8 @@ PACK=$(VM)pack/
 
 MKFLAGS=
 
+BENCHS=benchs/
+
 all:	zam-miniML
 
 miniML:
@@ -70,29 +72,44 @@ clean:	clean-miniML
 	rm -rf $(ZAM-MINIML)src/*.cm[oi]
 	rm -rf $(ZAM-OCAML)*.cm[oi]
 	rm -rf $(ZAM-STDLIB)*.cm[oi]
+	rm -rf $(BENCHS)*.cm[oi]
+
 
 test:
-	make zam-ocaml-run MLFILES=tests/clos/clos0.ml
-	make zam-ocaml-run MLFILES=tests/clos/clos1.ml
-	make zam-ocaml-run MLFILES=tests/clos/clos2.ml 
-	make zam-ocaml-run MLFILES=tests/rec/fact.ml
-	make zam-ocaml-run MLFILES=tests/rec/fib.ml
-	make zam-ocaml-run MLFILES=tests/appterm/fact.ml
-	make zam-ocaml-run MLFILES=tests/appterm/ackermann.ml
-	make zam-ocaml-run MLFILES=tests/grab/grab.ml
-	make zam-ocaml-run MLFILES=tests/grab/grab2.ml
-	make zam-ocaml-run MLFILES=tests/grab/f91.ml
-	make zam-ocaml-run MLFILES="vm/stdlib/array.ml tests/array/arr.ml"
-	make zam-ocaml-run MLFILES=tests/alloc/alloc.ml
-	make zam-ocaml-run MLFILES="vm/stdlib/array.ml tests/alloc/alloc_array.ml"
-	make zam-ocaml-run MLFILES="tests/segdata/m.ml tests/segdata/sstring.ml"
-	make zam-ocaml-run MLFILES="tests/modules/m1.ml tests/modules/m2.ml tests/modules/m3.ml"
-	make zam-ocaml-run MLFILES=tests/loop/for.ml
-	make zam-ocaml-run MLFILES=tests/variants/opt.ml
-	make zam-ocaml-run MLFILES=tests/variants/list_012345.ml
-	make zam-ocaml-run MLFILES=tests/variants/list0.ml
-	make zam-ocaml-run MLFILES=tests/variants/list2.ml
-	make zam-ocaml-run MLFILES=tests/variants/list_iter.ml
-	make zam-ocaml-run MLFILES=tests/variants/list_append.ml
-	make zam-ocaml-run MLFILES="tests/modules/m1.ml tests/modules/m2.ml tests/modules/m3.ml tests/modules/m4.ml"
+	make zam-ocaml-run MLFILES=$(BENCHS)f91.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)syracuse.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)fact_tail.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)fact.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)fib_tail.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)fib.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)oddeven.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)pascal.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)rec.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)list_iter.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)list_rev.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)list_append.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)list_fold_left.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)list_map.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)list_map2.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/clos/clos0.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/clos/clos1.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/clos/clos2.ml 
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/rec/fact.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/rec/fib.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/appterm/fact.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/appterm/fib.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/appterm/ackermann.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/grab/grab.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/grab/grab2.ml
+	make zam-ocaml-run MLFILES="vm/stdlib/array.ml $(BENCHS)tests/array/arr.ml"
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/alloc/alloc.ml
+	make zam-ocaml-run MLFILES="vm/stdlib/array.ml $(BENCHS)tests/alloc/alloc_array.ml"
+	make zam-ocaml-run MLFILES="$(BENCHS)tests/segdata/m.ml $(BENCHS)tests/segdata/sstring.ml"
+	make zam-ocaml-run MLFILES="$(BENCHS)tests/modules/m1.ml $(BENCHS)tests/modules/m2.ml $(BENCHS)tests/modules/m3.ml"
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/loop/for.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/variants/opt.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/variants/list_012345.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/variants/list0.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)tests/variants/list2.ml
+	make zam-ocaml-run MLFILES="$(BENCHS)tests/modules/m1.ml $(BENCHS)tests/modules/m2.ml $(BENCHS)tests/modules/m3.ml $(BENCHS)tests/modules/m4.ml"
 

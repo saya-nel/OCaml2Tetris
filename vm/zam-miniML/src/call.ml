@@ -73,15 +73,19 @@ let caml_lessequal_code v1 v2 = Mlvalues.val_long @@
                                   Prims.leint
                                     (Mlvalues.long_val v1)
                                     (Mlvalues.long_val v2)
-
-let caml_int_compare = 4
-let caml_compare = 4
+let caml_lessthan = 4
+let caml_lessthan_code v1 v2 = Mlvalues.val_long @@
+                                  Prims.ltint
+                                    (Mlvalues.long_val v1)
+                                    (Mlvalues.long_val v2)
+let caml_int_compare = 5
+let caml_compare = 5
 let caml_int_compare_code v1 v2 = Mlvalues.val_long @@
                                     Prims.compare_imm
                                       (Mlvalues.long_val v1)
                                       (Mlvalues.long_val v2)
 
-let caml_array_append = 5
+let caml_array_append = 6
 let caml_array_append_code v1 v2 = failwith "todo"
 
 

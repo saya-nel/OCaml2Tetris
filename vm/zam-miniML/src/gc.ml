@@ -146,8 +146,8 @@ let alloc size =
   if heap_can_alloc size then
     begin
       if debug then (print_string "can alloc"; print_newline ());
-      let ptr = Domain.heap_start + (!Domain.heap_top) in
-      Domain.heap_top := (!Domain.heap_top) + size;
+      let ptr = !Domain.heap_top + Domain.heap_start in
+      Domain.heap_top := !Domain.heap_top + size;
       ptr  
     end
   else 
@@ -160,8 +160,8 @@ let alloc size =
       run_gc size;
       if heap_can_alloc size then 
         begin
-          let ptr = Domain.heap_start + (!Domain.heap_top) in
-          Domain.heap_top := (!Domain.heap_top) + size;
+          let ptr = !Domain.heap_top + Domain.heap_start  in
+          Domain.heap_top := !Domain.heap_top + size;
           ptr  
         end
       else 

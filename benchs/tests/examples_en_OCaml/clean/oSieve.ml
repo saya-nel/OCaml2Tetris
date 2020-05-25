@@ -1,7 +1,5 @@
 (* $Id: oSieve.ml,v 1.2 2006/07/16 13:39:32 emmanuel Exp $ *)
 
-
-let succ x = x + 1;;
 (* Eratosthene's sieve *)
 
 (* interval min max = [min; min+1; ...; max-1; max] *)
@@ -30,7 +28,9 @@ let sieve max =
   let rec filter_again = function
      [] -> []
   | n::r as l ->
-      if n*n > max then l else n :: filter_again (remove_multiples_of n r)
+      if n*n > max
+      then l 
+      else n :: filter_again (remove_multiples_of n r)
   in
     filter_again (interval 2 max)
 ;;
@@ -42,5 +42,8 @@ let rec do_list f l = match l with
 
 
 for i = 1 to 10 do 
-do_list (fun n -> N2t.print_int n; N2t.print_string " ") (sieve 13);
-N2t.print_string "\n" done;;
+  do_list (fun n -> print_int n; 
+                    print_string " ") 
+    (sieve 15);
+   print_newline () 
+done;;

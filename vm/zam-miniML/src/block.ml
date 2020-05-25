@@ -1,18 +1,37 @@
+let bounds_ok i a =
+  i >= 0 && i < Array.length a
+
 let get ptr = 
   if ptr >= Domain.heap_start
-  then (!Domain.from_space).(ptr-Domain.heap_start)
+  then let i = ptr - Domain.heap_start in 
+       (if bounds_ok i !Domain.from_space 
+        then (!Domain.from_space).(i) 
+        else failwith "en dehors du tas")
   else
     if ptr >= Domain.global_start
-    then (Domain.global).(ptr-Domain.global_start)
-  else (Domain.data).(ptr)
+    then let i = ptr - Domain.global_start in 
+       (if bounds_ok i Domain.global 
+        then Domain.global.(i) 
+        else failwith "en dehors des globales")
+  else (if bounds_ok ptr Domain.data 
+        then Domain.data.(ptr)
+        else failwith "en dehors du segment data")
 
 let set ptr x = 
-  if ptr >= Domain.heap_start 
-  then (!Domain.from_space).(ptr-Domain.heap_start) <- x
+  if ptr >= Domain.heap_start
+  then (let i = ptr - Domain.heap_start in 
+        if bounds_ok i !Domain.from_space 
+        then (!Domain.from_space).(i) <- x
+        else failwith "en dehors du tas")
   else
     if ptr >= Domain.global_start
-    then (Domain.global).(ptr-Domain.global_start) <- x
-    else (Domain.data).(ptr) <- x (* NB : le programme n'est pas censé écrire dans data *)
+    then (let i = ptr - Domain.global_start in 
+          if bounds_ok i Domain.global 
+          then Domain.global.(i) <- x
+          else failwith "en dehors des globales")
+  else (if bounds_ok ptr Domain.data 
+        then Domain.data.(ptr) <- x
+        else failwith "en dehors du segment data")
 
 let size ptr = 
   let hd = get ptr in 
