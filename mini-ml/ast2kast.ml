@@ -55,7 +55,7 @@ let lenv_extend x lenv =
   | pi::_ -> let i = snd pi + 1 in 
              (i,Lenv(args,((x,i) :: locals),free)))
 
-let lenv_extend_tail x lenv = 
+let lenv_extend_tail x lenv = lenv_extend x lenv (* ATTENTION : cette optimisation provoque des captures de variables !! 
   match lenv with 
   Lenv(args,locals,free) -> 
   (match locals with
@@ -64,7 +64,7 @@ let lenv_extend_tail x lenv =
              let i = (match List.assoc_opt x locals with 
                       | None -> i + 1
                       | Some(i) -> i) in
-             (i,Lenv(args,((x,i) :: locals),free)))
+             (i,Lenv(args,((x,i) :: locals),free))) *)
 
 
 let compare_ast_int c1 c2 =
