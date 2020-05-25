@@ -3,7 +3,7 @@ let b = 38 in
 let c = 4 in
 let f x y = x + y + a + b in 
 let g = f c in
-  N2t.print_int (g 100)
+  print_int (g 100)
 
 
 (* ~> 184 *)

@@ -5,6 +5,6 @@ let rec iter f = function
 | [] -> () 
 | h::t-> let () = f h in iter f t ;;
 
-iter N2t.print_int l;;
+iter print_int l;;
 
 (* ~> 12345 *)

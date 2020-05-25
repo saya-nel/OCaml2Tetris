@@ -6,8 +6,8 @@
 
 (* taille de chaque segment *)
 
-let data_size = 100
-let global_size = 100
+let data_size = 1000
+let global_size = 1000
 let heap_size = ref 1000 (* par semi-space *)
 let stack_size = 2048
 

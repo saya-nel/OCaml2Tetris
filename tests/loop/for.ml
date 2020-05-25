@@ -1,1 +1,1 @@
-for i = 0 to 10 do N2t.print_int i; N2t.print_newline () done ;;
+for i = 0 to 10 do print_int i; print_newline () done ;;

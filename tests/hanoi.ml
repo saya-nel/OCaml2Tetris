@@ -1,8 +1,8 @@
 let mouvement de vers =
-    N2t.print_string de; 
-    N2t.print_string "-->";
-    N2t.print_string vers; 
-    N2t.print_newline ();;
+    print_string de; 
+    print_string "-->";
+    print_string vers; 
+    print_newline ();;
 
 let rec hanoi depart milieu arrivee = function
 | 0 -> ()

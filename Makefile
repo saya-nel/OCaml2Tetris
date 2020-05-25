@@ -13,7 +13,7 @@ MINIML-FLAGS=
 # chemins relatifs depuis mini-ml
 MINIML=mini-ml/
 ROOT=../
-STDLIB=stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml
+STDLIB=stdlib/pervasives.ml stdlib/array.ml stdlib/string.ml #pour mini-ml
 VM=vm/
 ZAM-MINIML=$(VM)zam-miniML/
 ZAM-OCAML=$(VM)zam-OCaml/
@@ -24,6 +24,7 @@ ZAM_SRC=src/mlvalues.ml src/prims.ml \
 ZAM_BIN=$(ZAM-MINIML)bin/
 
 LINK=$(VM)link/
+PACK=$(VM)pack/
 
 MKFLAGS=
 
@@ -36,12 +37,11 @@ clean-miniML:
 	make clean -C $(MINIML) $(MKFLAGS)
 
 cmo:
-	# echo $(foreach f,$(MLFILES),$(LINK)$(f))
-	make MLFILES="$(foreach f,$(MLFILES),../../$(f))" -C $(LINK) $(MKFLAGS)
+	make MLFILES="$(foreach f,$(MLFILES),../../$(f))" -C $(PACK) $(MKFLAGS)
 
 obytelib:
 	dune build $(VM)bytecode/obytelibParser.exe
-	./_build/default/$(VM)bytecode/obytelibParser.exe $(MLFILES:.ml=.cmo) >> obytelib.log
+	./_build/default/$(VM)bytecode/obytelibParser.exe $(PACK)main.cmo >> obytelib.log
 
 zam-miniML:	clean miniML cmo obytelib
 	mkdir -p $(ZAM_BIN)
@@ -58,10 +58,12 @@ zam-ocaml-run:
 	echo ; ./$(ZAM-OCAML)zam.exe ; echo ; echo
 
 clean:	clean-miniML
-	rm -rf $(ZAM_BIN)
+	rm -rf obytelib.log
+	rm -rf $(ZAM_BIN) 
 	rm -rf $(ZAM_INPUT)
 	make clean-all -C $(LINK)
 	make clean-all -C $(ZAM-OCAML)
+
 
 test:
 	make zam-ocaml-run MLFILES=tests/clos/clos0.ml
@@ -82,7 +84,7 @@ test:
 	make zam-ocaml-run MLFILES=tests/loop/for.ml
 	make zam-ocaml-run MLFILES=tests/variants/opt.ml
 	make zam-ocaml-run MLFILES=tests/variants/list_012345.ml
-	make zam-ocaml-run MLFILES=tests/variants/list.ml
+	make zam-ocaml-run MLFILES=tests/variants/list0.ml
 	make zam-ocaml-run MLFILES=tests/variants/list2.ml
 	make zam-ocaml-run MLFILES=tests/variants/list_iter.ml
 	make zam-ocaml-run MLFILES=tests/variants/list_append.ml

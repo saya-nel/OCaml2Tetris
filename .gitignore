@@ -1,5 +1,5 @@
 compile
-zam/bin/
+vm/zam-miniML/bin/
 nand2tetris/tools/bin/*
 mini-ml/generated_files
 obytelib.log

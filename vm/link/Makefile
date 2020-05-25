@@ -1,12 +1,14 @@
 CAMLC=ocamlc
-COMPFLAGS= -i
+FLAGS= -nopervasives -no-alias-deps -open Pervasives
 MLFILES= # foo.ml
 CFILES=primitives.c
 EXE=a.out
-II=$(foreach f,$(MLFILES),-I $(dir $(f)))
+INCLUDES=-I stdlib $(foreach f,$(MLFILES),-I $(dir $(f)))
+STDLIB_SRC= pervasives.ml # stdlib/array.ml stdlib/list.ml
+OBJS= $(subst .ml,.cmo,$(STDLIB_SRC) $(MLFILES))
 
-all: n2t.ml $(MLFILES)
-	$(CAMLC) $(II) -custom -o $(EXE) $(CFILES) n2t.ml $(MLFILES) 
+all: clean-cmo $(OBJS)
+	$(CAMLC) $(FLAGS) $(INCLUDES) -custom -o $(EXE) $(CFILES) $(OBJS)
 
 bytecode:	clean-all all clean
 
@@ -16,16 +18,20 @@ bytecode:	clean-all all clean
 
 .c.o:
 	cc -c -I`ocamlc -where` $<
+
+pervasives.cmo:	pervasives.ml 
+	$(CAMLC) -nopervasives -no-alias-deps $(INCLUDES) -c $<
+
 .ml.cmo:
-	$(CAMLC) $(II) $(FLAGS) $(COMPFLAGS) -c $<
+	$(CAMLC) $(INCLUDES) $(FLAGS) -c $<
 
 .mli.cmi:
-	$(CAMLC) $(II) $(FLAGS) $(COMPFLAGS) -c $<
+	$(CAMLC) $(INCLUDES) $(FLAGS) -c $<
 
 clean:
 	rm -rf  *~ *.cm[ix] *.o $(EXE)
 
 clean-cmo:
-	rm -rf *.cmo
+	rm -rf *.cmo $(OBJS)
 
 clean-all:	clean clean-cmo

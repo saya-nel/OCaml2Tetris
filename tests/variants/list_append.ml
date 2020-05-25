@@ -12,6 +12,6 @@ let rec iter f = function
 | [] -> () 
 | h::t-> let () = f h in iter f t ;;
 
-iter N2t.print_int (append l1 l2);;
+iter print_int (append l1 l2);;
 
 (* ~> 12345678910 *)

@@ -7,6 +7,6 @@ let f = (fun x -> let w = 16 in
                       x + y + a + b + w + z) in 
 let g = f c in
 let h = g 100 in
-  N2t.print_int (h 40)
+  print_int (h 40)
 
 (* ~> 240 *)

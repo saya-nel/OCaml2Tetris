@@ -26,6 +26,7 @@ let get_global i =
   (Domain.global).(i)
 
 let set_global i vx =
+  (* Printf.printf "set_global %d %d\n" i (Mlvalues.long_val vx);  *)
   (Domain.global).(i) <- vx
 
 let make_header tag sz =

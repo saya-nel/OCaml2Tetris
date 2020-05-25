@@ -202,10 +202,12 @@ let instr_string_with_args (prim : string array) (instrs : Instr.t array) : stri
 (* Renvoie un nouveau bytecode dont les offsets des variables globales sont données en position absolu,
   en prenant compte les [ofs] variables globales déjà defines dans de précédentes unités de compilation *) 
 let set_global_data_ofs (ofs : int) (instrs : Instr.t array) = 
-  let rewrite = function
-  | Instr.GETGLOBAL n -> Instr.GETGLOBAL (n+ofs)
+  let rewrite ins = match ins with
   | Instr.SETGLOBAL n -> Instr.SETGLOBAL (n+ofs)
   | Instr.PUSHGETGLOBAL n -> Instr.PUSHGETGLOBAL (n+ofs)
+  | Instr.GETGLOBAL n -> Instr.GETGLOBAL (n+ofs)
+  | Instr.GETGLOBALFIELD (n,p) -> Instr.GETGLOBALFIELD (n+ofs,p) 
+  | Instr.PUSHGETGLOBALFIELD (n,p) -> Instr.PUSHGETGLOBALFIELD (n+ofs,p) 
   | ins -> ins 
   in
   Array.map rewrite instrs
@@ -336,7 +338,7 @@ and add_block tag a =
   Printf.sprintf "Data.push_global (%s)" (add_value v)
 
 let list_string_of_data data =
-   List.map string_of_value (Array.to_list data)
+   List.map string_of_value (Array.to_list data) (* @ [ "Data.push_global (Mlvalues.val_long 0)"] *)
 
 let process ?(global_ofs=0) ?(start=0) inpath = 
 

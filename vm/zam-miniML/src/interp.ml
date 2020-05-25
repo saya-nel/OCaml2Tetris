@@ -33,7 +33,8 @@ let rec debug_print_block block =
       print_string ", tag : ";
       print_int (Block.tag (Mlvalues.ptr_val block));
       print_string ") ";
-      (* for i = 0 to Block.size (Mlvalues.ptr_val block) - 1 do
+      (* print_string "{";
+       for i = 0 to Block.size (Mlvalues.ptr_val block) - 1 do
         print_string "<";
         if Mlvalues.is_ptr (Block.get_field block i) then
           debug_print_block (Block.get_field block i)
@@ -41,7 +42,8 @@ let rec debug_print_block block =
           print_int (Mlvalues.long_val (Block.get_field block i));
         print_string ">";
         print_string " | "
-      done;*)
+      done;
+      print_string "}"; *)
       print_newline ()
     end
 
@@ -306,20 +308,48 @@ let interp code =
       | 52 (* PUSHOFFSETCLOSURE *) -> pushoffsetclosure_n (take_argument code)
       | 53 (* GETGLOBAL *) -> let n = take_argument code in
                               Domain.acc := (Block.get_global n)
+(* Printf.printf "GET GLOBAL %d\n" n;
+            debug_print_arr Domain.global !Domain.global_top "globals";
+                                  debug_print_arr Domain.global !Domain.data_top "data" *)
+                             (* debug_print_arr Domain.global !Domain.global_top "globals";
+                                  debug_print_arr Domain.global !Domain.data_top "data"; *)
       | 54 (* PUSHGETGLOBAL *) -> push_stack (!Domain.acc);
                                   let n = take_argument code in
                                   Domain.acc := (Block.get_global n)
+                                 (*  Printf.printf "GET GLOBAL %d %d\n" n (Mlvalues.ptr_val !Domain.acc);
+                                 debug_print_arr Domain.global !Domain.global_top "globals";
+                                  debug_print_arr Domain.global !Domain.data_top "data" *)
       | 55 (* GETGLOBALFIELD *) -> let n = take_argument code in
                                    let p = take_argument code in
-                                   Domain.acc := Block.get_field (Domain.global.(n)) p
+                                (* Printf.printf "gg %d %d %d\n"  n p (Mlvalues.ptr_val !Domain.acc);
+                                 Printf.printf "-->%d\n" (Mlvalues.ptr_val (Domain.global.(n))); *)
 
+                                   Domain.acc := (Block.get_field (Domain.global.(n)) p)
+                                 (*   Printf.printf "\nGET FIELD GLOBAL %d %d %d\n" n p (Mlvalues.ptr_val !Domain.acc);
+                                                debug_print_arr Domain.global !Domain.global_top "globals";
+                                  debug_print_arr Domain.global !Domain.data_top "data"*)
+                                 (*  debug_print_arr !Domain.from_space !Domain.heap_top "heap"; *)
+                                  (*  Printf.printf "gg %d %d %d\n"  n p (Mlvalues.ptr_val !Domain.acc) *)
+                                  
       | 56 (* PUSHGETGLOBALFIELD *) -> push_stack (!Domain.acc);
                                        let n = take_argument code in
                                        let p = take_argument code in
                                        Domain.acc := Block.get_field (Domain.global.(n)) p
+                                      (*  Printf.printf "\nGET FIELD GLOBAL %d %d %d\n" n p (Mlvalues.ptr_val !Domain.acc);
+                                                    debug_print_arr Domain.global !Domain.global_top "globals";
+                                  debug_print_arr Domain.global !Domain.data_top "data"*)
+                                      (* debug_print_arr Domain.global 10 "globals";
+                                       debug_print_arr !Domain.from_space !Domain.heap_top "heap"*)
+                                      (*  Printf.printf "gg %d %d %d\n"  n p (Mlvalues.ptr_val !Domain.acc) *)
 
       | 57 (* SETGLOBAL *) -> let n = take_argument code in
+     (*  Printf.printf "uu %d %d %d %d\n" !pc (Mlvalues.ptr_val !Domain.acc) n (Mlvalues.ptr_val !Domain.acc); *)
                               Block.set_global n (!Domain.acc);
+
+(* Printf.printf "SET GLOBAL %d\n" n;
+            debug_print_arr Domain.global !Domain.global_top "globals";
+                                  debug_print_arr Domain.global !Domain.data_top "data"; *)
+
                               Domain.acc := Block.unit
 
       | 58 (* ATOM0 *) -> Domain.acc := Alloc.make_block 0 0
@@ -435,7 +465,8 @@ let interp code =
                         | 2 -> Call.n2t_print_char_code    !Domain.acc
                         | 3 -> Call.n2t_print_string_code  !Domain.acc        
                         | 4 -> Call.n2t_array_length_code  !Domain.acc
-                        | 5 -> Call.n2t_fresh_oo_id_code   !Domain.acc
+                        | 5 -> Call.caml_fresh_oo_id_code  !Domain.acc
+                        | 6 -> Call.caml_array_concat_code !Domain.acc  
                         | _ -> Call.not_available ());
          pop_stack_ignore 1
       | 94 (* C-CALL2 *) -> 
@@ -443,8 +474,12 @@ let interp code =
          let v = pop_stack () in
          push_stack !Domain.env; 
          Domain.acc := (match p with
-                        | 0 -> Call.n2t_make_vect_code !Domain.acc v
-                        | 1 -> Call.n2t_array_get_addr_code !Domain.acc v
+                        | 0 -> Call.caml_make_vect_code !Domain.acc v
+                        | 1 -> Call.caml_array_get_addr_code !Domain.acc v
+                        | 2 -> Call.caml_greaterequal_code !Domain.acc v
+                        | 3 -> Call.caml_lessequal_code !Domain.acc v
+                        | 4 -> Call.caml_int_compare_code !Domain.acc v
+                        | 5 -> Call.caml_array_append_code !Domain.acc v                     
                         | _ -> Call.not_available ());
          pop_stack_ignore 1
       | 95 (* C-CALL3 *) ->
@@ -453,8 +488,8 @@ let interp code =
          let v2 = pop_stack () in
          push_stack !Domain.env; 
          Domain.acc := (match p with
-                        | 0 -> Call.n2t_array_set_addr_code !Domain.acc v1 v2
-                        | 1 -> Call.n2t_array_sub_code !Domain.acc v1 v2
+                        | 0 -> Call.caml_array_set_addr_code !Domain.acc v1 v2
+                        | 1 -> Call.caml_array_sub_code !Domain.acc v1 v2
                         | _ -> Call.not_available ());
          Domain.env := pop_stack ()
       | 96 (* C-CALL4 *) -> 
@@ -474,6 +509,7 @@ let interp code =
          let v4 = pop_stack () in
          push_stack !Domain.env; 
          Domain.acc := (match p with
+                        | 0 -> Call.caml_array_blit_code !Domain.acc v1 v2 v3 v4
                         | _ -> Call.not_available ());
          Domain.env := pop_stack ()
       | 98 (* C-CALLN *) -> (* TODO *) ()

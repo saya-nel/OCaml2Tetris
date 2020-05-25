@@ -1,9 +1,0 @@
-external print_int : int -> unit = "n2t_print_int" ;;
-external print_char : char -> unit = "n2t_print_char" ;;
-external print_string : string -> unit = "n2t_print_string" ;;
-external print_newline : unit -> unit = "n2t_print_newline" ;;
-external array_make : int -> 'a -> 'a array = "n2t_make_vect" ;;
-external array_length : 'a array -> int = "n2t_array_length" ;;
-external array_sub : 'a array -> int -> int -> 'a array  = "n2t_array_sub" ;;
-external array_get : 'a array -> int -> 'a = "n2t_array_get_addr" ;;
-external array_set : 'a array -> int -> 'a -> unit  = "n2t_array_set_addr" ;;
