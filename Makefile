@@ -39,21 +39,21 @@ miniML:
 clean-miniML:
 	make clean -C $(MINIML) $(MKFLAGS)
 
-cmo:
-	make MLFILES="$(foreach f,$(MLFILES),../../$(f))" -C $(PACK) $(MKFLAGS)
-
 link:
 	make MLFILES="$(foreach f,$(MLFILES),../../$(f))" -C $(LINK) $(MKFLAGS)
 
-obytelib:
-	dune build $(VM)bytecode/obytelibParser.exe
-	./_build/default/$(VM)bytecode/obytelibParser.exe $(PACK)main.cmo >> obytelib.log
+ocamlclean:	link
+	ocamlclean $(LINK)a.out -o $(LINK)byte.out  
 
-zam-miniML:	clean miniML cmo obytelib
+obytelib:	ocamlclean
+	dune build $(VM)bytecode/obytelibParser.exe
+	./_build/default/$(VM)bytecode/obytelibParser.exe $(LINK)byte.out >> obytelib.log
+
+zam-miniML:	clean miniML link obytelib
 	mkdir -p $(ZAM_BIN)
 	cd $(MINIML); ./compile $(ASSERT) $(MINIML-FLAGS) $(TYPECHECK) -dst=$(ROOT)$(ZAM_BIN) $(MINIML-STDLIB) $(foreach f,$(ZAM_SRC),$(ROOT)$(ZAM-MINIML)$(f)); cd $(ROOT)
 
-zam-ocaml:	 cmo obytelib
+zam-ocaml:	 link obytelib
 	make -C $(ZAM-OCAML) $(MKFLAGS)
 
 zam-miniML-run:	zam-miniML
@@ -67,6 +67,7 @@ clean:	clean-miniML
 	rm -rf obytelib.log
 	rm -rf $(ZAM_BIN) 
 	rm -rf $(ZAM_INPUT)
+	rm -rf $(LINK)byte.out 
 	make clean-all -C $(LINK)
 	make clean-all -C $(ZAM-OCAML)
 	rm -rf $(ZAM-MINIML)src/*.cm[oi]
@@ -101,15 +102,4 @@ test:
 	make zam-ocaml-run MLFILES=$(BENCHS)tests/appterm/ackermann.ml
 	make zam-ocaml-run MLFILES=$(BENCHS)tests/grab/grab.ml
 	make zam-ocaml-run MLFILES=$(BENCHS)tests/grab/grab2.ml
-	make zam-ocaml-run MLFILES="vm/stdlib/array.ml $(BENCHS)tests/array/arr.ml"
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/alloc/alloc.ml
-	make zam-ocaml-run MLFILES="vm/stdlib/array.ml $(BENCHS)tests/alloc/alloc_array.ml"
-	make zam-ocaml-run MLFILES="$(BENCHS)tests/segdata/m.ml $(BENCHS)tests/segdata/sstring.ml"
-	make zam-ocaml-run MLFILES="$(BENCHS)tests/modules/m1.ml $(BENCHS)tests/modules/m2.ml $(BENCHS)tests/modules/m3.ml"
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/loop/for.ml
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/variants/opt.ml
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/variants/list_012345.ml
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/variants/list0.ml
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/variants/list2.ml
-	make zam-ocaml-run MLFILES="$(BENCHS)tests/modules/m1.ml $(BENCHS)tests/modules/m2.ml $(BENCHS)tests/modules/m3.ml $(BENCHS)tests/modules/m4.ml"
 

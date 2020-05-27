@@ -3,7 +3,8 @@ vm/zam-miniML/bin/
 nand2tetris/tools/bin/*
 mini-ml/generated_files
 obytelib.log
-
+vm/link/a.out
+vm/link/byte.out
 *~
 *.annot
 *.cmo

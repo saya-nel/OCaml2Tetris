@@ -199,19 +199,6 @@ let instr_string_with_args (prim : string array) (instrs : Instr.t array) : stri
   let res = aux (Array.to_list instrs) in
   List.map (fun s -> String.trim s) res
 
-(* Renvoie un nouveau bytecode dont les offsets des variables globales sont données en position absolu,
-  en prenant compte les [ofs] variables globales déjà defines dans de précédentes unités de compilation *) 
-let set_global_data_ofs (ofs : int) (instrs : Instr.t array) = 
-  let rewrite ins = match ins with
-  | Instr.SETGLOBAL n -> Instr.SETGLOBAL (n+ofs)
-  | Instr.PUSHGETGLOBAL n -> Instr.PUSHGETGLOBAL (n+ofs)
-  | Instr.GETGLOBAL n -> Instr.GETGLOBAL (n+ofs)
-  | Instr.GETGLOBALFIELD (n,p) -> Instr.GETGLOBALFIELD (n+ofs,p) 
-  | Instr.PUSHGETGLOBALFIELD (n,p) -> Instr.PUSHGETGLOBALFIELD (n+ofs,p) 
-  | ins -> ins 
-  in
-  Array.map rewrite instrs
-
 (* 
   Renvoie le nombre d'arguments se situant avant une instruction d'index donnée dans la liste d'instructions
   ex : nb_args_before_ind ["CONST3"; "PUSHACC0"; "BNEQ 3 6"; "CONST3"] 3 donnera 2
@@ -324,7 +311,7 @@ let string_of_value v =
    | Int n -> "Mlvalues.val_long " ^ string_of_int n
    | String s -> Printf.sprintf "Data.add_string \"%s\"" s
    | Block (tag,a) -> add_block tag a
-   | _ -> failwith "not implemented"
+   | _ -> "Mlvalues.val_long 42 (* not yet implemented ! *)"
 and add_block tag a =
   let var = gensym () in
   let sz = Array.length a in
@@ -348,11 +335,11 @@ let main () =
     | _ -> failwith "Erreur chemin fichier" in
 
   (* résultats de obytelib *)
-  let cmofile = 
-    Cmofile.read inpath in
-  
+  let bytefile = 
+    Bytefile.read inpath in
+  Bytefile.print stdout bytefile;
   (* on récupère les champs *)
-  let data, symb, prim, code = Cmofile.reloc cmofile in
+  let Bytefile.{data;symb;prim;code;_} = bytefile in
 
   (* on va traiter la partie code *)
   (* serialize le code sous forme ["instr1 arg1 arg2"; "instr2"; "instr3 arg1"] etc *)

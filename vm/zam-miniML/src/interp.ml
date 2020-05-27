@@ -8,16 +8,21 @@ let extra_args = ref 0
 let trap_sp = ref 0
 
 let pop_stack () =
+  assert (!Domain.sp > 0);
   let v = Domain.stack.(!Domain.sp - 1) in 
   decr Domain.sp;
   v
 
 let pop_stack_ignore n =
+  assert (!Domain.sp >= n);
   Domain.sp := !Domain.sp - n
 
+let stack_overflow () = 
+  failwith "stack overflow"
+
 let push_stack v =
-  Domain.stack.(!Domain.sp) <- v; 
-  incr Domain.sp
+  if !Domain.sp >= Domain.stack_size - 1 then stack_overflow (); 
+  Domain.stack.(!Domain.sp) <- v; incr Domain.sp
 
 let take_argument code =
   incr pc;
@@ -119,6 +124,7 @@ let push_acc_n n =
   Domain.acc := Domain.stack.(!Domain.sp - n - 1)
 
 let pop_n n =
+  assert (!Domain.sp >= n);
   Domain.sp := !Domain.sp - n
 
 let assign n =
@@ -140,9 +146,11 @@ let pushoffsetclosure_n n =
   Domain.acc := Mlvalues.val_ptr (Mlvalues.ptr_val !Domain.env + n)
 
 let get_field_n n =
+  assert (Mlvalues.is_ptr !Domain.acc);
   Domain.acc := Block.get_field !Domain.acc n
 
 let set_field_n n =
+  assert (Mlvalues.is_ptr !Domain.acc);
   Block.set_field !Domain.acc n (pop_stack ()); Domain.acc := Block.unit 
 
 let const_n n =
@@ -211,7 +219,12 @@ let interp code =
                           pc := Mlvalues.long_val (Block.get_field !Domain.acc 0) - 1;
                           (* -1 annule l'incrémentation du pc en fin de boucle *)
                           Domain.env := !Domain.acc
-      | 33 (* APPLY1 *) -> let arg = pop_stack () in
+      | 33 (* APPLY1 *) -> assert (Mlvalues.is_ptr !Domain.acc);
+                           assert(let tag = Block.tag_val !Domain.acc in 
+                                  tag = Block.closure_tag || 
+                                  tag = Block.infix_tag
+                           );
+                           let arg = pop_stack () in
                            push_stack @@ Mlvalues.val_long !extra_args;
                            push_stack !Domain.env;
                            push_stack @@ Mlvalues.val_long !pc;
@@ -260,7 +273,7 @@ let interp code =
                              begin
                                decr extra_args;
                                pc := (Mlvalues.long_val @@
-                                        Block.addr_closure !Domain.acc) - 1;
+                                        Block.get_field !Domain.acc 0) - 1;
                                Domain.env := !Domain.acc
                              end
       | 41 (* RESTART *) ->
@@ -299,10 +312,9 @@ let interp code =
          let v = take_argument code in
          let o = take_argument code in
          if v > 0 then push_stack !Domain.acc;
-         (* (print_string "TOTO";  print_int (f); print_int (v); print_string "TOTO"); *)
          let closure_size = (2 * f) - 1 + v in  
          Domain.acc := Alloc.make_block Block.closure_tag closure_size;  
-         for i = 1 to f-1 do 
+         for i = 1 to f - 1 do 
            Block.set_field !Domain.acc (2 * i - 1) (
                Block.make_header Block.infix_tag (2 * i)
              );
@@ -310,7 +322,7 @@ let interp code =
                Mlvalues.val_long @@ take_argument code
              )
          done;
-         for i = 0 to v-1 do 
+         for i = 0 to v - 1 do 
            Block.set_field !Domain.acc (i + 2 * f - 1) (pop_stack ())
          done;
          Block.set_field !Domain.acc 0 (Mlvalues.val_long o);
@@ -430,10 +442,10 @@ let interp code =
          Domain.acc := Mlvalues.val_long @@ Prims.bnot (Mlvalues.long_val !Domain.acc)
       | 89 (* PUSHTRAP *) ->
          let ofs = take_argument code in
-         push_stack (Mlvalues.val_long !extra_args);
+         push_stack @@ Mlvalues.val_long !extra_args;
          push_stack !Domain.env;
-         push_stack (Mlvalues.val_long !trap_sp);
-         push_stack (Mlvalues.val_long (!pc - 1 + ofs));
+         push_stack @@ Mlvalues.val_long !trap_sp;
+         push_stack @@ Mlvalues.val_long (!pc - 1 + ofs);
          trap_sp := !Domain.sp
       | 90 (* POPTRAP *) -> 
          pop_stack_ignore 1;
@@ -580,32 +592,32 @@ let interp code =
                          Prims.asrint
                            (Mlvalues.long_val !Domain.acc)
                            (Mlvalues.long_val (pop_stack ()))
-      | 121 (* EQ     *) ->
+      | 121 (* EQ *) ->
          Domain.acc := Mlvalues.val_long @@
                          Prims.eq
                            (Mlvalues.long_val !Domain.acc)
                            (Mlvalues.long_val (pop_stack ()))
-      | 122 (* NEQ    *) ->
+      | 122 (* NEQ *) ->
          Domain.acc := Mlvalues.val_long @@
                          Prims.neq
                            (Mlvalues.long_val !Domain.acc)
                            (Mlvalues.long_val (pop_stack ())) 
-      | 123 (* LTINT  *) ->
+      | 123 (* LTINT *) ->
          Domain.acc := Mlvalues.val_long @@
                          Prims.ltint
                            (Mlvalues.long_val !Domain.acc)
                            (Mlvalues.long_val (pop_stack ()))  
-      | 124 (* LEINT  *) ->
+      | 124 (* LEINT *) ->
          Domain.acc := Mlvalues.val_long @@
                          Prims.leint
                            (Mlvalues.long_val !Domain.acc)
                            (Mlvalues.long_val (pop_stack ()))
-      | 125 (* GTINT  *) ->
+      | 125 (* GTINT *) ->
          Domain.acc := Mlvalues.val_long @@
                          Prims.gtint
                            (Mlvalues.long_val !Domain.acc)
                            (Mlvalues.long_val (pop_stack ())) 
-      | 126 (* GEINT  *) ->
+      | 126 (* GEINT *) ->
          Domain.acc := Mlvalues.val_long @@
                          Prims.geint
                            (Mlvalues.long_val !Domain.acc)
