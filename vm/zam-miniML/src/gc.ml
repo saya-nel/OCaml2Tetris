@@ -79,7 +79,7 @@ let move_addr value is_array source_reg source_arr pos_arr =
           for j = 0 to (Block.size (Mlvalues.ptr_val value)) - 1 do (* copie tout les fields *)
             (!Domain.to_space).(old + j + 1) <- Block.get_field value j
           done;
-          next := (Block.size (Mlvalues.ptr_val value)) + 1; (* prochaine pos dispo dans to_space *)
+          next := !next + (Block.size (Mlvalues.ptr_val value)) + 1; (* prochaine pos dispo dans to_space *)
           (* on change le tag du bloc en fwd_ptr car il a été déplacé  *)
           Block.set_field value (-1) (Block.make_header Block.fwd_ptr_tag (Block.size (Mlvalues.ptr_val value)));
           (* ajoute le fwd_ptr dans from_space vers la nouvelle position dans to_space *)
@@ -136,27 +136,14 @@ let run_gc size =
 
 (* Alloue si possible, sinon lance le GC puis alloue *)
 let alloc size = 
-  if debug then
-    begin
-      print_newline ();
-      print_string "try alloc ";
-      print_int size;
-      print_newline ()
-    end;
   if heap_can_alloc size then
     begin
-      if debug then (print_string "can alloc"; print_newline ());
       let ptr = !Domain.heap_top + Domain.heap_start in
       Domain.heap_top := !Domain.heap_top + size;
       ptr  
     end
   else 
     begin
-      if debug then 
-        begin
-          print_string "cannot alloc";
-          print_newline ()
-        end;
       run_gc size;
       if heap_can_alloc size then 
         begin
