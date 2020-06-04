@@ -1,31 +1,82 @@
 # OCaml2Tetris
 
+Implémentation de la zam OCaml pour la plateforme Nand2Tetris.
+
+## Description
+
+Une description complète du projet est décrite dans le fichier rapport.pdf.
+
 ## Installation
+
+Opam doit être installé. Voici les dépendances :
+
 ```bash
 $ opam switch create ocaml-base-compiler.4.07.1
 $ opam install dune
-$ opam install obytelib 
+$ opam install obytelib
 $ opam install ocamlclean
 ```
--  NB: obytelib 1.5 nécessite ocaml >= 4.07, mais manipule du bytecode ocaml <= 4.07.1
 
-### compilation de la ZAM
-- `make zam-miniML MLFILES=benchs/fact.ml` compile en mini-ml notre implémentation de la ZAM. Les executables sont dans `zam/bin`, accompagné d'un script `Main.tst` permettant de configurer le simulateur Nand2Tetris. Pour lancer le programme depuis le simulateur, on ouvrira Main.tst avec *file -> load script*, on poura enlever les animations pour rendre la vm plus rapide : *animate -> no animation*, puis on cliquera sur run (bouton double flèche bleu).
+- NB: obytelib 1.5 nécessite ocaml >= 4.07, mais manipule du bytecode ocaml <= 4.07.1
 
-- `make zam-ocaml MLFILES=benchs/fact.ml` compile en OCaml notre implémentation de la ZAM. L'executable est `zam/src/ocaml/zam.exe`
+### Compilation de la ZAM
 
-- `make zam-miniML-run MLFILES=benchs/fact.ml` compile en mini-ml notre implémentation de la ZAM, puis lance le simulateur
+Dans tous les exemples, nom_du_fichier.ml est aremplacé par le nom du fichier que vous voulez tester dans le dossier bench.
 
-- `make zam-ocaml-run MLFILES=benchs/fact.ml` compile en OCaml notre implémentation de la ZAM, puis lance l'executable `zam/src/ocaml/zam.exe`
+- `make zam-miniML MLFILES=benchs/nom_du_fichier.ml` compile en mini-ml notre implémentation de la ZAM. Les executables sont dans 'zam/bin', accompagné d'un script 'Main.tst' permettant de configurer le simulateur Nand2Tetris. Pour lancer le programme depuis le simulateur, on ouvrira Main.tst avec *file -> load script*, on poura enlever les animations pour rendre la VM plus rapide : *animate -> no animation*, puis on cliquera sur run (bouton double flèche bleue).
 
-### étapes intermédiaires
+- `make zam-ocaml MLFILES=benchs/nom_du_fichier.ml` compile en OCaml notre implémentation de la ZAM. L'executable est 'zam/src/ocaml/zam.exe'
+
+- `make zam-miniML-run MLFILES=benchs/nom_du_fichier.ml` compile en mini-ml notre implémentation de la ZAM, puis lance le simulateur
+
+- `make zam-ocaml-run MLFILES=benchs/nom_du_fichier.ml` compile en OCaml notre implémentation de la ZAM, puis lance l'executable 'zam/src/ocaml/zam.exe'
+
+Pour lancer un programme séparé en plusieurs fichiers, toutes les commandes précédentes peuvent contenir plusieurs noms de fichiers.
+
+Exemple :
+
+```bash
+$ make zam-ocaml-run MLFILES="benchs/nom_du_fichier1.ml benchs/nom_du_fichier2.ml"
+```
+
+Exemple concret d'utilisation :
+
+```bash
+$ make zam-miniML-run MLFILES=benchs/fact.ml
+```
+
+### Options pour lancement en miniML
+
+Les options suivantes sont disponibles uniquement si la zam est lancée en miniML : 
+
+- -printpast  : affiche l'AST en syntaxe Caml
+- -printast  : affiche l'AST simplifié en syntaxe Caml (après typage et optimisation)
+- -typecheck  : type le programme est abandonne si celui-ci est mal typé
+- -inline  : profondeur d'inlining
+- -noglobalize  : désactive la globalisation des valeurs immutables allouées.
+- -nofolding  : désactive la propagation des constantes
+- -nosmpvar  : désactive la réécriture des variables globales de la forme [let x = constante] en fonction d'arité 0
+- -src  : spécifie où chercher les fichiers sources à compiler
+- -dst  : spécifie le dossier où seront placés les fichiers compilés
+- -stdlib chemin vers la bibliothèque d'execution de mini-ml
+- -assert  : embarque les assertions dans le code.
+- -help  Display this list of options
+- --help  Display this list of options
+
+Exemple : 
+
+```bash
+make zam-miniML-run MLFILES="benchs/fact.ml" MINIML-FLAGS="-printast"
+```
+
+### Etapes intermédiaires
 
 - `make miniML` compile (en OCaml) le compilateur `mini-ml`.
 - `make link MLFILES="f1.ml f2.ml ..."` compile les sources avec ocamlc. édition des liens avec un fichier primitives.c qui définit l'équivalent OCaml des primitives C supportées par notre implémentation de la ZAM.
 - `make ocamlclean` produit l'executable `vm/link/byte.out` à partir de l'executable `vm/link/a.out`
 - `make obytelib` construit le tableau code `zam/input.ml` à partir de l'executable `vm/link/byte.out`. 
 
-### tests unitaires 
+### Tests unitaires 
 
 - `make test` (seulement pour notre implémentation de la ZAM en OCaml). 
 
@@ -109,23 +160,3 @@ $ opam install ocamlclean
     ├── micro-ml    # implantation en OCaml d'un compilateur ([λ-calcul + fix] -> Nand2Tetris)
     └── vm-emulator # implantation en OCaml d'un simulateur Nand2Tetris
 ```
-
-
-----------------------------------------------------
-# Alternative 
-## Lancement
-
-Pour lancer le projet, il faut posseder opam et dune, sur Ubuntu on peut les installer de la manière suivante :
-
-`sudo apt install opam`
-
-`opam install dune`
-
-On peut ensuite lancer le projet, depuis la racine de celui ci, en passant un ou plusieurs fichier .ml, avec l'extension .cmo (si le .cmo n'existe pas il sera généré) :
-
-`./run.sh samples/test1.cmo`
-`./run.sh samples/amodule.cmo samples/bmodule.cmo`
-
-un fichier "Main.tst" sera généré dans zam/bin, ce fichier devra être interprété par la VM nand2tetris qui s'est lancée à la fin du script.
-On ouvrira Main.tst avec **file -> load script**, on poura enlever les animations pour rendre la vm plus rapide : **animate -> no animation**, puis on cliquera sur run (bouton double flèche bleu).
-
