@@ -63,9 +63,9 @@ let resize_spaces size =
 let move_addr value is_array source_reg source_arr pos_arr =
   if Mlvalues.is_ptr value then (* val pointe vers un bloc *)
     begin
-      (* if Mlvalues.ptr_val value < Domain.global_start || Block.tag (Mlvalues.ptr_val value) >= Block.no_scan_tag 
+      if Mlvalues.ptr_val value < Domain.global_start || Block.tag (Mlvalues.ptr_val value) >= Block.no_scan_tag 
       then () (* c'est une valeur dans le segment data, qui ne pointe vers aucune valeur allouée *)
-      else *) if Block.tag (Mlvalues.ptr_val value) = Block.fwd_ptr_tag then (* le bloc pointé est un fwd_ptr *)
+      else if Block.tag (Mlvalues.ptr_val value) = Block.fwd_ptr_tag then (* le bloc pointé est un fwd_ptr *)
         (* on fait pointer value sur la nouvelle destination *)
         begin
           if is_array then source_arr.(pos_arr) <- Block.get_field value 0
