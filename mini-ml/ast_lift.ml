@@ -4,15 +4,16 @@ let gen = Gensym.create 0
 let create () = ref []
 
 let rec rw_exp cl env lenv e = 
+
   match e with
-  | Ast.Fun (name,e) -> 
+  | Ast.Fun (name,e) ->
     let env = List.append lenv env in
     let lenv = name :: [] in
     let e = rw_exp cl env lenv e in
     let sym = Gensym.next "_lambda" gen in
     let vars = Freevr.collect env lenv e in
     (match vars with 
-     | [] -> Ast.Fun (name,e) 
+     | [] ->  Printf.printf "foo\n";Ast.Fun (name,e) 
      | _ -> let f = List.fold_right (fun x -> 
                                      fun e -> Ast.Fun (x,e)) (List.append vars (name::[])) e
              in 
@@ -20,7 +21,7 @@ let rec rw_exp cl env lenv e =
              cl := d :: !cl;
              Ast.App(Ast.Ident (sym),List.map (fun v -> Ast.Ident(v)) vars))     
   | Ast.Let(name,e1,e2) -> let lenv' = name :: lenv in
-                           Ast.Let(name,rw_exp cl env lenv' e1,rw_exp cl env lenv e2)
+                           Ast.Let(name,rw_exp cl env lenv e1,rw_exp cl env lenv' e2)
   | Ast.LetRec(name,e1,e2) -> let lenv' = name :: lenv in
                                 Ast.LetRec(name,rw_exp cl env lenv' e1,rw_exp cl env lenv' e2)
   | Ast.Ident(name) -> Ast.Ident(name)

@@ -6,7 +6,7 @@ let rec collect_exp coll env lenv e =
 match e with 
   | Ast.Constant (_) -> ()
   | Ast.Ident(name) -> 
-    if not (List.exists (String.equal name) lenv)
+    if (not (List.exists (String.equal name) lenv))
        && List.exists (String.equal name) env
     then coll := name :: !coll
 | Ast.Let(name,e1,e2) -> 
