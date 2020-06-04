@@ -17,6 +17,8 @@ $ opam install obytelib
 $ opam install ocamlclean
 ```
 
+La version de dune doit être dune 1.11, vous pouvez-aussi essayer de modifié le fichier dune-project avec votre version.
+
 - NB: obytelib 1.5 nécessite ocaml >= 4.07, mais manipule du bytecode ocaml <= 4.07.1
 
 ### Compilation de la ZAM
