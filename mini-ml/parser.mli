@@ -31,6 +31,7 @@ type token =
   | IMPLY
   | CAT
   | AT
+  | REF
   | IDENT of (string)
   | IDENT_CAPITALIZE of (string)
   | VM_IDENT of (string)

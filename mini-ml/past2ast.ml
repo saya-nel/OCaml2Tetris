@@ -17,8 +17,8 @@ let export mod_name (genv,lenv) =
 let env_extend v (genv,lenv) = (genv,v::lenv)
 
 
-let ast_ref_contents e = Ast.App(Ast.Ident("Pervasives.ref_contents"),[e])
-let ast_ref e = Ast.App(Ast.Ident("Pervasives.ref"),[e])
+let ast_ref_contents e = Ast.App(Ast.Ident("Internal.array_get"),[e;Ast.Constant(Ast.Int 0)])
+let ast_ref e = Ast.App(Ast.Ident("Internal.array_make"),[Ast.Constant (Ast.Int 1);e])
 
 
 let rec visit_tmodule env Past.{mod_name;decls} = 

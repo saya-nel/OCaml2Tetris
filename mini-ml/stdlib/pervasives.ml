@@ -6,20 +6,20 @@
 let exit (n : int) : unit = 
 	Internal.exit n
 
-let ref (x : 'a) : 'a ref = 
-   Internal.array_make 1 x
+let ref x = 
+   ref_ x (* Internal.array_make 1 x *)
 
-let ref_contents (r : 'a ref) : 'a = 
-	Internal.array_get r 0
+let ref_contents r = 
+	!r
 
-let ref_set_contents (r : 'a ref) (x : 'a) : unit = 
-	Internal.array_set r 0 x
+let ref_set_contents r x = 
+	r := x
 
 let incr r = 
-	ref_set_contents r (ref_contents r + 1)
+	r := (!r + 1)
 
 let decr r = 
-	ref_set_contents r (ref_contents r - 1)
+  r := (!r - 1)
 
 let not b = if b then false else true
 

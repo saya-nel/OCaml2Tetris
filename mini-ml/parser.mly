@@ -10,7 +10,7 @@ let exp_create e = Past.{exp_desc = e; exp_loc = pos()}
 
 /* (* reserved words *) */
 %token LET WHERE IN IF THEN ELSE ASSERT WHILE FOR TO DO DONE MATCH WITH PIPE BEGIN END EXTERNAL AND_KW CONS
-%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT FUN SHARP OF IMPLY CAT AT
+%token UNIT_TY BOOL_TY INT_TY STRING_TY ARRAY_TY ATAT FUN SHARP OF IMPLY CAT AT REF
 
 %token <string> IDENT IDENT_CAPITALIZE VM_IDENT
 %token <string> STRING
@@ -280,6 +280,7 @@ expr:
  | expression LOR expression             { exp_create @@ BinOp(Lor,$1,$3) }
  | expression LAND expression            { exp_create @@ BinOp(Land,$1,$3) }
  | expr ASSIGN expression                { exp_create @@ Ref_assign($1,$3) } 
+ | REF exp                               { exp_create @@ Ref($2) }
  | MINUS expr                            { exp_create @@ UnOp(UMinus,$2) }
  | expression COMMA expression           { exp_create @@ Pair($1,$3) }
  | expression CONS expression            { exp_create @@ App(exp_create @@ Constant(Constr("::")),[$1;$3]) } 

@@ -2,8 +2,6 @@
   open Parseutils
   open Parser        (* The type token is defined in parser.mli *)
   exception Eof
-
-
 }
 
 let vm_ident = ['a'-'z''A'-'Z''0'-'9''_']+
@@ -30,6 +28,7 @@ rule token = parse
 | ";;"               { TERMINAISON }
 | '.'                { DOT }
 | ','                { COMMA }
+| "ref_"             { REF }
 | "let"              { LET }
 | "where"            { WHERE }
 | "and"              { AND_KW }

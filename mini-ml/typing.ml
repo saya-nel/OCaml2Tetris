@@ -3,6 +3,21 @@
 open Types
 open Past
 
+let rec is_nonexpansive e = match e.exp_desc with
+| Annotation (e,_) -> is_nonexpansive e
+| Constant _ | Ident _ -> true
+| Let (v,e1,e2) -> is_nonexpansive e1 && is_nonexpansive e2
+| LetRec (v,e1,e2) -> is_nonexpansive e1 && is_nonexpansive e2
+| Fun _ -> true
+| App (e,es) -> is_nonexpansive e && List.for_all is_nonexpansive es
+| If (e1,e2,e3) -> is_nonexpansive e1 && is_nonexpansive e2 && is_nonexpansive e3 
+| Match (e1,_) -> is_nonexpansive e1  (* todo patern *)
+| BinOp (_,e1,e2) -> is_nonexpansive e1 && is_nonexpansive e2
+| UnOp (_,e1) -> is_nonexpansive e1
+| Pair (e1,e2) -> is_nonexpansive e1 && is_nonexpansive e2
+| _ -> false
+
+
 let ty_of_repr venv ty = 
  let rec aux = function 
  | Tint -> Types.Tint
@@ -45,7 +60,7 @@ let rec w env decs = function
                       let tc = canon t in
                        Printf.printf "%s : %s\n" x
                            (Past_print.sprint_real_ty 0 tc);
-                      add true x tc env) env xts 
+                      add false x tc env) env xts 
      in
      w env (decs @ xts) ds 
 and w_dec env {decl_desc;decl_loc} = 
@@ -58,13 +73,13 @@ match decl_desc with
   let funtys = List.map (fun f -> w_defun env f decl_loc) funs in
   (List.map2 (fun (f,_,_,_) tf -> (f,tf)) funs funtys)
 | DefFunRec funs -> 
-  let funcs = List.map (fun (x,_,_,_) -> x) funs in
+  let funcs = List.map (fun (x,_,_,e) -> x) funs in
   let env = List.fold_left (fun env f ->
                                let v0 = Types.Tvar (V.create ()) in 
                                add true f v0 env) env funcs in
   let env' = List.fold_left (fun env ((x,args,tyopt,e) as f) -> 
                                let t = w_defun env f decl_loc in 
-                               add true x t env) env funs in
+                               add (is_nonexpansive e) x t env) env funs in
   List.map (fun (x,_,_,_) -> (x,find x decl_loc env')) funs
 | Type (name,args,Exp_ty tyrepr) ->
   let vargs = List.map (fun var -> (var,Types.Tvar (V.create ()))) args in
@@ -110,10 +125,10 @@ match exp_desc with
       let t1 = w_exp env e1 in
       let ty = get_tyopt tyopt_repr in
       unify t1 ty;
-      w_exp (add true x t1 env) e2
+      w_exp (add (is_nonexpansive e1) x t1 env) e2
   | LetRec (name, e1, e2) -> 
   let tt = Types.Tvar (V.create ()) in
-  let env1 = add true name tt env in
+  let env1 = add (is_nonexpansive e1) name tt env in
   let t1 = w_exp env1 e1 in
   unify tt t1;
   w_exp env1 e2
@@ -229,7 +244,7 @@ match exp_desc with
      unify t1 Types.Tint;
      unify t2
      Types.Tint;
-     let env' = add true x Types.Tint env in
+     let env' = add false x Types.Tint env in (* ou is_nonexpansive e1 ? *) 
      let t3 = w_exp env' e3 in
      unify t3 Types.Tunit;
      Types.Tunit
