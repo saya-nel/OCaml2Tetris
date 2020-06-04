@@ -94,7 +94,13 @@ and rw_exp env Past.{exp_desc;exp_loc} =
                 ast_ref_contents (Ast.Ident(name_zz)),
                 Ast.Ident(len_zz)),
                      Ast.Let(name, ast_ref_contents (Ast.Ident(name_zz)),
-                         Ast.Seq(rw_exp env e2,Ast.App(Ast.Ident("Pervasives.incr"),[Ast.Ident(name_zz)])))))) 
+                         Ast.Seq(rw_exp env e2,Ast.App(Ast.Ident("Internal.array_set"), 
+                                              [Ast.Ident(name_zz); 
+                                               Ast.Constant(Ast.Int 0);
+                                               Ast.BinOp(Ast.Add,
+                                                         Ast.App(Ast.Ident("Internal.array_get"), 
+                                                         [Ast.Ident(name_zz); Ast.Constant(Ast.Int 0)]),Ast.Constant(Ast.Int 1))])))))) 
+
   | Past.Match (e,ms) -> visit_match env e ms
   | Past.Assert(e,pos) -> (* prevoir l'accès au nom du module *)
      if not !compile_assertions 
@@ -103,16 +109,16 @@ and rw_exp env Past.{exp_desc;exp_loc} =
     Ast.If(rw_exp env e,
               Ast.Constant(Ast.Unit),
               Ast.Seq(
-                Ast.App(Ast.Ident("Pervasives.print_string"),
+                Ast.App(Ast.Ident("Internal.print_string"),
                   [Ast.Constant
                     (Ast.String 
                       (Printf.sprintf "assertion fail [%s]" (Past_print.sprint_exp 0 e)))]),
-                Ast.Seq(Ast.App(Ast.Ident("Pervasives.print_newline"),[ Ast.Constant(Ast.Unit)]),
-                Ast.Seq(Ast.App(Ast.Ident("Pervasives.print_string"),
+                Ast.Seq(Ast.App(Ast.Ident("Internal.print_newline"),[ Ast.Constant(Ast.Unit)]),
+                Ast.Seq(Ast.App(Ast.Ident("Internal.print_string"),
                   [Ast.Constant
                     (Ast.String 
                       (Printf.sprintf "at %s. exit." (Parseutils.string_of_position pos)))]),
-                Ast.App(Ast.Ident("Pervasives.exit"),
+                Ast.App(Ast.Ident("Internal.exit"),
                        [Ast.Constant (Ast.Int(0))])))))
   | Past.Magic(e) -> rw_exp env e
 and visit_match env ec ms =
@@ -128,7 +134,7 @@ and visit_match env ec ms =
           Ast.Ident(name),
           Ast.Constant(Ast.Int(256))),
         Ast.Ident(name),
-        Ast.App(Ast.Ident("Array.get"),[
+        Ast.App(Ast.Ident("Internal.array_get"),[
             Ast.Ident(name);
             Ast.Constant(Ast.Int(0))])),
         List.map 
@@ -137,7 +143,7 @@ and visit_match env ec ms =
           | Past.Case(c,args,e) -> 
             let e = rw_exp env e in
             let e' = List.fold_right2 (fun arg v e -> Ast.Let (arg,v,e)) 
-            args (List.mapi (fun i _ -> Ast.App(Ast.Ident("Array.get"),[
+            args (List.mapi (fun i _ -> Ast.App(Ast.Ident("Internal.array_get"),[
                                           Ast.Ident(name);Ast.Constant(Ast.Int(i+1))])) args) e in
             (* TODO *) (* ? *)
             Ast.Case(rw_cst env c,e') | Past.Otherwise e -> Ast.Otherwise(rw_exp env e)) ms))

@@ -9,8 +9,9 @@ let rw_decl d =
  match d with
   | Ast.DefVar(v,e) -> (match e with 
                         | Ast.Constant(c) -> 
-                          
-                          (Ast.DefFun([Ast.DF (v,[],e)]))
+                          (match c with 
+                           | Ast.String s -> d 
+                           | _ -> (Ast.DefFun([Ast.DF (v,[],e)])))
                         | _ -> Ast.DefVar(v,e))
   | Ast.DefFun(l) -> Ast.DefFun(l)
   | Ast.DefFunRec(l) -> Ast.DefFunRec(l)

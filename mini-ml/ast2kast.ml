@@ -198,7 +198,7 @@ and rw_exp lenv genv e =
   | Ast.Ext(ext) ->
      (match ext with 
       | Ast.Array_alloc(e) ->
-         let array_alloc = Ast.App(Ast.Ident("Array.create_uninitialized"),e::[]) in
+         let array_alloc = Ast.App(Ast.Ident("Internal.array_create_uninitialized"),e::[]) in
          rw_exp lenv genv array_alloc
       | Ast.SetGlobal(e,i) ->
          Kast.Ext(Kast.SetGlobal (rw_exp lenv genv e,i))
