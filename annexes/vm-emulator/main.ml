@@ -1,3 +1,11 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
 
 let parse filename = 
   let ic = open_in filename in
@@ -19,10 +27,10 @@ let _ =
             let kbcs = Bc2kbc.prog bcs labels functions in
             let kbc = List.concat kbcs in
             let start,n = match !Bc2kbc.main_main_pos with
-                        | None -> failwith "main.main"
-                        | Some (start,n) -> (start,n) in
+              | None -> failwith "main.main"
+              | Some (start,n) -> (start,n) in
             
-           (* Printf.printf "%s\n" (String.concat "\n" (List.mapi (fun i ins -> Printf.sprintf "%d | %s" i (Kbc.string_of_instr ins)) kbc));
+            (* Printf.printf "%s\n" (String.concat "\n" (List.mapi (fun i ins -> Printf.sprintf "%d | %s" i (Kbc.string_of_instr ins)) kbc));
             Printf.printf "-->%d\n" start; *)
             Interp.interp start n (Array.of_list kbc)
   | _ -> exit 0

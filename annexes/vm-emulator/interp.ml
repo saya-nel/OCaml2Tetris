@@ -1,3 +1,12 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
 open Kbc
 
 let code = [||]
@@ -28,11 +37,11 @@ let frame = { sp = 0;
               link = (-1) }
 
 let print_stack () =
-   Array.mapi (Printf.printf "pile(%d) = %d\n") stack
+  Array.mapi (Printf.printf "pile(%d) = %d\n") stack
 
 let print_frame () =
- Printf.printf "sp = %d ; nb_args = %d ; nb_locals = %d; link = %d \n"
- frame.sp frame.nb_args frame.nb_locals frame.link
+  Printf.printf "sp = %d ; nb_args = %d ; nb_locals = %d; link = %d \n"
+    frame.sp frame.nb_args frame.nb_locals frame.link
 
 let pop_stack () =
   Pervasives.decr sp;
@@ -52,7 +61,9 @@ let pop_segment s =
   let x = pop_stack () in
   match s with
   | Constant n -> assert false
-  | Local n -> Printf.printf "~~~>%d\n" (frame.sp - frame.nb_locals + n); stack.(frame.sp - frame.nb_locals + n) <- x
+  | Local n -> Printf.printf "~~~>%d\n"
+                 (frame.sp - frame.nb_locals + n);
+               stack.(frame.sp - frame.nb_locals + n) <- x
   | Argument n -> stack.(frame.sp - frame.nb_locals - frame.nb_args -1 + n) <- x
   | Temp n -> temp.(n) <- x
   | This n -> this.(n) <- x
@@ -86,15 +97,15 @@ let rec interp start n code =
   frame.link <- -1;
   try 
     while true do
-         print_frame ();
-              print_stack ();
-       Printf.printf "%d: %s\n" !pc (string_of_instr code.(!pc));  
+      print_frame ();
+      print_stack ();
+      Printf.printf "%d: %s\n" !pc (string_of_instr code.(!pc));  
       begin
         match code.(!pc) with
         | Pop s -> pop_segment s
         | Push s -> push_segment s
         | Call(l,locals,arity) -> print_stack ();
-   
+                                  
 
                                   push_stack frame.sp;
                                   push_stack frame.nb_args;
@@ -157,8 +168,13 @@ let rec interp start n code =
 
            let n = pop_stack () in print_int n; push_stack 0
         (* ;print_string "\n";exit 0*)
-        | Prim(ML_print_char) -> let n = pop_stack () in print_char (Char.chr n); push_stack 0
-        | Prim(ML_print_newline) -> let _ =  pop_stack () in print_newline ();push_stack 0
+        | Prim(ML_print_char) ->
+           let n = pop_stack () in
+           print_char (Char.chr n);
+           push_stack 0
+        | Prim(ML_print_newline) -> let _ =  pop_stack () in
+                                    print_newline ();
+                                    push_stack 0
         | Prim(ML_print_char_array) -> let a = pop_stack () in
                                        let len = heap.(a) in
                                        for i = a + 1 to a + len do

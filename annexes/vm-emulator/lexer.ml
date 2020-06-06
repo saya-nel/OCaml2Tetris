@@ -1,4 +1,4 @@
-# 1 "lexer.mll"
+# 10 "lexer.mll"
  
   open Parseutils
   open Parser
@@ -1765,187 +1765,187 @@ and __ocaml_lex_token_rec lexbuf __ocaml_lex_state =
   match Lexing.engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
 let
-# 13 "lexer.mll"
+# 22 "lexer.mll"
                   n
 # 1771 "lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 13 "lexer.mll"
+# 22 "lexer.mll"
                     ( INT(int_of_string n) )
 # 1775 "lexer.ml"
 
   | 1 ->
-# 14 "lexer.mll"
+# 23 "lexer.mll"
          ( POP )
 # 1780 "lexer.ml"
 
   | 2 ->
-# 15 "lexer.mll"
+# 24 "lexer.mll"
           ( PUSH )
 # 1785 "lexer.ml"
 
   | 3 ->
-# 16 "lexer.mll"
+# 25 "lexer.mll"
               ( FUNCTION )
 # 1790 "lexer.ml"
 
   | 4 ->
-# 17 "lexer.mll"
+# 26 "lexer.mll"
             ( RETURN )
 # 1795 "lexer.ml"
 
   | 5 ->
-# 18 "lexer.mll"
+# 27 "lexer.mll"
           ( CALL)
 # 1800 "lexer.ml"
 
   | 6 ->
-# 19 "lexer.mll"
+# 28 "lexer.mll"
           ( GOTO )
 # 1805 "lexer.ml"
 
   | 7 ->
-# 20 "lexer.mll"
+# 29 "lexer.mll"
              ( IFGOTO )
 # 1810 "lexer.ml"
 
   | 8 ->
-# 21 "lexer.mll"
+# 30 "lexer.mll"
            (  LABEL)
 # 1815 "lexer.ml"
 
   | 9 ->
-# 22 "lexer.mll"
+# 31 "lexer.mll"
              (  CONSTANT)
 # 1820 "lexer.ml"
 
   | 10 ->
-# 23 "lexer.mll"
+# 32 "lexer.mll"
             ( STATIC )
 # 1825 "lexer.ml"
 
   | 11 ->
-# 24 "lexer.mll"
+# 33 "lexer.mll"
            ( LOCAL )
 # 1830 "lexer.ml"
 
   | 12 ->
-# 25 "lexer.mll"
+# 34 "lexer.mll"
               ( ARGUMENT )
 # 1835 "lexer.ml"
 
   | 13 ->
-# 26 "lexer.mll"
+# 35 "lexer.mll"
           ( TEMP )
 # 1840 "lexer.ml"
 
   | 14 ->
-# 27 "lexer.mll"
+# 36 "lexer.mll"
           ( THIS )
 # 1845 "lexer.ml"
 
   | 15 ->
-# 28 "lexer.mll"
+# 37 "lexer.mll"
           ( THAT)
 # 1850 "lexer.ml"
 
   | 16 ->
-# 29 "lexer.mll"
+# 38 "lexer.mll"
          ( ADD )
 # 1855 "lexer.ml"
 
   | 17 ->
-# 30 "lexer.mll"
+# 39 "lexer.mll"
          ( SUB )
 # 1860 "lexer.ml"
 
   | 18 ->
-# 31 "lexer.mll"
+# 40 "lexer.mll"
           ( LAND )
 # 1865 "lexer.ml"
 
   | 19 ->
-# 32 "lexer.mll"
+# 41 "lexer.mll"
          ( LOR )
 # 1870 "lexer.ml"
 
   | 20 ->
-# 33 "lexer.mll"
+# 42 "lexer.mll"
          ( NOT )
 # 1875 "lexer.ml"
 
   | 21 ->
-# 34 "lexer.mll"
+# 43 "lexer.mll"
         ( LT )
 # 1880 "lexer.ml"
 
   | 22 ->
-# 35 "lexer.mll"
+# 44 "lexer.mll"
         ( GT )
 # 1885 "lexer.ml"
 
   | 23 ->
-# 36 "lexer.mll"
+# 45 "lexer.mll"
         ( EQ)
 # 1890 "lexer.ml"
 
   | 24 ->
 let
-# 37 "lexer.mll"
+# 46 "lexer.mll"
            lxm
 # 1896 "lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 37 "lexer.mll"
+# 46 "lexer.mll"
                     ( match lxm with 
 	                  | _ -> IDENT(lxm) )
 # 1901 "lexer.ml"
 
   | 25 ->
 let
-# 39 "lexer.mll"
+# 48 "lexer.mll"
             lxm
 # 1907 "lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 39 "lexer.mll"
+# 48 "lexer.mll"
                      ( MIDENT(lxm) )
 # 1911 "lexer.ml"
 
   | 26 ->
 let
-# 40 "lexer.mll"
+# 49 "lexer.mll"
            lxm
 # 1917 "lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 40 "lexer.mll"
+# 49 "lexer.mll"
                      ( FNAME(lxm) )
 # 1921 "lexer.ml"
 
   | 27 ->
-# 41 "lexer.mll"
+# 50 "lexer.mll"
                      ( (Lexing.new_line lexbuf) ; (token lexbuf) )
 # 1926 "lexer.ml"
 
   | 28 ->
-# 42 "lexer.mll"
+# 51 "lexer.mll"
                      ( token lexbuf )
 # 1931 "lexer.ml"
 
   | 29 ->
-# 43 "lexer.mll"
+# 52 "lexer.mll"
                      ( token lexbuf )
 # 1936 "lexer.ml"
 
   | 30 ->
-# 44 "lexer.mll"
+# 53 "lexer.mll"
                     ( EOF )
 # 1941 "lexer.ml"
 
   | 31 ->
 let
-# 45 "lexer.mll"
+# 54 "lexer.mll"
         lxm
 # 1947 "lexer.ml"
 = Lexing.sub_lexeme_char lexbuf lexbuf.Lexing.lex_start_pos in
-# 45 "lexer.mll"
+# 54 "lexer.mll"
                     ( raise (Parse_Exception (Printf.sprintf "Unexpected character: %c"  lxm,  Parseutils.pos())) )
 # 1951 "lexer.ml"
 
