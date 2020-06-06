@@ -1,4 +1,15 @@
-(* repris et étendu de https://www.lri.fr/~filliatr/ens/compil/td/7/corrige/corrige.ml.html *)
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
+(* repris et étendu de :
+   https://www.lri.fr/~filliatr/ens/compil/td/7/corrige/corrige.ml.html *)
+
 
 open Ast
 open Types
@@ -11,7 +22,8 @@ let rec w e =
  | UnificationFailure (t1,t2) -> 
       Printf.printf "\nError: This expression has type %s but an expression was expected of type %s\n" (Types.string_of_typ t1) (Types.string_of_typ t2); exit 0
   | Unbound_value (x) -> Printf.printf "Error: Unbound value %s\n" x; exit 0
-  | exn -> Printf.printf "UN BUG DANS LE TYPEUR. on continue : %s\n" ( Printexc.to_string exn)
+  | exn -> Printf.printf "UN BUG DANS LE TYPEUR. on continue : %s\n"
+             ( Printexc.to_string exn)
 
 and w_exp env e = 
 match e with

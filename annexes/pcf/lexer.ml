@@ -1,4 +1,4 @@
-# 1 "lexer.mll"
+# 10 "lexer.mll"
  
   open Parseutils
   open Parser        (* The type token is defined in parser.mli *)
@@ -124,61 +124,61 @@ and __ocaml_lex_token_rec lexbuf __ocaml_lex_state =
   match Lexing.engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
 let
-# 10 "lexer.mll"
+# 19 "lexer.mll"
                   n
 # 130 "lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 10 "lexer.mll"
+# 19 "lexer.mll"
                     ( INT(int_of_string n) )
 # 134 "lexer.ml"
 
   | 1 ->
-# 11 "lexer.mll"
+# 20 "lexer.mll"
                     ( LPAREN )
 # 139 "lexer.ml"
 
   | 2 ->
-# 12 "lexer.mll"
+# 21 "lexer.mll"
                     ( RPAREN )
 # 144 "lexer.ml"
 
   | 3 ->
-# 13 "lexer.mll"
+# 22 "lexer.mll"
                     ( FUN )
 # 149 "lexer.ml"
 
   | 4 ->
-# 14 "lexer.mll"
+# 23 "lexer.mll"
                     ( DOT )
 # 154 "lexer.ml"
 
   | 5 ->
-# 15 "lexer.mll"
+# 24 "lexer.mll"
                     ( ADD )
 # 159 "lexer.ml"
 
   | 6 ->
-# 16 "lexer.mll"
+# 25 "lexer.mll"
                     ( SUB )
 # 164 "lexer.ml"
 
   | 7 ->
-# 17 "lexer.mll"
+# 26 "lexer.mll"
                     ( EQ )
 # 169 "lexer.ml"
 
   | 8 ->
-# 18 "lexer.mll"
+# 27 "lexer.mll"
                     ( END )
 # 174 "lexer.ml"
 
   | 9 ->
 let
-# 19 "lexer.mll"
+# 28 "lexer.mll"
            lxm
 # 180 "lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 19 "lexer.mll"
+# 28 "lexer.mll"
                     ( match lxm with 
 	                  | "ifz" -> IFZ
 	                  | "then" -> THEN
@@ -190,32 +190,32 @@ let
 # 191 "lexer.ml"
 
   | 10 ->
-# 27 "lexer.mll"
+# 36 "lexer.mll"
                      ( (Lexing.new_line lexbuf) ; (token lexbuf) )
 # 196 "lexer.ml"
 
   | 11 ->
-# 28 "lexer.mll"
+# 37 "lexer.mll"
                      ( token lexbuf )
 # 201 "lexer.ml"
 
   | 12 ->
-# 29 "lexer.mll"
+# 38 "lexer.mll"
                     ( comment lexbuf )
 # 206 "lexer.ml"
 
   | 13 ->
-# 30 "lexer.mll"
+# 39 "lexer.mll"
                     ( EOF )
 # 211 "lexer.ml"
 
   | 14 ->
 let
-# 31 "lexer.mll"
+# 40 "lexer.mll"
         lxm
 # 217 "lexer.ml"
 = Lexing.sub_lexeme_char lexbuf lexbuf.Lexing.lex_start_pos in
-# 31 "lexer.mll"
+# 40 "lexer.mll"
                     ( raise (Parse_Exception (Printf.sprintf "Unexpected character: %c"  lxm,  Parseutils.pos())) )
 # 221 "lexer.ml"
 
@@ -227,12 +227,12 @@ and comment lexbuf =
 and __ocaml_lex_comment_rec lexbuf __ocaml_lex_state =
   match Lexing.engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
-# 35 "lexer.mll"
+# 44 "lexer.mll"
        ( token lexbuf )
 # 233 "lexer.ml"
 
   | 1 ->
-# 36 "lexer.mll"
+# 45 "lexer.mll"
        ( comment lexbuf )
 # 238 "lexer.ml"
 

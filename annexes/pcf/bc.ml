@@ -1,3 +1,12 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
 
 type instrs = instr list          
 and instr =
@@ -19,16 +28,17 @@ and op = Add | Sub | Eq | Not
 let indent = "  "
 
 let string_of_segment seg = 
-match seg with
+  match seg with
   | Argument(n) ->
      (^) "argument " (string_of_int n)
   | Constant(n) ->
-  if n >= 0 then (^) "constant " (string_of_int n)
-  else (^) ((^) indent "constant 0\n    push constant ") ((^) (string_of_int (-n)) "\n    sub")
+     if n >= 0 then (^) "constant " (string_of_int n)
+     else (^) ((^) indent "constant 0\n    push constant ")
+            ((^) (string_of_int (-n)) "\n    sub")
   | Local(n) ->
      (^) "local " (string_of_int n)
 let string_of_op op = 
-match op with
+  match op with
   | Add -> (^) indent "add"
   | Sub -> (^) indent "sub"
   | Eq -> (^) indent "eq"
