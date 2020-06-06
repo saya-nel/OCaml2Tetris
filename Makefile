@@ -1,3 +1,12 @@
+############################################################################
+##                                                                        ##
+##         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             ##
+##                                                                        ##      
+##           Loïc SYLVESTRE              Pablito BELLO                    ##
+##           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        ##
+##                                                                        ##  
+############################################################################
+
 # variante run.sh
 
 # usage :
@@ -51,7 +60,8 @@ obytelib:	ocamlclean
 
 zam-miniML:	clean miniML link obytelib
 	mkdir -p $(ZAM_BIN)
-	cd $(MINIML); ./compile $(ASSERT) $(MINIML-FLAGS) $(TYPECHECK) -dst=$(ROOT)$(ZAM_BIN) $(MINIML-STDLIB) $(foreach f,$(ZAM_SRC),$(ROOT)$(ZAM-MINIML)$(f)); cd $(ROOT)
+	cd $(MINIML); ./compile $(ASSERT) $(MINIML-FLAGS) $(TYPECHECK) -dst=$(ROOT)$(ZAM_BIN) \
+	$(MINIML-STDLIB) $(foreach f,$(ZAM_SRC),$(ROOT)$(ZAM-MINIML)$(f)); cd $(ROOT)
 
 zam-ocaml:	 link obytelib
 	make -C $(ZAM-OCAML) $(MKFLAGS)
@@ -92,14 +102,14 @@ test:
 	make zam-ocaml-run MLFILES=$(BENCHS)list_fold_left.ml
 	make zam-ocaml-run MLFILES=$(BENCHS)list_map.ml
 	make zam-ocaml-run MLFILES=$(BENCHS)list_map2.ml
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/clos/clos0.ml
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/clos/clos1.ml
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/clos/clos2.ml 
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/rec/fact.ml
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/rec/fib.ml
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/appterm/fact.ml
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/appterm/fib.ml
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/appterm/ackermann.ml
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/grab/grab.ml
-	make zam-ocaml-run MLFILES=$(BENCHS)tests/grab/grab2.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)traits/clos/clos0.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)traits/clos/clos1.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)traits/clos/clos2.ml 
+	make zam-ocaml-run MLFILES=$(BENCHS)traits/rec/fact.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)traits/rec/fib.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)traits/appterm/fact.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)traits/appterm/fib.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)traits/appterm/ackermann.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)traits/grab/grab.ml
+	make zam-ocaml-run MLFILES=$(BENCHS)traits/grab/grab2.ml
 

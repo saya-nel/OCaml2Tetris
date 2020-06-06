@@ -1,6 +1,6 @@
 let rec iter f = function
-| [] -> () 
-| h::t-> let () = f h in iter f t ;;
+  | [] -> () 
+  | h::t-> let () = f h in iter f t ;;
 
 let rec map2 f l1 l2 =
   match l1,l2 with
