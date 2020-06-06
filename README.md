@@ -55,7 +55,7 @@ Il est possible de tester notre implémentation de la ZAM, compilé par `ocamlc`
 
 
 
-### Options de compilation de la ZAM en `miniML`.
+### Options de compilation de notre implémentation de la ZAM en `miniML`.
 
 Les options du compilateur `miniML`peuvent être ajouté en redéfinissant, dans le Makefile prinicipal, la constante   `MINIML-FLAGS`.
 
@@ -165,6 +165,6 @@ Les options disponibles sont :
 │   ├── ast_globz.ml
 │   └── ast_closure.ml
 └── annexes
-    ├── micro-ml    # implantation en OCaml d'un compilateur ([λ-calcul + fix] -> Nand2Tetris)
+    ├── pcf         # implantation en OCaml d'un compilateur ([λ-calcul + fix] -> Nand2Tetris)
     └── vm-emulator # implantation en OCaml d'un simulateur Nand2Tetris
 ```
