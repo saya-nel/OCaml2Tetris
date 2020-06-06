@@ -1,4 +1,14 @@
-(* interpreter le programme d'entrée *)
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
+(* point d'entrée de notre implémentation de la ZAM, 
+   interprète le tableau de bytecode Input.code *)
 
 let print_end () =
   print_newline ();

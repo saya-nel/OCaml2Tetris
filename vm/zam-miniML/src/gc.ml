@@ -1,3 +1,12 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
 let debug = false
 
 (* ALLOC fonctions *)
@@ -9,7 +18,8 @@ let heap_can_alloc size =
 let next = ref 0 (* premiere position disponible dans to_space lors de la copie *)
 
 (* libération des semi-spaces lors du redimensionnement  *) 
-(* implantation en OCaml : la fonction free ne fait rien (le gc se charge de libérer les objets) *)
+(* implantation en OCaml : la fonction free ne fait rien 
+   (le gc se charge de libérer les objets) *)
 (* implantation en mini-ml la fonction free libère le pointeur passé en argument *)
 let free a = Mlvalues.free a 
 
@@ -26,7 +36,8 @@ let resize_spaces size =
     Domain.heap_size := (!Domain.heap_size + size) * 2
   else 
     begin
-      (* si taille + allocation < 25% de la taille de base, on diminue la taille par deux *)
+      (* si taille + allocation < 25% de la taille de base, 
+         on diminue la taille par deux *)
       if quarter > (!Domain.heap_top + size) then (* si remplis à moins de 25% *)
         Domain.heap_size := !Domain.heap_size / 2
     end;
@@ -53,19 +64,22 @@ let resize_spaces size =
       Domain.to_space := Array.make !Domain.heap_size (Mlvalues.val_long 0) 
     end
 
-(* Traite le déplacement d'un bloc de to_space vers from_space si nécéssaire,                  *)
-(* sinon suit le fwd_ptr                                                                       *)
-(* value est le mlvalue pointeur vers le bloc,                                                 *)
-(* is_array dis si la source est un tableau ou pas : true si pile/tas , faux si env/acc        *)
-(* source_reg est le registre qui contient value si is_array est false (acc, env)              *)
+(* Traite le déplacement d'un bloc de to_space vers from_space si nécéssaire,   *)
+(* sinon suit le fwd_ptr                                                        *)
+(* value est le mlvalue pointeur vers le bloc,                                  *)
+(* is_array dis si la source est un tableau ou pas : true si pile/tas , faux si env/acc *)
+(* source_reg est le registre qui contient value si is_array est false (acc, env)  *)
 (* source_arr est le tableau contenant value a la pos pos_arr si is_array est true (pile, tas) *)
 
 let move_addr value is_array source_reg source_arr pos_arr =
   if Mlvalues.is_ptr value then (* val pointe vers un bloc *)
     begin
-      if Mlvalues.ptr_val value < Domain.global_start || Block.tag (Mlvalues.ptr_val value) >= Block.no_scan_tag 
-      then () (* c'est une valeur dans le segment data, qui ne pointe vers aucune valeur allouée *)
-      else if Block.tag (Mlvalues.ptr_val value) = Block.fwd_ptr_tag then (* le bloc pointé est un fwd_ptr *)
+      if Mlvalues.ptr_val value < Domain.global_start
+         || Block.tag (Mlvalues.ptr_val value) >= Block.no_scan_tag 
+      then () (* c'est une valeur dans le segment data, 
+                 qui ne pointe vers aucune valeur allouée *)
+      else if Block.tag (Mlvalues.ptr_val value) = Block.fwd_ptr_tag
+      then (* le bloc pointé est un fwd_ptr *)
         (* on fait pointer value sur la nouvelle destination *)
         begin
           if is_array then source_arr.(pos_arr) <- Block.get_field value 0
@@ -76,12 +90,15 @@ let move_addr value is_array source_reg source_arr pos_arr =
           let old = !next in (* sauvegarde de l'endroit où on va copier dans to_space *)
           (* on copie tout le bloc, header compris dans to_space *)
           (!Domain.to_space).(old) <- Block.get_field value (-1); (* copie le header *)
-          for j = 0 to (Block.size (Mlvalues.ptr_val value)) - 1 do (* copie tout les fields *)
+          for j = 0 to (Block.size (Mlvalues.ptr_val value)) - 1 do
+            (* copie tout les fields *)
             (!Domain.to_space).(old + j + 1) <- Block.get_field value j
           done;
-          next := !next + (Block.size (Mlvalues.ptr_val value)) + 1; (* prochaine pos dispo dans to_space *)
+          next := !next + (Block.size (Mlvalues.ptr_val value)) + 1;
+          (* prochaine pos dispo dans to_space *)
           (* on change le tag du bloc en fwd_ptr car il a été déplacé  *)
-          Block.set_field value (-1) (Block.make_header Block.fwd_ptr_tag (Block.size (Mlvalues.ptr_val value)));
+          Block.set_field value (-1)
+            (Block.make_header Block.fwd_ptr_tag (Block.size (Mlvalues.ptr_val value)));
           (* ajoute le fwd_ptr dans from_space vers la nouvelle position dans to_space *)
           Block.set_field value 0 (Mlvalues.val_ptr (old + Domain.heap_start)) ;
           (* on fait pointer value vers le nouveau bloc dans to_space *)

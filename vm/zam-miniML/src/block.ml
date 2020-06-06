@@ -1,3 +1,12 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
 let bounds_ok i a =
   i >= 0 && i < Array.length a
 
@@ -7,12 +16,12 @@ let get ptr =
        assert (bounds_ok i !Domain.from_space);
        (!Domain.from_space).(i) 
   else if ptr >= Domain.global_start
-       then let i = ptr - Domain.global_start in 
-            assert (bounds_ok i Domain.global);
-            Domain.global.(i) 
-       else let i = ptr in
-            assert (bounds_ok i Domain.data);
-            Domain.data.(i)
+  then let i = ptr - Domain.global_start in 
+       assert (bounds_ok i Domain.global);
+       Domain.global.(i) 
+  else let i = ptr in
+       assert (bounds_ok i Domain.data);
+       Domain.data.(i)
 
 let set ptr v = 
   if ptr >= Domain.heap_start
@@ -20,18 +29,18 @@ let set ptr v =
        assert (bounds_ok i !Domain.from_space);
        (!Domain.from_space).(i) <- v
   else if ptr >= Domain.global_start
-       then let i = ptr - Domain.global_start in 
-            assert (bounds_ok i Domain.global);
-            Domain.global.(i) <- v
-       else let i = ptr in
-            assert (bounds_ok i Domain.data);
-            Domain.data.(i) <- v
+  then let i = ptr - Domain.global_start in 
+       assert (bounds_ok i Domain.global);
+       Domain.global.(i) <- v
+  else let i = ptr in
+       assert (bounds_ok i Domain.data);
+       Domain.data.(i) <- v
 
 let size ptr = 
   let hd = get ptr in 
   (Mlvalues.long_val hd) / 256
 
-  (* a priori, problème si le bloc a taille >= 128 *)
+(* a priori, problème si le bloc a taille >= 128 *)
 let tag ptr = 
   (* a priori, problème si le bloc a taille >= 128 *)
   let hd = get ptr in 

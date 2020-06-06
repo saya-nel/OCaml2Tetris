@@ -1,3 +1,13 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
+
 let debug = false
 let debug_opcode = false
 let debug_pc = false
@@ -222,8 +232,8 @@ let interp code =
       | 33 (* APPLY1 *) -> assert (Mlvalues.is_ptr !Domain.acc);
                            assert(let tag = Block.tag_val !Domain.acc in 
                                   tag = Block.closure_tag || 
-                                  tag = Block.infix_tag
-                           );
+                                    tag = Block.infix_tag
+                             );
                            let arg = pop_stack () in
                            push_stack @@ Mlvalues.val_long !extra_args;
                            push_stack !Domain.env;

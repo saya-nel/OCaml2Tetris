@@ -1,3 +1,12 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
 let add_long n =
   let p = !Domain.data_top in
   Domain.data.(p) <- Mlvalues.val_long n;
@@ -21,6 +30,7 @@ let add_string s =
   done;
   Mlvalues.val_ptr p
 
+let add_unknown () = add_long 0
 
 let push_global v = 
   Domain.global.(!Domain.global_top) <- v;

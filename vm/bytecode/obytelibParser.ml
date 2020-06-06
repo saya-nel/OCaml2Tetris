@@ -294,8 +294,9 @@ let replace_labels_indexes (instrs : string list) : string list =
 (* écrit le tableau d'instructions dans un nouveau fichier dst *)
 let write_instr_array ?(dst="zam/input.ml") data (instr_array : string) : unit =
   let oc = open_out dst in
+  let msg = "(* !!! ATTENTION CE FICHIER EST AUTO-GÉNÉRÉ !!! *)" in
   let sdata = if data = "" then "" else "let () = " ^ data ^ "\n\n" in
-  fprintf oc "%slet code = %s\n" sdata instr_array;
+  fprintf oc "%s\n\n%s\n%s\n%s\nlet code = %s\n" msg "(* SECTION DATA *)" sdata "(* SECTION CODE *)" instr_array;
   close_out oc
 
 
@@ -311,7 +312,7 @@ let string_of_value v =
    | Int n -> "Mlvalues.val_long " ^ string_of_int n
    | String s -> Printf.sprintf "Data.add_string \"%s\"" s
    | Block (tag,a) -> add_block tag a
-   | _ -> "Mlvalues.val_long 42 (* not yet implemented ! *)"
+   | _ -> "Data.add_unknown ()"
 and add_block tag a =
   let var = gensym () in
   let sz = Array.length a in

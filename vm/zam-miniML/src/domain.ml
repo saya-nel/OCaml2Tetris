@@ -1,14 +1,22 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
 
 (* Hypothèse :
    Les segments mémoires sont placés dans cet ordre :
-   [|... DATA ...|] [| ... GLOBALES ...|] [| ... SEMI-SPACE1 ... |] [| ... SEMI-SPACE2 ... |] 
-*)
+   [| DATA |] [| GLOBALES |] [| SEMI-SPACE1 |] [| SEMI-SPACE2  |] 
+ *)
 
 (* taille de chaque segment *)
 
-let data_size = 1000
-let global_size = 1000
-let heap_size = ref 1000 (* par semi-space *)
+let data_size = 1024
+let global_size = 1024
+let heap_size = ref 4096 (* par semi-space *)
 let stack_size = 2048
 
 (* segment data *)
