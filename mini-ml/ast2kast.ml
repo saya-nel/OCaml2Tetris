@@ -1,3 +1,11 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
 
 
 let gen = Gensym.create 0
@@ -55,7 +63,8 @@ let lenv_extend x lenv =
   | pi::_ -> let i = snd pi + 1 in 
              (i,Lenv(args,((x,i) :: locals),free)))
 
-let lenv_extend_tail x lenv = lenv_extend x lenv (* ATTENTION : cette optimisation provoque des captures de variables !! 
+let lenv_extend_tail x lenv = lenv_extend x lenv
+(* ATTENTION : cette optimisation provoque des captures de variables !! 
   match lenv with 
   Lenv(args,locals,free) -> 
   (match locals with
@@ -69,7 +78,9 @@ let lenv_extend_tail x lenv = lenv_extend x lenv (* ATTENTION : cette optimisati
 
 let compare_ast_int c1 c2 =
   match c1 with
-  | Ast.Int(n1) -> (match c2 with | Ast.Int(n2) -> Pervasives.compare n1 n2 | _ -> assert false)
+  | Ast.Int(n1) -> (match c2 with
+                    | Ast.Int(n2) -> Pervasives.compare n1 n2
+                    | _ -> assert false)
   | _ -> assert false
 
 let rec rw_constant lenv genv cst = 
@@ -88,53 +99,53 @@ match cst with
    rw_exp lenv genv create_string 
 
 and rw_exp lenv genv e = 
- match e with
+  match e with
   | Ast.Constant(c) -> rw_constant lenv genv c
   | Ast.Ident(name) ->
      (match genv with
-     | Genv (mod_name,globals,global_funs,primitives,_) -> 
-     (match lenv with 
-     Lenv(args,locals,free) -> 
-     (match List.assoc_opt name locals with
-      | None ->
-         (match List.assoc_opt name args with
-          | None ->
-             (match List.assoc_opt name free with
-              | None ->
-                 (match List.assoc_opt name globals with
-                  | None -> let full_name =
-                              if (match String.index_opt name '.' with
-                                  | None -> false
-                                  | _ -> true)
-                              then name
-                              else ((^) ((^) mod_name  ".") name)
-                            in                
-                            (if List.mem full_name global_funs
-                             then Kast.GFun(full_name)
-                             else let f =
-                                    match List.assoc_opt name primitives with 
-                                    | None -> failwith ((^) "cannot find " name)
-                                    | Some(f) -> f
-                                  in
-                                  Kast.GFun(f))
-                  | Some(i) -> Kast.Variable(Kast.Global ((^) ((^) mod_name ".") name))) (* Kast.App (Kast.GFun(genv.mod_name ^ "." ^ name),[])) *)
-              | Some(i) -> 
-                 Kast.Variable(Kast.Free (i))) 
-          | Some(i) -> Kast.Variable(Kast.Argument (i)))
-      | Some(i) -> Kast.Variable(Kast.Local i)))) 
+      | Genv (mod_name,globals,global_funs,primitives,_) -> 
+         (match lenv with 
+            Lenv(args,locals,free) -> 
+            (match List.assoc_opt name locals with
+             | None ->
+                (match List.assoc_opt name args with
+                 | None ->
+                    (match List.assoc_opt name free with
+                     | None ->
+                        (match List.assoc_opt name globals with
+                         | None -> let full_name =
+                                     if (match String.index_opt name '.' with
+                                         | None -> false
+                                         | _ -> true)
+                                     then name
+                                     else ((^) ((^) mod_name  ".") name)
+                                   in                
+                                   (if List.mem full_name global_funs
+                                    then Kast.GFun(full_name)
+                                    else let f =
+                                           match List.assoc_opt name primitives with 
+                                           | None -> failwith ((^) "cannot find " name)
+                                           | Some(f) -> f
+                                         in
+                                         Kast.GFun(f))
+                         | Some(i) -> Kast.Variable(Kast.Global ((^) ((^) mod_name ".") name))) (* Kast.App (Kast.GFun(genv.mod_name ^ "." ^ name),[])) *)
+                     | Some(i) -> 
+                        Kast.Variable(Kast.Free (i))) 
+                 | Some(i) -> Kast.Variable(Kast.Argument (i)))
+             | Some(i) -> Kast.Variable(Kast.Local i)))) 
   | Ast.Let(name,e1,e2) ->
      let p = lenv_extend_tail name lenv in (* optimisation (avec `lenv_extend_tail`) : recyclage des variables masquées, 
                                                    contrainte pour la génération de code : dans, C[let x = e1(x) in e2] C[e1] doit bien manipuler le nouveau [x] et [e1] l'ancien *)
      let i = fst p in
      let lenv' = snd p in
      Kast.Let(i,rw_exp lenv genv e1, rw_exp lenv' genv e2)
- | Ast.LetRec(f,e1,e2) -> 
-   let (i,lenv') = lenv_extend f lenv in
-   let ke1 = rw_exp lenv' genv e1 in
-   let ke2 = rw_exp lenv' genv e2 in
-   Kast.Let (i,ke1,
-                   Kast.Seq(Kast.App(Kast.GFun("Internal.array_set"),[Kast.Variable(Kast.Local(i));Kast.Constant(Kast.Int(i+1));Kast.Variable(Kast.Local(i))]),
-                          ke2))
+  | Ast.LetRec(f,e1,e2) -> 
+     let (i,lenv') = lenv_extend f lenv in
+     let ke1 = rw_exp lenv' genv e1 in
+     let ke2 = rw_exp lenv' genv e2 in
+     Kast.Let (i,ke1,
+               Kast.Seq(Kast.App(Kast.GFun("Internal.array_set"),[Kast.Variable(Kast.Local(i));Kast.Constant(Kast.Int(i+1));Kast.Variable(Kast.Local(i))]),
+                        ke2))
   (* let (i,lenv') = lenv_extend f lenv in
   let (j,lenv2) = lenv_extend "__fake__" lenv' in
   let ke1 = rw_exp lenv2 genv e1 in
@@ -143,7 +154,7 @@ and rw_exp lenv genv e =
                           ke2)) *)
 
 
-(*
+  (*
   let p = lenv_extend f lenv in (* tail ? .optimisation (avec `lenv_extend_tail`) : recyclage des variables masquées, 
                                                    contrainte pour la génération de code : dans, C[let x = e1(x) in e2] C[e1] doit bien manipuler le nouveau [x] et [e1] l'ancien *)
      let i = fst p in
@@ -153,21 +164,21 @@ and rw_exp lenv genv e =
   let j = fst p2 in
   let lenv2 = snd p2 in
      Kast.Let(i,rw_exp lenv2 genv e1, rw_exp lenv' genv e2) *)
- | Ast.Fun(_,_) -> assert false (* déjà transformer en fermeture *)
+  | Ast.Fun(_,_) -> assert false (* déjà transformer en fermeture *)
 
- | Ast.Closure(code,name,v) ->
-    let id = fst code in
-    let c = snd code in
-      (* après lambda-lifting *)
+  | Ast.Closure(code,name,v) ->
+     let id = fst code in
+     let c = snd code in
+     (* après lambda-lifting *)
      let lenv_code = 
        match lenv with
        | Lenv(args,locals,free) ->
-         let free = associate 1
-                     (match v with 
-                      | Ast.Block(l) ->
-                        (match l with
-                         | [] -> assert false
-                         | addr::l -> List.map (fun e ->
+          let free = associate 1
+                       (match v with 
+                        | Ast.Block(l) ->
+                           (match l with
+                            | [] -> assert false
+                            | addr::l -> List.map (fun e ->
                                                   match e with
                                                   | Ast.Ident(sym) -> sym
                                                   | _ -> assert false) l)
@@ -278,15 +289,18 @@ and aux_ast_match2 otherw var ms =
            Ast.If(Ast.BinOp(Ast.Lt,
                             Ast.Ident(var),
                             Ast.Constant(md)),
-                  aux_ast_match2 otherw var l1,Ast.If(Ast.BinOp(Ast.Eq,
-                                          Ast.Ident(var),
-                                          Ast.Constant(md)),e1,aux_ast_match2 otherw var l2t)))
-
+                  aux_ast_match2 otherw var l1,
+                  Ast.If(Ast.BinOp(Ast.Eq,
+                                   Ast.Ident(var),
+                                   Ast.Constant(md)),e1,aux_ast_match2 otherw var l2t)))
+           
 type recflag = Rec | NonRec
 
 
 let rw_defun mod_name genv recflag dfs =
-  let gnames = List.map (fun d -> match d with | Ast.DF (name,args,e) -> (^) ((^) mod_name ".") name)  dfs in
+  let gnames = List.map
+                 (fun d -> match d with
+                           | Ast.DF (name,args,e) -> (^) ((^) mod_name ".") name)  dfs in
   let genv2 = match genv with
               | Genv (md,globals,global_funs,p,init) -> 
                 let global_funs = List.append gnames global_funs in
@@ -324,12 +338,16 @@ let rec rw_decl mod_name genv d =
           let init = ( (^) ((^) mod_name ".") name_init) :: init in
          Genv (md,globals,g,p,init)
      in
-     let p = rw_decl mod_name genv (
-                      Ast.DefFun (Ast.DF (name_init,[],Ast.Ext(Ast.SetGlobal(e,i))) :: [])) in
+     let p = rw_decl
+               mod_name
+               genv
+               (Ast.DefFun (Ast.DF (name_init,[],Ast.Ext(Ast.SetGlobal(e,i))) :: [])) in
      let genv = fst p in
      let d1 = snd p in
-     let p = rw_decl mod_name genv (
-                      Ast.DefFun (Ast.DF (name,[],Ast.Ext(Ast.ReadGlobal(i))) :: [])) in
+     let p = rw_decl
+               mod_name
+               genv
+               (Ast.DefFun (Ast.DF (name,[],Ast.Ext(Ast.ReadGlobal(i))) :: [])) in
      let genv = fst p in
      let d2 = snd p in
      (genv,List.append d1 d2)

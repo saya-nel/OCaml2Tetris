@@ -1,14 +1,29 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
 type loc = Parseutils.pos
 
 type prog = tmodule list
-and tmodule = { mod_name : name ; 
-                decls : decl list }
+
+and tmodule = {
+    mod_name : name ; 
+    decls : decl list
+  }
+            
 and name = string
 and var = (name * typ option)
 
-and decl = { decl_desc: declaration_desc; 
-             decl_loc : loc
-            }
+and decl = {
+    decl_desc: declaration_desc; 
+    decl_loc : loc
+  }
+         
 and declaration_desc =
   | DefVar of (var * exp)
   | DefFun of    ((name * var list * typ option * exp) list)

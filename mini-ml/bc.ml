@@ -1,4 +1,14 @@
-(*  (mod_name,bc_body,init) *)
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
+
+(*  c'est un triplet (mod_name * bc_body * init) *)
 type bcmodule = Module of (Ast.name * instr list * Ast.name list)
 
 and instrs = instr list          
@@ -33,4 +43,4 @@ and vm_binop =
   Add | Sub | Mult | Div | Eq
   | Gt | Lt | And | Or | Assign
 and vm_unop = Not | Access | Alloc
-                      
+                               

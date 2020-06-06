@@ -1,4 +1,4 @@
-# 1 "lexer.mll"
+# 11 "lexer.mll"
  
   open Parseutils
   open Parser        (* The type token is defined in parser.mli *)
@@ -1981,419 +1981,419 @@ and __ocaml_lex_token_rec lexbuf __ocaml_lex_state =
   match Lexing.engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
 let
-# 13 "lexer.mll"
+# 23 "lexer.mll"
                                                         lxm
 # 1987 "lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 13 "lexer.mll"
-                                                             ( let n = int_of_string lxm in 
-	                            if abs n >= 0x8000
-	                            then failwith "Integer literal exceeds the range of representable integers" 
-	                            else INT(n) )
+# 24 "lexer.mll"
+                    ( let n = int_of_string lxm in 
+	              if abs n >= 0x8000
+	              then failwith "Integer literal exceeds the range of representable integers" 
+	              else INT(n) )
 # 1994 "lexer.ml"
 
   | 1 ->
-# 17 "lexer.mll"
+# 28 "lexer.mll"
                      ( TYPE )
 # 1999 "lexer.ml"
 
   | 2 ->
-# 18 "lexer.mll"
+# 29 "lexer.mll"
                      ( EXTERNAL )
 # 2004 "lexer.ml"
 
   | 3 ->
-# 19 "lexer.mll"
+# 30 "lexer.mll"
                      ( BOOL(true) )
 # 2009 "lexer.ml"
 
   | 4 ->
-# 20 "lexer.mll"
+# 31 "lexer.mll"
                      ( BOOL(false) )
 # 2014 "lexer.ml"
 
   | 5 ->
-# 21 "lexer.mll"
+# 32 "lexer.mll"
                      ( COLON )
 # 2019 "lexer.ml"
 
   | 6 ->
-# 22 "lexer.mll"
+# 33 "lexer.mll"
                      ( LPAREN )
 # 2024 "lexer.ml"
 
   | 7 ->
-# 23 "lexer.mll"
+# 34 "lexer.mll"
                      ( RPAREN )
 # 2029 "lexer.ml"
 
   | 8 ->
-# 24 "lexer.mll"
+# 35 "lexer.mll"
                      ( LBRACKET )
 # 2034 "lexer.ml"
 
   | 9 ->
-# 25 "lexer.mll"
+# 36 "lexer.mll"
                      ( RBRACKET )
 # 2039 "lexer.ml"
 
   | 10 ->
-# 26 "lexer.mll"
+# 37 "lexer.mll"
                      ( SEMICOL )
 # 2044 "lexer.ml"
 
   | 11 ->
-# 27 "lexer.mll"
+# 38 "lexer.mll"
                      ( CONS )
 # 2049 "lexer.ml"
 
   | 12 ->
-# 28 "lexer.mll"
+# 39 "lexer.mll"
                      ( TERMINAISON )
 # 2054 "lexer.ml"
 
   | 13 ->
-# 29 "lexer.mll"
+# 40 "lexer.mll"
                      ( DOT )
 # 2059 "lexer.ml"
 
   | 14 ->
-# 30 "lexer.mll"
+# 41 "lexer.mll"
                      ( COMMA )
 # 2064 "lexer.ml"
 
   | 15 ->
-# 31 "lexer.mll"
+# 42 "lexer.mll"
                      ( REF )
 # 2069 "lexer.ml"
 
   | 16 ->
-# 32 "lexer.mll"
+# 43 "lexer.mll"
                      ( LET )
 # 2074 "lexer.ml"
 
   | 17 ->
-# 33 "lexer.mll"
+# 44 "lexer.mll"
                      ( WHERE )
 # 2079 "lexer.ml"
 
   | 18 ->
-# 34 "lexer.mll"
+# 45 "lexer.mll"
                      ( AND_KW )
 # 2084 "lexer.ml"
 
   | 19 ->
-# 35 "lexer.mll"
+# 46 "lexer.mll"
                      ( FUN )
 # 2089 "lexer.ml"
 
   | 20 ->
-# 36 "lexer.mll"
+# 47 "lexer.mll"
                      ( REC )
 # 2094 "lexer.ml"
 
   | 21 ->
-# 37 "lexer.mll"
+# 48 "lexer.mll"
                      ( IN )
 # 2099 "lexer.ml"
 
   | 22 ->
-# 38 "lexer.mll"
+# 49 "lexer.mll"
                      ( IF )
 # 2104 "lexer.ml"
 
   | 23 ->
-# 39 "lexer.mll"
+# 50 "lexer.mll"
                      ( THEN )
 # 2109 "lexer.ml"
 
   | 24 ->
-# 40 "lexer.mll"
+# 51 "lexer.mll"
                      ( ELSE )
 # 2114 "lexer.ml"
 
   | 25 ->
-# 41 "lexer.mll"
+# 52 "lexer.mll"
                      ( ASSERT )
 # 2119 "lexer.ml"
 
   | 26 ->
-# 42 "lexer.mll"
+# 53 "lexer.mll"
                      ( PIPE )
 # 2124 "lexer.ml"
 
   | 27 ->
-# 43 "lexer.mll"
+# 54 "lexer.mll"
                      ( WILDCARD )
 # 2129 "lexer.ml"
 
   | 28 ->
-# 44 "lexer.mll"
+# 55 "lexer.mll"
                      ( MATCH )
 # 2134 "lexer.ml"
 
   | 29 ->
-# 45 "lexer.mll"
+# 56 "lexer.mll"
                      ( WITH )
 # 2139 "lexer.ml"
 
   | 30 ->
-# 46 "lexer.mll"
+# 57 "lexer.mll"
                      ( OF )
 # 2144 "lexer.ml"
 
   | 31 ->
-# 47 "lexer.mll"
+# 58 "lexer.mll"
                      ( WHILE )
 # 2149 "lexer.ml"
 
   | 32 ->
-# 48 "lexer.mll"
+# 59 "lexer.mll"
                      ( FOR )
 # 2154 "lexer.ml"
 
   | 33 ->
-# 49 "lexer.mll"
+# 60 "lexer.mll"
                      ( TO )
 # 2159 "lexer.ml"
 
   | 34 ->
-# 50 "lexer.mll"
+# 61 "lexer.mll"
                      ( DO )
 # 2164 "lexer.ml"
 
   | 35 ->
-# 51 "lexer.mll"
+# 62 "lexer.mll"
                      ( DONE )
 # 2169 "lexer.ml"
 
   | 36 ->
-# 52 "lexer.mll"
+# 63 "lexer.mll"
                      ( BEGIN )
 # 2174 "lexer.ml"
 
   | 37 ->
-# 53 "lexer.mll"
+# 64 "lexer.mll"
                      ( END )
 # 2179 "lexer.ml"
 
   | 38 ->
-# 54 "lexer.mll"
+# 65 "lexer.mll"
                      ( ARRAY_OPEN )
 # 2184 "lexer.ml"
 
   | 39 ->
-# 55 "lexer.mll"
+# 66 "lexer.mll"
                      ( ARRAY_CLOSE )
 # 2189 "lexer.ml"
 
   | 40 ->
-# 56 "lexer.mll"
+# 67 "lexer.mll"
                      ( ARRAY_ACCESS_OPEN )
 # 2194 "lexer.ml"
 
   | 41 ->
-# 57 "lexer.mll"
+# 68 "lexer.mll"
                      ( LEFT_ARROW )
 # 2199 "lexer.ml"
 
   | 42 ->
-# 58 "lexer.mll"
+# 69 "lexer.mll"
                      ( RIGHT_ARROW )
 # 2204 "lexer.ml"
 
   | 43 ->
-# 59 "lexer.mll"
+# 70 "lexer.mll"
                      ( ASSIGN )
 # 2209 "lexer.ml"
 
   | 44 ->
-# 60 "lexer.mll"
+# 71 "lexer.mll"
                      ( ACCESS )
 # 2214 "lexer.ml"
 
   | 45 ->
 let
-# 61 "lexer.mll"
+# 72 "lexer.mll"
                       s
 # 2220 "lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 1) (lexbuf.Lexing.lex_curr_pos + -1) in
-# 61 "lexer.mll"
+# 72 "lexer.mll"
                                ( STRING(s) )
 # 2224 "lexer.ml"
 
   | 46 ->
 let
-# 62 "lexer.mll"
+# 73 "lexer.mll"
                                                             c
 # 2230 "lexer.ml"
 = Lexing.sub_lexeme_char lexbuf (lexbuf.Lexing.lex_start_pos + 1) in
-# 62 "lexer.mll"
+# 73 "lexer.mll"
                                                                      ( CHAR(c) )
 # 2234 "lexer.ml"
 
   | 47 ->
 let
-# 63 "lexer.mll"
+# 74 "lexer.mll"
                  c
 # 2240 "lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 1) lexbuf.Lexing.lex_curr_pos in
-# 63 "lexer.mll"
+# 74 "lexer.mll"
                     ( TVAR(c) )
 # 2244 "lexer.ml"
 
   | 48 ->
-# 64 "lexer.mll"
+# 75 "lexer.mll"
                      ( PLUS )
 # 2249 "lexer.ml"
 
   | 49 ->
-# 65 "lexer.mll"
+# 76 "lexer.mll"
                      ( MINUS )
 # 2254 "lexer.ml"
 
   | 50 ->
-# 66 "lexer.mll"
+# 77 "lexer.mll"
                      ( TIMES )
 # 2259 "lexer.ml"
 
   | 51 ->
-# 67 "lexer.mll"
+# 78 "lexer.mll"
                      ( DIV )
 # 2264 "lexer.ml"
 
   | 52 ->
-# 68 "lexer.mll"
+# 79 "lexer.mll"
                      ( AND )
 # 2269 "lexer.ml"
 
   | 53 ->
-# 69 "lexer.mll"
+# 80 "lexer.mll"
                      ( OR )
 # 2274 "lexer.ml"
 
   | 54 ->
-# 70 "lexer.mll"
+# 81 "lexer.mll"
                      ( LAND )
 # 2279 "lexer.ml"
 
   | 55 ->
-# 71 "lexer.mll"
+# 82 "lexer.mll"
                      ( LOR )
 # 2284 "lexer.ml"
 
   | 56 ->
-# 72 "lexer.mll"
+# 83 "lexer.mll"
                      ( EQ )
 # 2289 "lexer.ml"
 
   | 57 ->
-# 73 "lexer.mll"
+# 84 "lexer.mll"
                      ( NEQ )
 # 2294 "lexer.ml"
 
   | 58 ->
-# 74 "lexer.mll"
+# 85 "lexer.mll"
                      ( GT )
 # 2299 "lexer.ml"
 
   | 59 ->
-# 75 "lexer.mll"
+# 86 "lexer.mll"
                      ( LT )
 # 2304 "lexer.ml"
 
   | 60 ->
-# 76 "lexer.mll"
+# 87 "lexer.mll"
                      ( GE )
 # 2309 "lexer.ml"
 
   | 61 ->
-# 77 "lexer.mll"
+# 88 "lexer.mll"
                      ( LE )
 # 2314 "lexer.ml"
 
   | 62 ->
-# 78 "lexer.mll"
+# 89 "lexer.mll"
                      ( IMPLY )
 # 2319 "lexer.ml"
 
   | 63 ->
-# 79 "lexer.mll"
+# 90 "lexer.mll"
                      ( AT )
 # 2324 "lexer.ml"
 
   | 64 ->
-# 80 "lexer.mll"
+# 91 "lexer.mll"
                      ( ATAT )
 # 2329 "lexer.ml"
 
   | 65 ->
-# 81 "lexer.mll"
+# 92 "lexer.mll"
                      ( CAT )
 # 2334 "lexer.ml"
 
   | 66 ->
-# 82 "lexer.mll"
+# 93 "lexer.mll"
                      ( SHARP )
 # 2339 "lexer.ml"
 
   | 67 ->
 let
-# 83 "lexer.mll"
+# 94 "lexer.mll"
                       lxm
 # 2345 "lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 83 "lexer.mll"
+# 94 "lexer.mll"
                           ( IDENT_CAPITALIZE(lxm) )
 # 2349 "lexer.ml"
 
   | 68 ->
 let
-# 84 "lexer.mll"
+# 95 "lexer.mll"
            lxm
 # 2355 "lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 84 "lexer.mll"
+# 95 "lexer.mll"
                      ( IDENT(lxm) )
 # 2359 "lexer.ml"
 
   | 69 ->
 let
-# 85 "lexer.mll"
+# 96 "lexer.mll"
               lxm
 # 2365 "lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 85 "lexer.mll"
+# 96 "lexer.mll"
                      ( VM_IDENT(lxm) )
 # 2369 "lexer.ml"
 
   | 70 ->
-# 86 "lexer.mll"
+# 97 "lexer.mll"
                      ( (Lexing.new_line lexbuf) ; (token lexbuf) )
 # 2374 "lexer.ml"
 
   | 71 ->
-# 87 "lexer.mll"
+# 98 "lexer.mll"
                      ( token lexbuf )
 # 2379 "lexer.ml"
 
   | 72 ->
-# 88 "lexer.mll"
+# 99 "lexer.mll"
                      ( comment lexbuf )
 # 2384 "lexer.ml"
 
   | 73 ->
-# 89 "lexer.mll"
+# 100 "lexer.mll"
                      ( EOF )
 # 2389 "lexer.ml"
 
   | 74 ->
 let
-# 90 "lexer.mll"
+# 101 "lexer.mll"
         lxm
 # 2395 "lexer.ml"
 = Lexing.sub_lexeme_char lexbuf lexbuf.Lexing.lex_start_pos in
-# 90 "lexer.mll"
+# 101 "lexer.mll"
                      ( raise (Parse_Exception (Printf.sprintf "Unexpected character: %c"  lxm,  Parseutils.pos())) )
 # 2399 "lexer.ml"
 
@@ -2405,17 +2405,17 @@ and comment lexbuf =
 and __ocaml_lex_comment_rec lexbuf __ocaml_lex_state =
   match Lexing.engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
-# 94 "lexer.mll"
+# 105 "lexer.mll"
           ( token lexbuf )
 # 2411 "lexer.ml"
 
   | 1 ->
-# 95 "lexer.mll"
+# 106 "lexer.mll"
           ( Lexing.new_line lexbuf; comment lexbuf )
 # 2416 "lexer.ml"
 
   | 2 ->
-# 96 "lexer.mll"
+# 107 "lexer.mll"
           (comment lexbuf )
 # 2421 "lexer.ml"
 

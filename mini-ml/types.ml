@@ -1,4 +1,14 @@
-(* repris et étendu de https://www.lri.fr/~filliatr/ens/compil/td/7/corrige/corrige.ml.html *)
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
+(* repris et étendu de :
+   https://www.lri.fr/~filliatr/ens/compil/td/7/corrige/corrige.ml.html *)
 
 type typid = string
 
@@ -19,8 +29,10 @@ and tvar =
   { id : int;
     mutable def : typ option }
 
-let alias = ref ([] : (typid * typ) list)       (* alias définis dans le module courrant *)
-let old_alias = ref ([] : (typid * typ) list)   (* alias, de la forme M.t, définis dans de précédents modules *)
+let alias = ref ([] : (typid * typ) list)
+(* alias définis dans le module courrant *)
+let old_alias = ref ([] : (typid * typ) list)
+(* alias, de la forme M.t, définis dans de précédents modules *)
 
 (* module V pour les variables de type *)
 

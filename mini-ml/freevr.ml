@@ -1,3 +1,12 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
 type collect = string list 
 
 let create () = ref []
@@ -54,7 +63,8 @@ match e with
 
 let collect env lenv e = (* "env" est l'environnement local englobant *)
   match env with 
-  | [] -> [] (* "la variable libre de quelqu'un et la variable liée de quelqu'un d'autre" *)
+  | [] -> []
+  (* "la variable libre de quelqu'un et la variable liée de quelqu'un d'autre" *)
   | _ -> let coll = create () in 
          collect_exp coll env lenv e;
          !coll

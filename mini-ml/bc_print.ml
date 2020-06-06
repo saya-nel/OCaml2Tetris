@@ -1,3 +1,12 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
 
 let prefix = "ML_"
 
@@ -17,7 +26,8 @@ and string_of_instr inst =
   | Bc.Function (f,n) ->
      (* sptf "// val \"%s\"\n\ " *)
        (^) "function " ((^) ((^) prefix f) ((^) " " (string_of_int n)))
-  | Bc.Call (f,n) -> (^) indent ((^) "call " ((^) ((^) prefix f) ((^) " " (string_of_int n))))
+  | Bc.Call (f,n) -> (^) indent ((^) "call "
+                                   ((^) ((^) prefix f) ((^) " " (string_of_int n))))
   | Bc.BinOp(s) -> string_of_binop s
   | Bc.UnOp(s) -> string_of_unop s
   | Bc.True -> (^) ((^) indent "push constant 0\n") ((^) indent "not")
@@ -30,7 +40,8 @@ match seg with
      (^) "argument " (string_of_int n)
   | Bc.Constant(n) ->
   if n >= 0 then (^)((^) indent "constant ") (string_of_int n)
-  else (^) ((^) indent "constant 0\n    push constant ") ((^) (string_of_int (-n)) "\n    sub")
+  else (^) ((^) indent "constant 0\n    push constant ")
+         ((^) (string_of_int (-n)) "\n    sub")
   | Bc.Static(n) ->
      (^) "static " (string_of_int n)
   | Bc.Local(n) ->

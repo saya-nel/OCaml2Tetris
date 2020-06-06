@@ -1,4 +1,14 @@
-(* attention, la propagation des Bc.Constantes devrait respecter l'architecture (addition 16 bit etc.) *)
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
+(* attention, la propagation des Bc.Constantes
+   devrait respecter les spécificité de l'architecture Hack (addition 16 bits etc.) *)
 
 let bc_int n = [Bc.Push (Bc.Constant(n))]
 

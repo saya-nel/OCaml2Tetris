@@ -1,3 +1,12 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
 open Past
 
 let sptf = Printf.sprintf
@@ -25,12 +34,19 @@ and sprint_module lvl {mod_name;decls} =
 and sprint_decl lvl {decl_desc} = match decl_desc with
   | Type (name,largsv,ty) ->
      let sty = match ty with 
-               | Exp_ty t -> (sprint_ty lvl t)
-               | Sum (l) -> mapcat " | " (function (c,[]) -> c | (c,args) ->
-               c ^ " of " ^ (mapcat " * " (sprint_ty 0) args)) l in
-     sptf "%stype %s%s = %s" (indent_string lvl)  (match largsv with 
-                              | [] -> ""
-                              | _ -> " (" ^ (mapcat ", " (sptf "'%s") largsv) ^ ") ") name sty
+       | Exp_ty t -> (sprint_ty lvl t)
+       | Sum (l) ->
+          mapcat " | "
+            (function
+               (c,[]) -> c
+             | (c,args) ->
+                c ^ " of " ^ (mapcat " * " (sprint_ty 0) args)) l
+     in
+     sptf "%stype %s%s = %s"
+       (indent_string lvl)
+       (match largsv with 
+        | [] -> ""
+        | _ -> " (" ^ (mapcat ", " (sptf "'%s") largsv) ^ ") ") name sty
   | DefVar (var,e) ->
      let w = sptf "let %s = " (sprint_var lvl var) in
      let z = get_indent_level w lvl in
@@ -46,9 +62,9 @@ and sprint_fun ?(recflag=false) lvl l =
       String.concat ("\n" ^ indent_string lvl ^ "and") @@
         List.map (fun (name,args,tyopt,e) ->
             let s = sptf " %s %s %s= " name (mapcat " " (sprint_var lvl) args) 
-            (match tyopt with 
-              | None -> ""
-              | Some ty -> sptf ": %s " (sprint_ty lvl ty)) in
+                      (match tyopt with 
+                       | None -> ""
+                       | Some ty -> sptf ": %s " (sprint_ty lvl ty)) in
             s ^ "\n" ^ (indent_string (next lvl)) ^ (sprint_exp (next lvl) e)) l
 and sprint_exp lvl {exp_desc} = match exp_desc with
   | Annotation (e,ty) ->
@@ -91,7 +107,8 @@ and sprint_exp lvl {exp_desc} = match exp_desc with
   | App(e,args) ->
      let s = sptf "(%s " (sprint_exp lvl e) in
      let lvl' = get_indent_level s lvl in 
-     s ^ (mapcat " " (sprint_exp lvl') args) ^ ")"    (* à revoir, indentation pas terrible si plusieurs "gros" arguments *)
+     s ^ (mapcat " " (sprint_exp lvl') args) ^ ")"    
+  (* à revoir, indentation pas terrible si plusieurs "gros" arguments *)
   | If(e1,e2,e3) ->
      let lvl = lvl + 1 in (* pour la parenthèse ouvrante *)
      sptf "(if %s\n%sthen %s \n%selse %s)"
@@ -209,11 +226,13 @@ and sprint_ty lvl ty =
      sptf "(%s ref)"
        (sprint_ty lvl t)
   | Tvar name -> (indent_string lvl) ^ name
-  | Tconstr (name,args) -> sptf "%s%s" 
-                               (match args with
-                                | [] -> "" 
-                                | [name] -> (sprint_ty lvl name) ^ " "
-                                | _ -> mapcat " " (sprint_ty lvl) args ^" ") name (* à revoir *)
+  | Tconstr (name,args) ->
+     sptf "%s%s" 
+       (match args with
+        | [] -> "" 
+        | [name] -> (sprint_ty lvl name) ^ " "
+        | _ -> mapcat " " (sprint_ty lvl) args ^" ") name (* à revoir *)
+  
 and sprint_var lvl (p,opt) = 
   match opt with 
   | None -> p
@@ -255,8 +274,9 @@ let rec sprint_real_ty lvl ty =
      (match v.def with 
       | None -> Printf.sprintf "'a%d" v.id
       | Some ty -> sprint_real_ty lvl ty)
-  | Tconstr (name,args) -> sptf "%s%s" 
-                               (match args with
-                                | [] -> "" 
-                                | [name] -> (sprint_real_ty lvl name) ^ " "
-                                | _ -> mapcat " " (sprint_real_ty lvl) args ^" ") name (* à revoir *)
+  | Tconstr (name,args) ->
+     sptf "%s%s" 
+       (match args with
+        | [] -> "" 
+        | [name] -> (sprint_real_ty lvl name) ^ " "
+        | _ -> mapcat " " (sprint_real_ty lvl) args ^" ") name (* à revoir *)

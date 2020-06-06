@@ -1,3 +1,13 @@
+############################################################################
+##                                                                        ##
+##         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             ##
+##                                                                        ##      
+##           Loïc SYLVESTRE              Pablito BELLO                    ##
+##           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        ##
+##                                                                        ##  
+############################################################################
+
+
 CC=ocamlc
 EXE=compile
 
@@ -46,9 +56,11 @@ test2: 	./compile
 	./compile stdlib/pervasives.ml stdlib/array.ml test/modules/m1.ml test/modules/m2.ml -assert -printast
 
 bootstrap:	./compile
-	./compile -typecheck -assert -printpast -noglobalize -nofolding -inline=0 bootstrap/stdlib-full/pervasives.ml bootstrap/stdlib-full/array.ml \
-	bootstrap/stdlib-full/string.ml bootstrap/stdlib-full/list.ml gensym.ml ast.ml freevr.ml kast.ml ast_lift.ml  ast_globz.ml ast_smpvar.ml \
-	 ast_closure.ml  bc.ml bc_print.ml kast2bc.ml bootstrap/main_bootstrap.ml # ast2kast.ml # 
+	./compile -typecheck -assert -printpast -noglobalize -nofolding -inline=0 \
+	bootstrap/stdlib-full/pervasives.ml bootstrap/stdlib-full/array.ml \
+	bootstrap/stdlib-full/string.ml bootstrap/stdlib-full/list.ml gensym.ml ast.ml \
+	freevr.ml kast.ml ast_lift.ml  ast_globz.ml ast_smpvar.ml \
+	 ast_closure.ml  bc.ml bc_print.ml kast2bc.ml bootstrap/main_bootstrap.ml # ast2kast.ml 
 
 clean:
 	rm -f $(EXE) *.cmo *.cmi compile *.vm *.tst *.out 

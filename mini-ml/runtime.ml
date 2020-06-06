@@ -1,3 +1,12 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
 let load_file f =
   let ic = open_in f in
   let n = in_channel_length ic in
@@ -14,7 +23,7 @@ let mv f dst =
 
 let link_test_file dir = 
   let oc = open_out (Filename.concat dir ("Main.tst")) in
-  Printf.fprintf oc "%s\n" "load; repeat 25000000 { vmstep; }"; (*, output-file Main.out, output-list RAM[12]%D1.6.1; *)
+  Printf.fprintf oc "%s\n" "load; repeat 25000000 { vmstep; }";
   close_out oc
 
 let link_runtime dir = 
@@ -162,22 +171,22 @@ end
 let primitives =
   let open PrimTypes in
   let ml_internal = 
-    [("Internal.exit",             "Internal.exit",               ty_internal_exit);
-     ("Internal.array_length",     "Internal.array_length",       ty_internal_array_length);
-     ("Internal.array_get",        "Internal.array_get",          ty_internal_array_get);
-     ("Internal.array_set",        "Internal.array_set",          ty_internal_array_set);
-     ("Internal.array_make",       "Internal.array_make",         ty_internal_array_make);
+    [("Internal.exit",             "Internal.exit",             ty_internal_exit);
+     ("Internal.array_length",     "Internal.array_length",     ty_internal_array_length);
+     ("Internal.array_get",        "Internal.array_get",        ty_internal_array_get);
+     ("Internal.array_set",        "Internal.array_set",        ty_internal_array_set);
+     ("Internal.array_make",       "Internal.array_make",       ty_internal_array_make);
      ("Internal.array_create_uninitialized", "Internal.array_create_uninitialized", ty_internal_array_create_uninitialized);
-     ("Internal.print_char",       "Internal.print_char",         ty_print_char);
-     ("Internal.print_char_array", "Internal.print_char_array",   ty_print_string); 
-     ("Internal.print_int",        "Internal.print_int",          ty_print_int);
-     ("Internal.print_newline",    "Internal.print_newline",      ty_print_newline);
-     ("Internal.make_pair",        "Internal.make_pair",          ty_internal_pair); 
-     ("Internal.fst",              "Internal.left",               ty_fst);
-     ("Internal.snd",              "Internal.right",              ty_snd);
-     ("Internal.free",             "Internal.free",               ty_internal_ignore);
-     ("Internal.obj_magic",        "Internal.obj_magic",          ty_obj_magic);
-     ("Obj.magic",                 "Internal.obj_magic",          ty_obj_magic)] in
+     ("Internal.print_char",       "Internal.print_char",       ty_print_char);
+     ("Internal.print_char_array", "Internal.print_char_array", ty_print_string); 
+     ("Internal.print_int",        "Internal.print_int",        ty_print_int);
+     ("Internal.print_newline",    "Internal.print_newline",    ty_print_newline);
+     ("Internal.make_pair",        "Internal.make_pair",        ty_internal_pair); 
+     ("Internal.fst",              "Internal.left",             ty_fst);
+     ("Internal.snd",              "Internal.right",            ty_snd);
+     ("Internal.free",             "Internal.free",             ty_internal_ignore);
+     ("Internal.obj_magic",        "Internal.obj_magic",        ty_obj_magic);
+     ("Obj.magic",                 "Internal.obj_magic",        ty_obj_magic)] in
   let openned_ml_pervasives =
     [("exit",             "Pervasives.exit",             ty_exit);
      ("failwith",         "Pervasives.failwith",         ty_failwith);

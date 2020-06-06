@@ -1,11 +1,22 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
+
 type prog = tmodule list
 
-(*     
+(* Le type OCaml initial était :    
 and tmodule = {
     mod_name : Ast.name ;
     decls: decl list ;
     init : Ast.name list
-  } *)
+  } 
+*)
 
 and tmodule = Module of (Ast.name * decl list * Ast.name list)
 

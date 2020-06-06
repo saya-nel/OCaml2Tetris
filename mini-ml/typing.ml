@@ -1,4 +1,16 @@
-(* repris et étendu de https://www.lri.fr/~filliatr/ens/compil/td/7/corrige/corrige.ml.html *)
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
+(* repris et étendu de :
+   https://www.lri.fr/~filliatr/ens/compil/td/7/corrige/corrige.ml.html *)
+
+
 
 open Types
 open Past
@@ -26,7 +38,9 @@ let ty_of_repr venv ty =
   | Tchar -> Types.Tchar
   | Tstring -> Types.Tstring
   | Tvar name -> (match List.assoc_opt name venv with
-                  | None -> Types.Tvar (V.create ())  (* (Printf.printf "Error: Unbound type parameter %s.\n\n %sexit.\n" name (Parseutils.string_of_position exp_loc);
+                  | None -> Types.Tvar (V.create ())
+                  (* (Printf.printf "Error: Unbound type parameter %s.\n\n %sexit.\n" 
+                                    name (Parseutils.string_of_position exp_loc);
                              exit 0); *)
                   | Some v -> v)
   | Tarrow (t1,t2) -> Types.Tarrow(aux t1,aux t2)

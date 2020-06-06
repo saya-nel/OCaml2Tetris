@@ -1,3 +1,13 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
+
 open Ast
 
 let sptf = Printf.sprintf
@@ -79,7 +89,8 @@ and sprint_exp lvl = function
   | App(e,args) ->
      let s = sptf "(%s " (sprint_exp lvl e) in
      let lvl' = get_indent_level s lvl in 
-     s ^ (mapcat " " (sprint_exp lvl') args) ^ ")"    (* à revoir, indentation pas terrible si plusieurs "gros" arguments *)
+     s ^ (mapcat " " (sprint_exp lvl') args) ^ ")"
+  (* à revoir, indentation pas terrible si plusieurs "gros" arguments *)
   | If(e1,e2,e3) ->
      let lvl = lvl + 1 in (* pour la parenthèse ouvrante *)
      sptf "(if %s\n%sthen %s \n%selse %s)"
@@ -116,8 +127,23 @@ and sprint_exp lvl = function
                  let lvl' = get_indent_level s lvl in
                  s ^ (sprint_exp lvl' e))
              cases)) ^ ")"
-  | Closure ((addr,e1),name,e2) -> sptf "#({%s}{%s})" (sprint_exp lvl e1) (sprint_exp lvl e2) (* "(%s {scode(%d): %s | %s})" name addr (sprint_exp 0 e1) (sprint_exp 0 e2) *)
-  | Ext _ -> "..."
+  | Closure ((addr,e1),name,e2) -> sptf "#({%s}{%s})"
+                                     (sprint_exp lvl e1)
+                                     (sprint_exp lvl e2)
+  (* ou bien :
+     "(%s {scode(%d): %s | %s})" name addr (sprint_exp 0 e1) (sprint_exp 0 e2) 
+  *)
+  | Ext ext -> (match ext with
+                | Array_alloc e ->
+                   sptf "$alloc %s" (sprint_exp lvl e)
+                | SetGlobal (e,n) ->
+                   sptf "$set_global %s %d" (sprint_exp lvl e) n
+                | ReadGlobal n ->
+                   sptf "$read_global %d" n 
+                | Goto (s,es) ->
+                   sptf "$goto %s %s" s (mapcat " " (fun x -> sprint_exp lvl x) es)
+                | Label (s,e) ->
+                   sptf "$label %s;\n%s%s" s (indent_string lvl) (sprint_exp lvl e))
 and sprint_constant lvl = function
   | Unit -> sptf "()"
   | Bool b -> sptf "%b" b

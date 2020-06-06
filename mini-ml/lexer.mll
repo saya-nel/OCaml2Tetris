@@ -1,3 +1,13 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
+
 {
   open Parseutils
   open Parser        (* The type token is defined in parser.mli *)
@@ -10,12 +20,13 @@ let ident_capitalize = ['A'-'Z'] ['a'-'z''A'-'Z''0'-'9''_']*
 let module_ident = ['A'-'Z'] ['a'-'z''A'-'Z''0'-'9''_']*
 
 rule token = parse
-| ((('-'?)"0x"['0'-'9''a'-'f''A'-'F']+)| ['0'-'9']+) as lxm  { let n = int_of_string lxm in 
-	                            if abs n >= 0x8000
-	                            then failwith "Integer literal exceeds the range of representable integers" 
-	                            else INT(n) }
+| ((('-'?)"0x"['0'-'9''a'-'f''A'-'F']+)| ['0'-'9']+) as lxm
+                    { let n = int_of_string lxm in 
+	              if abs n >= 0x8000
+	              then failwith "Integer literal exceeds the range of representable integers" 
+	              else INT(n) }
 | "type"             { TYPE }
-| "external"         { EXTERNAL } (* external int_of_string : string -> int = f *)
+| "external"         { EXTERNAL }
 | "true"             { BOOL(true) }
 | "false"            { BOOL(false) }
 | ':'                { COLON }

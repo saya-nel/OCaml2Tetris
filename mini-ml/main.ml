@@ -1,3 +1,13 @@
+(**************************************************************************)
+(*                                                                        *)
+(*         PSTL : OCaml sur la plate-forme Nand2Tetris (2020)             *)
+(*                                                                        *)      
+(*           Loïc SYLVESTRE              Pablito BELLO                    *)
+(*           loic.sylvestre@etu.upmc.fr  pablito.bello@etu.upmc.fr        *)
+(*                                                                        *)  
+(**************************************************************************)
+
+
 let inputs = ref []
 let stdlib = ref "stdlib"
 
@@ -16,7 +26,7 @@ let destination_dir = ref "generated_files"
 
 let () =
   Arg.parse [
-      ("-printpast", Arg.Set print_past,         (* -printpast, -printast TODO *)
+      ("-printpast", Arg.Set print_past,
        " : affiche l'AST en syntaxe Caml");
       ("-printast", Arg.Set print_ast,
        " : affiche l'AST simplifié en syntaxe Caml (après typage et optimisation)");
@@ -61,48 +71,59 @@ let parse_modules fs =
 (* env *)
 
 let compile cstrenv genv (mdl : Past.tmodule) = 
-    let cstrenv,mdl = Past2ast.visit_tmodule cstrenv mdl in
-    (* lambda lifting *)
-    let mdl = Ast_lift.rewrite mdl in
-    (* globalisation des valeurs immutables allouées *)
-    let mdl = if !globalize then Ast_globz.rewrite mdl else mdl in
+  let cstrenv,mdl = Past2ast.visit_tmodule cstrenv mdl in
+  (* lambda lifting *)
+  let mdl = Ast_lift.rewrite mdl in
 
-    (* intégration des appels de fonctions *)
-    
-    let mdl = Ast_inline.visit_tmodule ~depth_max:!inline_depth mdl in
-    (* apparament, dans cette version du compilateur avec bootstrap, l'inlining cause des plantage en simulation. Les déclarations sont elles bien dans l'ordre ? *)
-    
+  (* globalisation des valeurs immutables allouées *)
+  let mdl = if !globalize then Ast_globz.rewrite mdl else mdl in
 
-    (* propagation de constantes *)
-    let mdl = if !folding then Ast_fold.rewrite mdl else mdl in
-    let mdl = if !nosmpvar then Ast_smpvar.rewrite mdl else mdl in
-    let mdl = Ast_closure.rewrite mdl in
-    let mdl = Ast_tailrec.rewrite mdl in
-    if !print_ast then print_string @@ Ast_print.sprint_module 0 mdl;
-    let genv = match genv with
-              | Ast2kast.Genv (md,globals,g,p,init) -> 
-                let mod_name = (match mdl with Ast.Module(mod_name,_) -> mod_name) in
-                Ast2kast.Genv (mod_name,globals,g,p,[]) in
-    let genv,kast = Ast2kast.rewrite genv mdl in
-    let bc_mdl = match genv with
-                 | Ast2kast.Genv (_,_,_,_,init) ->  
-                   Kast2bc.bc_of_tmodule init kast in
-    let bc_mdl = Bc_fold.rewrite bc_mdl in
-    (cstrenv,genv,bc_mdl)
+  (* intégration des appels de fonctions *)
+  
+  let mdl = Ast_inline.visit_tmodule ~depth_max:!inline_depth mdl in
+
+  (* propagation de constantes *)
+  let mdl = if !folding then Ast_fold.rewrite mdl else mdl in
+  let mdl = if !nosmpvar then Ast_smpvar.rewrite mdl else mdl in
+  let mdl = Ast_closure.rewrite mdl in
+  let mdl = Ast_tailrec.rewrite mdl in
+  if !print_ast then print_string @@ Ast_print.sprint_module 0 mdl;
+  let genv = match genv with
+    | Ast2kast.Genv (md,globals,g,p,init) -> 
+       let mod_name = (match mdl with Ast.Module(mod_name,_) -> mod_name) in
+       Ast2kast.Genv (mod_name,globals,g,p,[]) in
+  let genv,kast = Ast2kast.rewrite genv mdl in
+  let bc_mdl = match genv with
+    | Ast2kast.Genv (_,_,_,_,init) ->  
+       Kast2bc.bc_of_tmodule init kast in
+  let bc_mdl = Bc_fold.rewrite bc_mdl in
+  (cstrenv,genv,bc_mdl)
 
 
 (* compile le programme formés des modules mdls *)
 let compile_all mdls =
-  if !print_past then List.iter (fun mdl -> print_string @@ Past_print.sprint_module 0 mdl) mdls;
-  if !type_check then (let env = ref 
-                        (let init = [("[]",let v = Types.var_create () in Types.Tconstr("list",[v]));
-                                     ("::",let v = Types.var_create () in Types.(Tarrow(v,Tarrow(Tconstr("list",[v]),Tconstr("list",[v])))));
-                                     ("None",let v = Types.var_create () in Types.Tconstr("option",[v]));
-                                     ("Some",let v = Types.var_create () in Types.(Tarrow(v,Tconstr("option",[v])))); ] in
-                         let prims = List.map (fun (x,c,ty) -> (x,ty)) Runtime.primitives in
-                         Typing.initial_env (prims @ init)) 
-                      in
-                       List.iter (fun mdl -> env := Typing.type_check mdl Ast2kast.(!env)) mdls);
+
+  if !print_past
+  then List.iter
+         (fun mdl ->
+           print_string @@
+             Past_print.sprint_module 0 mdl) mdls;
+  
+  if !type_check
+  then (let env =
+          ref (let init = [("[]",let v = Types.var_create () in
+                                 Types.Tconstr("list",[v]));
+                           ("::",let v = Types.var_create () in
+                                 Types.(Tarrow(v,Tarrow(Tconstr("list",[v]),
+                                                        Tconstr("list",[v])))));
+                           ("None",let v = Types.var_create () in
+                                   Types.Tconstr("option",[v]));
+                           ("Some",let v = Types.var_create () in
+                                   Types.(Tarrow(v,Tconstr("option",[v])))); ] in
+               let prims = List.map (fun (x,c,ty) -> (x,ty)) Runtime.primitives in
+               Typing.initial_env (prims @ init)) 
+        in
+        List.iter (fun mdl -> env := Typing.type_check mdl Ast2kast.(!env)) mdls);
   
   let (_,_,bc_mdls) = 
     let genv = let prims = List.map (fun (x,c,_) -> (x,c)) Runtime.primitives in
@@ -112,9 +133,9 @@ let compile_all mdls =
                     ("None",(0,0));
                     ("Some",(1,1)) ] in
     List.fold_left (fun (cstrenv,genv,acc) mdl -> 
-                      let cstrenv,genv,bc_mdl = compile cstrenv genv mdl in 
-                      (cstrenv,genv,acc @ [bc_mdl])) 
-          ((cstrenv,[]),genv,[]) mdls in 
+        let cstrenv,genv,bc_mdl = compile cstrenv genv mdl in 
+        (cstrenv,genv,acc @ [bc_mdl])) 
+      ((cstrenv,[]),genv,[]) mdls in 
   Kast2bc.bc_of_prog bc_mdls
 
 
